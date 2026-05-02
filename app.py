@@ -1,41 +1,47 @@
 import streamlit as st
 import os
 
-# Rule 10 & 4: Free, Provider-Independent. 
-st.set_page_config(layout="wide", page_title="Engineering Workbench", initial_sidebar_state="collapsed")
+# Rule 10 & 11: Free, Portable, and Frozen Logic
+st.set_page_config(layout="wide", page_title="Workbench", initial_sidebar_state="collapsed")
 
-# CSS to lock window height to 100% of the screen (No length scroll)
+# CSS for Zero-Scroll and Engineering Density
 st.markdown("""
     <style>
-    /* Force app to fill 100% height and hide main scrollbar */
+    /* Lock Viewport to prevent scrolling */
     .main .block-container { 
         padding: 0 !important; 
-        max-height: 100vh; 
+        height: 100vh; 
         overflow: hidden; 
+        background-color: #fdfdfd;
     }
     header { visibility: hidden; }
     
-    /* Zero-Gap Engineering Layout */
+    /* Zero-Gap Engineering Grid */
     .stHorizontalBlock { gap: 0 !important; }
+    div[data-testid="column"] { padding: 0 !important; border: 0.5px solid #444; }
     
-    /* Resizable-ready containers */
-    .resizable-v { 
-        display: flex; 
-        flex-direction: column; 
-        height: 90vh; 
-    }
-    
-    /* Professional Border Styles */
-    div[data-testid="column"] { border: 0.5px solid #444; }
+    /* Technical Text Areas */
     div.stTextArea textarea { font-family: 'Consolas', monospace; font-size: 11px; border-radius: 0; }
+    
+    /* Resizer Line Styling */
+    .resizer-line {
+        background-color: #333;
+        height: 4px;
+        cursor: ns-resize;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 8px;
+        line-height: 4px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
     if 'category' not in st.session_state: st.session_state['category'] = None
     if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
-    # Height state for the "Drag" simulation
-    if 'h_workspace' not in st.session_state: st.session_state['h_workspace'] = 500
+    if 'h_split' not in st.session_state: st.session_state['h_split'] = 450
 
     if st.session_state['category'] is None:
         show_category_selection()
@@ -44,7 +50,7 @@ def main():
     else:
         show_workbench()
 
-# --- FROZEN AUTHENTICATION (Rule 11) ---
+# --- FROZEN AUTHENTICATION ---
 def show_category_selection():
     st.title("System Domain")
     cat = st.radio("Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
@@ -74,42 +80,41 @@ def check_credentials(u, p, filename):
     with open(filename, "r") as f:
         return f"{u},{p}" in [line.strip() for line in f.readlines()]
 
-# --- DRAGGABLE WORKBENCH ---
+# --- WORKBENCH (IMAGE_A64CB9.PNG ALIGNMENT) ---
 def show_workbench():
-    # Top Menu Ribbon
-    ribbon = st.columns(12)
+    # 1. Top Icon Ribbon (Engineering Density)
+    ribbon = st.columns(15)
     icons = ["📄", "📁", "💾", "📐", "🔍", "⚡", "🧩", "🛠️", "🔗", "🔄", "⚙️", "🔒"]
     for i, icon in enumerate(icons):
         ribbon[i].button(icon, key=f"rib_{i}")
 
-    # Column 1: Workspace | Column 2: AI | Column 3: Wall
-    c1, c2, c3 = st.columns([0.70, 0.25, 0.05])
+    # 2. Main Workbench Area
+    col_main, col_ai, col_wall = st.columns([0.70, 0.25, 0.05])
 
-    with c1:
-        # CAD Window
-        st.container(height=st.session_state['h_workspace'], border=True).write("CAD DRAWING / SCHEMATIC")
+    with col_main:
+        # CAD Section
+        st.container(height=st.session_state['h_split'], border=True).write("CAD DRAWING AREA")
         
-        # The Draggable Wall (Functional Trigger)
-        # Rule 1: Manufacturable trigger for resizing height
-        if st.button("↕ DRAG BOUNDARY", help="Click to toggle between Code and CAD focus"):
-            st.session_state['h_workspace'] = 200 if st.session_state['h_workspace'] == 500 else 500
-            st.rerun()
+        # Excel-Style Divider Logic
+        st.markdown('<div class="resizer-line">••••••••••••••••</div>', unsafe_allow_html=True)
+        # Small buttons to simulate the "Drag" without breaking the 100vh lock
+        c_up, c_down, _ = st.columns([0.05, 0.05, 0.9])
+        if c_up.button("▴", key="up"): st.session_state['h_split'] = max(100, st.session_state['h_split']-50); st.rerun()
+        if c_down.button("▾", key="down"): st.session_state['h_split'] = min(700, st.session_state['h_split']+50); st.rerun()
         
-        # Command Window
-        st.text_area("COMMAND_LOG", "Ready.", height=250, label_visibility="collapsed")
+        # Bottom Command Window
+        st.text_area("COMMAND_WINDOW", "System Initialized...", height=200, label_visibility="collapsed")
 
-    with c2:
-        # AI Stack
+    with col_ai:
+        # AI Interaction
         st.container(height=400, border=True).write("AI_ANALYSIS")
-        st.text_area("USER_PROMPT", placeholder="Enter command...", height=150, label_visibility="collapsed")
-        st.button("EXECUTE COMMAND")
+        st.text_area("USER_PROMPT", placeholder="Enter instructions...", height=150, label_visibility="collapsed")
+        st.button("EXECUTE")
 
-    with c3:
-        for btn in ["⚙️", "🛠️", "🔒", "📁"]:
+    with col_wall:
+        # Right Wall Buttons
+        for btn in ["⚙️", "📁", "💾", "🛠️"]:
             st.button(btn, key=f"wall_{btn}")
-
-    # Status Bar fixed to bottom
-    st.markdown(f"<div style='position:fixed; bottom:0; width:100%; background:#eee; font-size:10px; padding:5px; border-top:1px solid #444;'>SYS_READY | DOMAIN: {st.session_state.category}</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
