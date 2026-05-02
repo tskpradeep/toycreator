@@ -2,9 +2,9 @@ import streamlit as st
 import os
 
 # Rule 10 & 11: Provider Independent and Frozen Logic
-st.set_page_config(layout="wide", page_title="Engineering Workbench Baseline", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="Engineering Workbench", initial_sidebar_state="collapsed")
 
-# Rule 6: Minimalist plain gray background
+# Rule 6: Minimalist plain light-gray background
 st.markdown("""
     <style>
     .block-container { padding: 0 !important; background-color: #d3d3d3; height: 100vh; }
@@ -24,8 +24,7 @@ def main():
     elif not st.session_state['logged_in']:
         show_login_page()
     else:
-        # This is where we will carefully rebuild the 1:1 blueprint
-        show_workbench_gateway()
+        show_initial_workbench()
 
 def show_category_selection():
     st.title("System Domain")
@@ -52,7 +51,7 @@ def show_login_page():
                 st.rerun()
     with col2:
         if st.button("Register New ID"):
-            # Local storage implementation (Provider Independent)
+            # Local storage implementation (Offline-first)
             with open(filename, "a") as f: 
                 f.write(f"{u},{p}\n")
             st.success("Credential Logged Locally.")
@@ -64,9 +63,9 @@ def check_credentials(u, p, filename):
         credentials = [line.strip() for line in f.readlines()]
         return f"{u},{p}" in credentials
 
-def show_workbench_gateway():
+def show_initial_workbench():
     st.success(f"System Authenticated: {st.session_state['category']}")
-    st.info("Awaiting instruction for the rigid 1:1 grid reconstruction.")
+    st.write("Ready for grid instructions.")
 
 if __name__ == "__main__":
     main()
