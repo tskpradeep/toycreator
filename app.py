@@ -1,44 +1,54 @@
 import streamlit as st
 import os
 
-# Rule 10 & 11: Free, Portable, and Frozen Logic
-st.set_page_config(layout="wide", page_title="Workbench", initial_sidebar_state="collapsed")
+# Rule 10 & 11: Frozen logic and Provider Independence
+st.set_page_config(layout="wide", page_title="Workbench v1.0", initial_sidebar_state="collapsed")
 
-# 1:1 Blueprint CSS Implementation
+# Hard-coded 1:1 Blueprint CSS
 st.markdown("""
     <style>
-    .main .block-container { padding: 0 !important; height: 100vh; overflow: hidden; background-color: #fdfdfd; }
+    /* Remove all default spacing */
+    .block-container { padding: 0 !important; max-height: 100vh; overflow: hidden; }
     header { visibility: hidden; }
     
-    /* Grid Definition for 1:1 Layout */
-    .blueprint-grid {
+    /* Main Layout Grid - Forced 1:1 Mapping to image_a30e62.png */
+    .grid-wrapper {
         display: grid;
-        grid-template-columns: 1fr 300px 150px; /* Workspace | AI Panel | Square Matrix */
-        grid-template-rows: 1fr 150px 80px;     /* Top Content | Command Prompt | Footer */
+        grid-template-columns: 1fr 300px 180px; /* Workspace | AI Panel | Square Matrix */
+        grid-template-rows: 1fr 150px 80px;     /* Content | Command | Footer */
         height: 100vh;
+        width: 100vw;
+        background-color: white;
         border: 2px solid black;
     }
 
-    /* Borders based on Image colors */
-    .vertical-red-border { border-right: 3px solid red !important; }
-    .horizontal-green-border { border-bottom: 3px solid green !important; }
+    /* Cell Borders to match Blueprint colors */
+    .cell { border: 1px solid black; position: relative; overflow: hidden; }
+    .v-red { border-right: 3px solid red !important; }
+    .h-green { border-bottom: 3px solid green !important; }
     
-    /* Square Matrix Buttons */
-    .matrix-grid {
+    /* Square Matrix Button Style */
+    .matrix-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        grid-gap: 2px;
         padding: 5px;
+        gap: 5px;
     }
-    .sq-btn { width: 40px; height: 40px; background: black; border: 1px solid white; }
+    .sq-box { 
+        width: 45px; height: 45px; 
+        background-color: white; 
+        border: 2px solid black; 
+        display: inline-block;
+    }
+    
+    /* Labels */
+    .lbl { padding: 5px; font-weight: bold; font-family: 'Comic Sans MS'; }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
     if 'category' not in st.session_state: st.session_state['category'] = None
     if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
-    if 'v_split' not in st.session_state: st.session_state['v_split'] = 0.7  # Red line position
-    if 'h_split' not in st.session_state: st.session_state['h_split'] = 0.6  # Green line position
 
     if st.session_state['category'] is None:
         show_category_selection()
@@ -47,11 +57,11 @@ def main():
     else:
         show_workbench()
 
-# --- FROZEN AUTHENTICATION LOGIC ---
+# --- FROZEN AUTHENTICATION ---
 def show_category_selection():
     st.title("System Domain")
     cat = st.radio("Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
-    if st.button("Initialize Gateway"):
+    if st.button("Initialize"):
         st.session_state['category'] = cat
         st.rerun()
 
@@ -77,51 +87,48 @@ def check_credentials(u, p, filename):
     with open(filename, "r") as f:
         return f"{u},{p}" in [line.strip() for line in f.readlines()]
 
-# --- 1:1 WORKBENCH ---
+# --- 1:1 BLUEPRINT WORKBENCH ---
 def show_workbench():
-    # Outer Layout using standard Columns to maintain functionality
-    c_main, c_ai, c_matrix = st.columns([st.session_state['v_split'], 0.25, 0.05])
+    # We use Streamlit columns but force them into a strict bordered container
+    # Column Group A: Main & AI | Column Group B: Vertical Right Buttons
+    main_cols = st.columns([0.88, 0.12])
 
-    with c_main:
-        # Top: CAD/Visuals
-        st.container(height=450, border=True).write("VISUAL DISPLAYS / CAD DESIGNS")
+    with main_cols[0]:
+        # Top Row: Visuals and AI Replying
+        t_left, t_right = st.columns([0.7, 0.3])
+        with t_left:
+            st.markdown("<div style='height:450px; border-bottom:3px solid green; border-right:3px solid red; padding:10px;'>"
+                        "<h2 style='color:brown;'>visual displays dynamic between coding and screen/CAD designs</h2></div>", unsafe_allow_html=True)
+            # Bottom Row: Command Prompt
+            st.markdown("<div style='height:150px; padding:10px;'>"
+                        "<p style='color:red;'>command prompt for system programming for project</p></div>", unsafe_allow_html=True)
         
-        # GREEN BORDER (Horizontal Partition)
-        st.markdown("<div style='border-bottom: 3px solid green; margin: 5px 0;'></div>", unsafe_allow_html=True)
-        
-        # Bottom: Command Prompt
-        st.text_area("COMMAND PROMPT", "For system programming...", height=150)
+        with t_right:
+            st.markdown("<div style='height:300px; border-bottom:3px solid green; padding:10px;'>"
+                        "<h4 style='color:green;'>AI TEXT REPLYING WINDOW</h4></div>", unsafe_allow_html=True)
+            # Bottom Row: User Prompting
+            st.markdown("<div style='height:300px; padding:10px;'>"
+                        "<h4 style='color:purple;'>USER PROMPTING</h4></div>", unsafe_allow_html=True)
 
-    with c_ai:
-        # RED BORDER starts here (Vertical)
-        st.markdown("<div style='border-left: 3px solid red; height: 100vh; position: absolute; left: 0;'></div>", unsafe_allow_html=True)
-        
-        # AI Replying
-        st.container(height=350, border=True).write("AI TEXT REPLYING WINDOW")
-        
-        # GREEN BORDER (Horizontal)
-        st.markdown("<div style='border-bottom: 3px solid green; margin: 5px 0;'></div>", unsafe_allow_html=True)
-        
-        # User Prompting
-        st.text_area("USER PROMPT", height=200, placeholder="USER PROMPTING")
+    with main_cols[1]:
+        # Vertical Right Wall - "Rearlly selected or used buttons"
+        st.markdown("<div style='border-left:1px solid black; height:600px; text-align:center;'>", unsafe_allow_html=True)
+        for _ in range(12):
+            st.button("⬛", key=f"wall_{_}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    with c_matrix:
-        # Rare buttons stack (Vertical right wall)
-        for i in range(10):
-            st.button("⬛", key=f"rare_{i}")
-
-    # FOOTER SECTION
-    st.markdown("---")
-    f1, f2, f3 = st.columns([0.2, 0.5, 0.3])
+    # FOOTER
+    st.markdown("<div style='border-top:2px solid black;'></div>", unsafe_allow_html=True)
+    f1, f2, f3 = st.columns([0.2, 0.6, 0.2])
     with f1:
-        st.info("Small Indicators")
+        st.markdown("<div style='padding:20px; border-right:1px solid black; color:green;'>small indicators any</div>", unsafe_allow_html=True)
     with f2:
-        st.success("Control Buttons Decisions Space")
+        st.markdown("<div style='padding:20px; color:blue;'>buttons for controlling we will decide buttons as and when we</div>", unsafe_allow_html=True)
     with f3:
-        # Square Matrix (Right Bottom Corner)
+        # The 3x3 Matrix in bottom right
         m_cols = st.columns(3)
         for i in range(9):
-            m_cols[i % 3].button("⬛", key=f"mat_{i}")
+            m_cols[i%3].button("⬛", key=f"mat_{i}")
 
 if __name__ == "__main__":
     main()
