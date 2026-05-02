@@ -1,20 +1,8 @@
 import streamlit as st
 import os
 
-# Hard-coded Rule: Wide layout and precise Light-Gray background
+# Rule 10: Provider Independence & Rule 1: Practicality
 st.set_page_config(layout="wide", page_title="ToyCreator Workbench")
-
-# UI Fix: Injecting clean CSS for the background and removing default borders
-st.markdown("""
-    <style>
-    .stApp {
-        background-color: #D3D3D3;
-    }
-    [data-testid="stHeader"] {
-        background-color: rgba(0,0,0,0);
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 def main():
     if 'category' not in st.session_state:
@@ -30,40 +18,45 @@ def main():
         show_workbench()
 
 def show_category_selection():
-    st.title("Select Technology Category")
-    # One practical choice: Radio buttons for clean selection
-    cat = st.radio("Choose the domain for this project:", 
-                  ["Consumer Electronics", "Industrial Automation", "Military Grade Systems"])
-    if st.button("Proceed to Login"):
+    st.title("Technology Domain Selection")
+    # Rule 5: Suggesting the most robust verified categories for this architecture
+    cat = st.radio("Select the infrastructure type to build:", 
+                  ["Consumer Electronics", "Industrial Automation", "Military Systems"])
+    if st.button("Initialize Gateway"):
         st.session_state['category'] = cat
         st.rerun()
 
 def show_login_page():
-    st.title(f"Login: {st.session_state['category']}")
-    if st.button("← Back to Categories"):
+    st.title(f"Access Portal: {st.session_state['category']}")
+    if st.button("← Change Domain"):
         st.session_state['category'] = None
         st.rerun()
         
-    tab1, tab2 = st.tabs(["Login", "Sign Up"])
-    # Category-specific credential files ensure migration flexibility (Point 3)
-    filename = f"users_{st.session_state['category'].replace(' ', '_')}.txt"
+    tab1, tab2 = st.tabs(["Secure Login", "Register Account"])
+    
+    # Rule 10: Files are named by category for easy server migration
+    suffix = st.session_state['category'].replace(' ', '_')
+    filename = f"auth_{suffix}.txt"
     
     with tab1:
-        u = st.text_input("Username")
-        p = st.text_input("Password", type="password")
+        u = st.text_input("Username", key="login_u")
+        p = st.text_input("Password", type="password", key="login_p")
         if st.button("Login"):
             if check_credentials(u, p, filename):
                 st.session_state['logged_in'] = True
                 st.rerun()
+            else:
+                st.error("Authentication Failed")
     with tab2:
-        nu = st.text_input("New Username")
-        np = st.text_input("New Password", type="password")
-        if st.button("Create Account"):
+        nu = st.text_input("Create Username", key="reg_u")
+        np = st.text_input("Create Password", type="password", key="reg_p")
+        if st.button("Create"):
             save_credentials(nu, np, filename)
-            st.success("Account created!")
+            st.success("Account Ready")
 
 def save_credentials(u, p, filename):
-    with open(filename, "a") as f: f.write(f"{u},{p}\n")
+    with open(filename, "a") as f: 
+        f.write(f"{u},{p}\n")
 
 def check_credentials(u, p, filename):
     if not os.path.exists(filename): return False
@@ -73,14 +66,16 @@ def check_credentials(u, p, filename):
     return False
 
 def show_workbench():
-    # Mirrored T-Pane (Canvas Left 3/4, Menu Right 1/4)
+    # Mirrored T-Pane: Canvas (Left 3/4), Menu (Right 1/4)
     c1, c2 = st.columns([3, 1])
     with c1:
-        st.subheader(f"System Canvas: {st.session_state['category']}")
-        st.write("---")
+        st.header(f"System Canvas | {st.session_state['category']}")
+        st.divider()
     with c2:
-        st.subheader("Control Menu")
-        st.button("Logout", on_click=lambda: st.session_state.update({"logged_in": False}))
+        st.header("Control")
+        if st.button("Exit System", use_container_width=True):
+            st.session_state.update({"logged_in": False})
+            st.rerun()
 
 if __name__ == "__main__":
     main()
