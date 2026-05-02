@@ -2,110 +2,100 @@ import streamlit as st
 import os
 
 # Rule 10 & 11: Provider Independent and Frozen Logic
-st.set_page_config(layout="wide", page_title="Engineering Workbench", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="System Gateway", initial_sidebar_state="collapsed")
 
-# Rule 6: Minimalist Pure Black Background with Centered Narrow UI
+# Rule 6: Professional Black Engineering Aesthetic
 st.markdown("""
     <style>
-    /* Full reset of the Streamlit canvas to black */
-    .block-container { 
-        padding: 0 !important; 
-        background-color: #000000; 
-        height: 100vh; 
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    header, footer { visibility: hidden; }
+    /* Force absolute black and hide all web elements */
+    .block-container { padding: 0 !important; background-color: #000000; height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center; }
+    header, footer { visibility: hidden !important; }
     
-    /* Center the main content block and restrict width */
-    .centered-container {
-        width: 400px;
+    /* THE CENTRAL CONTROL HUB - Locked width, no spreading */
+    .control-hub {
+        width: 320px;
+        padding: 40px;
+        border: 1px solid #333;
+        background-color: #0a0a0a;
         text-align: center;
-        color: white;
-        font-family: "Courier New", Courier, monospace;
+        font-family: 'Courier New', Courier, monospace;
     }
 
-    /* Restrict width of input bars and center them */
-    .stTextInput > div > div > input {
-        background-color: #1a1a1a !important;
+    /* Professional Small Bars */
+    .stTextInput input {
+        background-color: #000 !important;
+        color: #00ff00 !important;
+        border: 1px solid #444 !important;
+        border-radius: 0px !important;
+        text-align: center !important;
+        height: 30px !important;
+        font-size: 14px !important;
+    }
+
+    /* Text & Label Alignment */
+    h1, h2, h3, label, .stMarkdown, .stRadio { 
+        color: #cccccc !important; 
+        text-align: center !important; 
+        font-size: 14px !important;
+    }
+    
+    /* Clean Buttons */
+    .stButton>button {
+        width: 100% !important;
+        border-radius: 0px !important;
+        background-color: #222 !important;
         color: white !important;
         border: 1px solid #444 !important;
-        text-align: center;
-    }
-    
-    /* Ensure all text/labels are visible against black background */
-    .stMarkdown, .stRadio, .stTextInput, .stButton, label { 
-        color: white !important; 
-        text-align: center !important;
-    }
-    
-    /* Center radio buttons and their labels */
-    [data-testid="stVerticalBlock"] > div {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
     }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # Wrap everything in a centered div
-    st.markdown('<div class="centered-container">', unsafe_allow_html=True)
-    
-    # --- FROZEN AUTHENTICATION LOGIC ---
-    if 'category' not in st.session_state: 
-        st.session_state['category'] = None
-    if 'logged_in' not in st.session_state: 
-        st.session_state['logged_in'] = False
+    # Forced Central Container
+    st.markdown('<div class="control-hub">', unsafe_allow_html=True)
+
+    # --- AUTHENTICATION STATE ---
+    if 'category' not in st.session_state: st.session_state['category'] = None
+    if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 
     if st.session_state['category'] is None:
-        show_category_selection()
-    elif not st.session_state['logged_in']:
-        show_login_page()
-    else:
-        show_workbench_ready()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-
-def show_category_selection():
-    st.title("System Domain")
-    cat = st.radio("Select Operational Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
-    if st.button("Initialize Gateway"):
-        st.session_state['category'] = cat
-        st.rerun()
-
-def show_login_page():
-    suffix = st.session_state['category'].replace(' ', '_')
-    filename = f"auth_{suffix}.txt"
-    
-    st.subheader(f"Access Portal")
-    st.caption(f"Domain: {st.session_state['category']}")
-    
-    # Small input bars centered
-    u = st.text_input("User ID", placeholder="Enter ID")
-    p = st.text_input("Passkey", type="password", placeholder="Enter Passkey")
-    
-    if st.button("Authenticate"):
-        if check_credentials(u, p, filename):
-            st.session_state['logged_in'] = True
+        st.markdown("### SYSTEM DOMAIN")
+        cat = st.radio("Select Operational Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"], label_visibility="collapsed")
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("INITIALIZE"):
+            st.session_state['category'] = cat
             st.rerun()
             
-    if st.button("Register New ID"):
-        with open(filename, "a") as f: 
-            f.write(f"{u},{p}\n")
-        st.success("Log Created.")
+    elif not st.session_state['logged_in']:
+        suffix = st.session_state['category'].replace(' ', '_')
+        filename = f"auth_{suffix}.txt"
+        
+        st.markdown(f"### ACCESS PORTAL")
+        st.markdown(f"<p style='color: #666;'>{st.session_state['category']}</p>", unsafe_allow_html=True)
+        
+        u = st.text_input("USER ID", placeholder="ID", label_visibility="collapsed")
+        p = st.text_input("PASSKEY", type="password", placeholder="PASS", label_visibility="collapsed")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("AUTHENTICATE"):
+            if check_credentials(u, p, filename):
+                st.session_state['logged_in'] = True
+                st.rerun()
+        
+        if st.button("REGISTER NEW ID"):
+            with open(filename, "a") as f: f.write(f"{u},{p}\\n")
+            st.toast("Credentials Logged.")
+
+    else:
+        st.markdown("<h3 style='color: #00ff00;'>SYSTEM ONLINE</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p>{st.session_state['category']}</p>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def check_credentials(u, p, filename):
-    if not os.path.exists(filename): 
-        return False
+    if not os.path.exists(filename): return False
     with open(filename, "r") as f:
-        credentials = [line.strip() for line in f.readlines()]
-        return f"{u},{p}" in credentials
-
-def show_workbench_ready():
-    st.success(f"Authenticated: {st.session_state['category']}")
-    st.info("System Ready for Grid Implementation.")
+        return f"{u},{p}" in [line.strip() for line in f.readlines()]
 
 if __name__ == "__main__":
     main()
