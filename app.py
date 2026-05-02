@@ -4,44 +4,41 @@ import os
 # Rule 10 & 11: Free, Portable, and Frozen Logic
 st.set_page_config(layout="wide", page_title="Workbench", initial_sidebar_state="collapsed")
 
-# CSS for Zero-Scroll and Engineering Density
+# 1:1 Blueprint CSS Implementation
 st.markdown("""
     <style>
-    /* Lock Viewport to prevent scrolling */
-    .main .block-container { 
-        padding: 0 !important; 
-        height: 100vh; 
-        overflow: hidden; 
-        background-color: #fdfdfd;
-    }
+    .main .block-container { padding: 0 !important; height: 100vh; overflow: hidden; background-color: #fdfdfd; }
     header { visibility: hidden; }
     
-    /* Zero-Gap Engineering Grid */
-    .stHorizontalBlock { gap: 0 !important; }
-    div[data-testid="column"] { padding: 0 !important; border: 0.5px solid #444; }
-    
-    /* Technical Text Areas */
-    div.stTextArea textarea { font-family: 'Consolas', monospace; font-size: 11px; border-radius: 0; }
-    
-    /* Resizer Line Styling */
-    .resizer-line {
-        background-color: #333;
-        height: 4px;
-        cursor: ns-resize;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-size: 8px;
-        line-height: 4px;
+    /* Grid Definition for 1:1 Layout */
+    .blueprint-grid {
+        display: grid;
+        grid-template-columns: 1fr 300px 150px; /* Workspace | AI Panel | Square Matrix */
+        grid-template-rows: 1fr 150px 80px;     /* Top Content | Command Prompt | Footer */
+        height: 100vh;
+        border: 2px solid black;
     }
+
+    /* Borders based on Image colors */
+    .vertical-red-border { border-right: 3px solid red !important; }
+    .horizontal-green-border { border-bottom: 3px solid green !important; }
+    
+    /* Square Matrix Buttons */
+    .matrix-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 2px;
+        padding: 5px;
+    }
+    .sq-btn { width: 40px; height: 40px; background: black; border: 1px solid white; }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
     if 'category' not in st.session_state: st.session_state['category'] = None
     if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
-    if 'h_split' not in st.session_state: st.session_state['h_split'] = 450
+    if 'v_split' not in st.session_state: st.session_state['v_split'] = 0.7  # Red line position
+    if 'h_split' not in st.session_state: st.session_state['h_split'] = 0.6  # Green line position
 
     if st.session_state['category'] is None:
         show_category_selection()
@@ -50,7 +47,7 @@ def main():
     else:
         show_workbench()
 
-# --- FROZEN AUTHENTICATION ---
+# --- FROZEN AUTHENTICATION LOGIC ---
 def show_category_selection():
     st.title("System Domain")
     cat = st.radio("Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
@@ -80,41 +77,51 @@ def check_credentials(u, p, filename):
     with open(filename, "r") as f:
         return f"{u},{p}" in [line.strip() for line in f.readlines()]
 
-# --- WORKBENCH (IMAGE_A64CB9.PNG ALIGNMENT) ---
+# --- 1:1 WORKBENCH ---
 def show_workbench():
-    # 1. Top Icon Ribbon (Engineering Density)
-    ribbon = st.columns(15)
-    icons = ["📄", "📁", "💾", "📐", "🔍", "⚡", "🧩", "🛠️", "🔗", "🔄", "⚙️", "🔒"]
-    for i, icon in enumerate(icons):
-        ribbon[i].button(icon, key=f"rib_{i}")
+    # Outer Layout using standard Columns to maintain functionality
+    c_main, c_ai, c_matrix = st.columns([st.session_state['v_split'], 0.25, 0.05])
 
-    # 2. Main Workbench Area
-    col_main, col_ai, col_wall = st.columns([0.70, 0.25, 0.05])
-
-    with col_main:
-        # CAD Section
-        st.container(height=st.session_state['h_split'], border=True).write("CAD DRAWING AREA")
+    with c_main:
+        # Top: CAD/Visuals
+        st.container(height=450, border=True).write("VISUAL DISPLAYS / CAD DESIGNS")
         
-        # Excel-Style Divider Logic
-        st.markdown('<div class="resizer-line">••••••••••••••••</div>', unsafe_allow_html=True)
-        # Small buttons to simulate the "Drag" without breaking the 100vh lock
-        c_up, c_down, _ = st.columns([0.05, 0.05, 0.9])
-        if c_up.button("▴", key="up"): st.session_state['h_split'] = max(100, st.session_state['h_split']-50); st.rerun()
-        if c_down.button("▾", key="down"): st.session_state['h_split'] = min(700, st.session_state['h_split']+50); st.rerun()
+        # GREEN BORDER (Horizontal Partition)
+        st.markdown("<div style='border-bottom: 3px solid green; margin: 5px 0;'></div>", unsafe_allow_html=True)
         
-        # Bottom Command Window
-        st.text_area("COMMAND_WINDOW", "System Initialized...", height=200, label_visibility="collapsed")
+        # Bottom: Command Prompt
+        st.text_area("COMMAND PROMPT", "For system programming...", height=150)
 
-    with col_ai:
-        # AI Interaction
-        st.container(height=400, border=True).write("AI_ANALYSIS")
-        st.text_area("USER_PROMPT", placeholder="Enter instructions...", height=150, label_visibility="collapsed")
-        st.button("EXECUTE")
+    with c_ai:
+        # RED BORDER starts here (Vertical)
+        st.markdown("<div style='border-left: 3px solid red; height: 100vh; position: absolute; left: 0;'></div>", unsafe_allow_html=True)
+        
+        # AI Replying
+        st.container(height=350, border=True).write("AI TEXT REPLYING WINDOW")
+        
+        # GREEN BORDER (Horizontal)
+        st.markdown("<div style='border-bottom: 3px solid green; margin: 5px 0;'></div>", unsafe_allow_html=True)
+        
+        # User Prompting
+        st.text_area("USER PROMPT", height=200, placeholder="USER PROMPTING")
 
-    with col_wall:
-        # Right Wall Buttons
-        for btn in ["⚙️", "📁", "💾", "🛠️"]:
-            st.button(btn, key=f"wall_{btn}")
+    with c_matrix:
+        # Rare buttons stack (Vertical right wall)
+        for i in range(10):
+            st.button("⬛", key=f"rare_{i}")
+
+    # FOOTER SECTION
+    st.markdown("---")
+    f1, f2, f3 = st.columns([0.2, 0.5, 0.3])
+    with f1:
+        st.info("Small Indicators")
+    with f2:
+        st.success("Control Buttons Decisions Space")
+    with f3:
+        # Square Matrix (Right Bottom Corner)
+        m_cols = st.columns(3)
+        for i in range(9):
+            m_cols[i % 3].button("⬛", key=f"mat_{i}")
 
 if __name__ == "__main__":
     main()
