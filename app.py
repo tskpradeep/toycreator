@@ -1,22 +1,58 @@
 import streamlit as st
 import os
 
-# Rule 10 & 11: Frozen Logic and Provider Independence
+# Rule 10 & 11: Provider Independent and Frozen Logic
 st.set_page_config(layout="wide", page_title="Engineering Workbench", initial_sidebar_state="collapsed")
 
-# Rule 6: Minimalist Pure Black Background for the technical workspace
+# Rule 6: Minimalist Pure Black Background with Centered Narrow UI
 st.markdown("""
     <style>
     /* Full reset of the Streamlit canvas to black */
-    .block-container { padding: 0 !important; background-color: #000000; height: 100vh; }
+    .block-container { 
+        padding: 0 !important; 
+        background-color: #000000; 
+        height: 100vh; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     header, footer { visibility: hidden; }
     
-    /* Ensure text is visible against black background in login/category screens */
-    .stMarkdown, .stRadio, .stTextInput, .stButton { color: white !important; }
+    /* Center the main content block and restrict width */
+    .centered-container {
+        width: 400px;
+        text-align: center;
+        color: white;
+        font-family: "Courier New", Courier, monospace;
+    }
+
+    /* Restrict width of input bars and center them */
+    .stTextInput > div > div > input {
+        background-color: #1a1a1a !important;
+        color: white !important;
+        border: 1px solid #444 !important;
+        text-align: center;
+    }
+    
+    /* Ensure all text/labels are visible against black background */
+    .stMarkdown, .stRadio, .stTextInput, .stButton, label { 
+        color: white !important; 
+        text-align: center !important;
+    }
+    
+    /* Center radio buttons and their labels */
+    [data-testid="stVerticalBlock"] > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
+    # Wrap everything in a centered div
+    st.markdown('<div class="centered-container">', unsafe_allow_html=True)
+    
     # --- FROZEN AUTHENTICATION LOGIC ---
     if 'category' not in st.session_state: 
         st.session_state['category'] = None
@@ -29,6 +65,8 @@ def main():
         show_login_page()
     else:
         show_workbench_ready()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def show_category_selection():
     st.title("System Domain")
@@ -38,26 +76,25 @@ def show_category_selection():
         st.rerun()
 
 def show_login_page():
-    # File naming convention based on selected domain (Offline-first / local data)
     suffix = st.session_state['category'].replace(' ', '_')
     filename = f"auth_{suffix}.txt"
     
-    st.subheader(f"Access Portal: {st.session_state['category']}")
+    st.subheader(f"Access Portal")
+    st.caption(f"Domain: {st.session_state['category']}")
     
-    u = st.text_input("User ID")
-    p = st.text_input("Passkey", type="password")
+    # Small input bars centered
+    u = st.text_input("User ID", placeholder="Enter ID")
+    p = st.text_input("Passkey", type="password", placeholder="Enter Passkey")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Authenticate"):
-            if check_credentials(u, p, filename):
-                st.session_state['logged_in'] = True
-                st.rerun()
-    with col2:
-        if st.button("Register New ID"):
-            with open(filename, "a") as f: 
-                f.write(f"{u},{p}\n")
-            st.success("Credential Logged Locally.")
+    if st.button("Authenticate"):
+        if check_credentials(u, p, filename):
+            st.session_state['logged_in'] = True
+            st.rerun()
+            
+    if st.button("Register New ID"):
+        with open(filename, "a") as f: 
+            f.write(f"{u},{p}\n")
+        st.success("Log Created.")
 
 def check_credentials(u, p, filename):
     if not os.path.exists(filename): 
@@ -67,8 +104,8 @@ def check_credentials(u, p, filename):
         return f"{u},{p}" in credentials
 
 def show_workbench_ready():
-    st.success(f"System Authenticated: {st.session_state['category']}")
-    st.info("Awaiting instruction for the rigid 1:1 grid construction on the black background.")
+    st.success(f"Authenticated: {st.session_state['category']}")
+    st.info("System Ready for Grid Implementation.")
 
 if __name__ == "__main__":
     main()
