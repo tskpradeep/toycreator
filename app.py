@@ -1,17 +1,36 @@
 import streamlit as st
 import os
 
-# Rule 10 & 1: Wide layout, Provider Independent
-st.set_page_config(layout="wide", page_title="ToyCreator Workbench")
+# Rule 10: Provider Independent. Rule 1: Practical Engineering Layout.
+st.set_page_config(layout="wide", page_title="ToyCreator Workbench Pro", initial_sidebar_state="collapsed")
+
+# Injecting High-Density Engineering UI
+st.markdown("""
+    <style>
+    /* Technical Vibe: Darker accents and condensed spacing */
+    .stApp { background-color: #F5F5F5; font-family: 'Courier New', Courier, monospace; }
+    header { visibility: hidden; }
+    .main .block-container { padding: 10px; }
+    
+    /* Global Component Styling */
+    div.stTextArea textarea { font-size: 12px; background-color: #FAFAFA; border: 1px solid #999; }
+    div.stContainer { border: 1px solid #444 !important; background-color: #FFF; }
+    
+    /* The Right Edge Wall - Dense Icon Strip */
+    .wall-container {
+        border-left: 2px solid #333;
+        height: 95vh;
+        background-color: #E0E0E0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def main():
-    # Initialize session states
     if 'category' not in st.session_state:
         st.session_state['category'] = None
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
 
-    # Logic Gate
     if st.session_state['category'] is None:
         show_category_selection()
     elif not st.session_state['logged_in']:
@@ -20,39 +39,31 @@ def main():
         show_workbench()
 
 def show_category_selection():
-    st.title("Technology Domain Selection")
-    cat = st.radio("Select the infrastructure type to build:", 
-                  ["Consumer Electronics", "Industrial Automation", "Military Systems"])
-    if st.button("Initialize Gateway"):
+    st.title("System Initialization")
+    cat = st.selectbox("CHOOSE SYSTEM DOMAIN:", ["CONSUMER_ELECTRONICS", "INDUSTRIAL_AUTOMATION", "MILITARY_SPEC"])
+    if st.button("PROCEED"):
         st.session_state['category'] = cat
         st.rerun()
 
 def show_login_page():
-    st.title(f"Access Portal: {st.session_state['category']}")
-    if st.button("← Change Domain"):
-        st.session_state['category'] = None
-        st.rerun()
-        
-    tab1, tab2 = st.tabs(["Secure Login", "Register Account"])
+    st.subheader(f"TERMINAL ACCESS: {st.session_state['category']}")
+    tab1, tab2 = st.tabs(["LOG_IN", "CREATE_ID"])
     suffix = st.session_state['category'].replace(' ', '_')
     filename = f"auth_{suffix}.txt"
     
     with tab1:
-        u = st.text_input("Username", key="login_u")
-        p = st.text_input("Password", type="password", key="login_p")
-        if st.button("Login"):
+        u = st.text_input("UID")
+        p = st.text_input("PWD", type="password")
+        if st.button("AUTHENTICATE"):
             if check_credentials(u, p, filename):
                 st.session_state['logged_in'] = True
                 st.rerun()
     with tab2:
-        nu = st.text_input("Create Username", key="reg_u")
-        np = st.text_input("Create Password", type="password", key="reg_p")
-        if st.button("Create"):
-            save_credentials(nu, np, filename)
-            st.success("Account Ready")
-
-def save_credentials(u, p, filename):
-    with open(filename, "a") as f: f.write(f"{u},{p}\n")
+        nu = st.text_input("NEW_UID")
+        np = st.text_input("NEW_PWD", type="password")
+        if st.button("REGISTER"):
+            with open(filename, "a") as f: f.write(f"{nu},{np}\n")
+            st.success("ID_CREATED")
 
 def check_credentials(u, p, filename):
     if not os.path.exists(filename): return False
@@ -62,42 +73,44 @@ def check_credentials(u, p, filename):
     return False
 
 def show_workbench():
-    # Layout based on image_b135de.png
-    # Col 1: Workspace (Left) | Col 2: AI Interaction (Right) | Col 3: Wall (Edge)
+    # Grid Breakdown for Engineering Density
+    # Left: Workspace (65%) | Right: AI Stack (30%) | Far Right: Tools (5%)
     col_work, col_ai, col_wall = st.columns([0.65, 0.30, 0.05])
 
     with col_work:
         # Dynamic CAD/Code Vertical Split
-        st.subheader("Visual Display / CAD")
-        # Dynamic Height Slider (Rule 5: Practical solution for resizing)
-        h_adj = st.slider("Adjust Split", 100, 800, 400, label_visibility="collapsed")
-        st.container(height=h_adj, border=True).write("CAD / Design Viewport")
+        st.write(f"**VIEWPORT: {st.session_state.category}**")
+        h_adj = st.slider("V-SCALE", 50, 800, 450, label_visibility="collapsed")
+        st.container(height=h_adj, border=True).write("CAD_RENDER_LAYER_0")
         
-        st.subheader("Command Prompt")
-        st.text_area("System Programming Window", height=250)
+        st.write("**CMD_PROMPT_SYSTEM_PRG**")
+        st.text_area("PROGRAM_INPUT", height=250, label_visibility="collapsed")
 
     with col_ai:
-        st.subheader("AI Replying Window")
-        st.container(height=400, border=True).write("AI Response...")
+        st.write("**AI_ANALYSIS_ENGINE**")
+        st.container(height=450, border=True).write("SYSTEM_READY...")
         
-        st.subheader("User Prompting")
-        st.text_area("Type here...", height=100, key="prompt_box")
-        st.button("Send", use_container_width=True)
+        st.write("**USER_QUERY_INPUT**")
+        st.text_area("PROMPT", height=80, label_visibility="collapsed")
+        st.button("EXECUTE_COMMAND", use_container_width=True)
 
     with col_wall:
-        # The Wall - Mobile optimized tooltips
-        st.button("⚙️", help="Settings", key="w1")
-        st.button("📁", help="Project Files", key="w2")
-        st.button("💾", help="Save Architecture", key="w3")
-        st.button("🛠️", help="Tools", key="w4")
+        # High Density "Wall"
+        st.markdown('<div class="wall-container">', unsafe_allow_html=True)
+        st.button("⚙️", help="SYS_CONFIG")
+        st.button("📂", help="FILE_MGR")
+        st.button("💾", help="MEM_SAVE")
+        st.button("🛰️", help="SYNC_SAT")
+        st.button("🛠️", help="DEBUG_TOOL")
+        st.button("🔒", help="SECURE_X")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Fixed Bottom Bar
-    st.markdown("---")
-    b_left, b_center, b_right = st.columns([2, 2, 1])
-    with b_left:
-        st.caption(f"Status: Connected | Domain: {st.session_state.category}")
-    with b_right:
-        if st.button("EXIT SYSTEM", type="primary", use_container_width=True):
+    # Status Bar
+    st.divider()
+    s1, s2, s3 = st.columns([2, 1, 1])
+    with s1: st.caption("SYS_STATUS: ONLINE | LATENCY: 24ms | DB: LOCAL_SQLITE")
+    with s3:
+        if st.button("SYSTEM_LOGOUT", use_container_width=True):
             st.session_state.logged_in = False
             st.rerun()
 
