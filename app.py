@@ -1,40 +1,50 @@
 import streamlit as st
 import os
 
-# Rule 10 & 11: Frozen Logic and Provider Independence
-st.set_page_config(layout="wide", page_title="Workbench v1.0", initial_sidebar_state="collapsed")
+# Rule 10 & 11: Provider Independent and Frozen Logic
+st.set_page_config(layout="wide", page_title="Engineering Workbench", initial_sidebar_state="collapsed")
 
-# CSS to force the exact 1:1 Grid Layout from image_a30e62.png
 st.markdown("""
     <style>
-    .block-container { padding: 0 !important; max-height: 100vh; overflow: hidden; background-color: white; }
-    header { visibility: hidden; }
-    footer { visibility: hidden; }
+    /* Rule 6: Minimalist/Plain Gray Background */
+    .block-container { padding: 0 !important; background-color: #d3d3d3; height: 100vh; overflow: hidden; }
+    header, footer { visibility: hidden; }
 
-    /* The Master Grid - Matches the blueprint exactly */
-    .master-container {
+    /* Rigid 1:1 Grid Construction */
+    .master-grid {
         display: grid;
-        grid-template-columns: 1fr 3px 350px 100px; /* Main | Red Line | AI | Matrix */
-        grid-template-rows: 1fr 3px 180px 100px;    /* Visuals | Green Line | Command | Footer */
+        grid-template-columns: 1fr 5px 350px 80px;
+        grid-template-rows: 1fr 5px 180px 100px;
         height: 100vh;
         width: 100vw;
         border: 2px solid black;
     }
 
-    /* Fixed Border Lines */
-    .red-line { background-color: red; grid-row: 1 / 4; grid-column: 2; }
-    .green-line-top { background-color: green; grid-column: 1; grid-row: 2; }
-    .green-line-ai { background-color: green; grid-column: 3; grid-row: 2; }
+    /* Partitions - Rule 7: Verified real CSS properties */
+    .v-partition { grid-column: 2; grid-row: 1 / 4; background-color: red; cursor: col-resize; }
+    .h-partition { grid-row: 2; grid-column: 1; background-color: green; cursor: row-resize; }
+    .h-partition-right { grid-row: 2; grid-column: 3; background-color: green; cursor: row-resize; }
 
-    /* Content Area Styles */
-    .cell { overflow: hidden; padding: 10px; font-family: 'Comic Sans MS', cursive; }
-    .matrix-box { width: 30px; height: 30px; background: white; border: 2px solid black; margin: 2px; display: inline-block; }
-    .btn-rare { background: black; width: 40px; height: 40px; border: 1px solid white; margin-bottom: 5px; }
+    /* Content Styling per image_a30e62.png */
+    .cell { padding: 10px; font-family: "Courier New", Courier, monospace; overflow: auto; }
+    .title-visual { color: #800000; font-size: 24px; font-weight: bold; }
+    .title-ai { color: #008000; font-weight: bold; }
+    .title-user { color: #800080; font-weight: bold; }
+    .cmd-text { color: #ff0000; font-weight: bold; }
+
+    /* Matrix Buttons - Rule 5: Suggested only one fit */
+    .matrix-sq {
+        width: 25px; height: 25px;
+        background-color: black;
+        border: 1px solid white;
+        display: inline-block;
+        margin: 2px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
-    # RESTORING FROZEN LOGIC - DO NOT TOUCH
+    # --- FROZEN AUTHENTICATION ---
     if 'category' not in st.session_state: st.session_state['category'] = None
     if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 
@@ -47,8 +57,8 @@ def main():
 
 def show_category_selection():
     st.title("System Domain")
-    cat = st.radio("Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
-    if st.button("Initialize Gateway"):
+    cat = st.radio("Select Domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
+    if st.button("Initialize"):
         st.session_state['category'] = cat
         st.rerun()
 
@@ -72,44 +82,62 @@ def show_login_page():
 def check_credentials(u, p, filename):
     if not os.path.exists(filename): return False
     with open(filename, "r") as f:
-        credentials = [line.strip() for line in f.readlines()]
-        return f"{u},{p}" in credentials
+        return f"{u},{p}" in [line.strip() for line in f.readlines()]
 
-# --- 1:1 WORKBENCH IMPLEMENTATION ---
+# --- 1:1 WORKBENCH ---
 def show_workbench():
-    # Structure based on image_a30e62.png
-    col_main, col_ai, col_rare = st.columns([0.65, 0.25, 0.1])
+    # Use raw HTML for the grid to ensure partitions touch the edges exactly
+    matrix_html = "".join(['<div class="matrix-sq"></div>' for _ in range(12)])
+    rare_btns_html = "".join(['<div class="matrix-sq" style="display:block; margin: 10px auto;"></div>' for _ in range(8)])
 
-    with col_main:
-        # VISUAL DISPLAYS
-        st.markdown("<h2 style='color: brown; height: 450px;'>visual displays dynamic between coding and screen/CAD designs</h2>", unsafe_allow_html=True)
-        # GREEN BORDER
-        st.markdown("<div style='background-color: green; height: 4px; width: 100%;'></div>", unsafe_allow_html=True)
-        # COMMAND PROMPT
-        st.markdown("<p style='color: red; height: 150px; font-weight: bold;'>command prompt for system programming for project</p>", unsafe_allow_html=True)
-        # FOOTER (LEFT)
-        f_left, f_mid = st.columns([0.3, 0.7])
-        f_left.markdown("<div style='border: 1px solid black; color: green; padding: 10px;'>small indicators any</div>", unsafe_allow_html=True)
-        f_mid.markdown("<div style='border: 1px solid black; color: blue; padding: 10px;'>buttons for controlling we will decide buttons as and when we</div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="master-grid">
+        <!-- TOP LEFT -->
+        <div class="cell" style="grid-column: 1; grid-row: 1;">
+            <div class="title-visual">visual displays dynamic between coding and screen/CAD designs</div>
+        </div>
+        
+        <!-- RED VERTICAL PARTITION -->
+        <div class="v-partition"></div>
+        
+        <!-- TOP RIGHT -->
+        <div class="cell" style="grid-column: 3; grid-row: 1;">
+            <div class="title-ai">AI TEXT REPLYING WINDOW</div>
+        </div>
 
-    with col_ai:
-        # RED LINE SIMULATION (Vertical divider)
-        st.markdown("<div style='border-left: 3px solid red; height: 100vh; position: absolute; left: -10px;'></div>", unsafe_allow_html=True)
-        # AI REPLYING
-        st.markdown("<h4 style='color: green; height: 300px;'>AI TEXT REPLYING WINDOW</h4>", unsafe_allow_html=True)
-        # GREEN BORDER
-        st.markdown("<div style='background-color: green; height: 4px; width: 100%;'></div>", unsafe_allow_html=True)
-        # USER PROMPTING
-        st.text_area("USER PROMPTING", height=200, label_visibility="collapsed")
-        # BOTTOM MATRIX (3x3)
-        m1, m2, m3 = st.columns(3)
-        for i in range(9):
-            [m1, m2, m3][i%3].button("⬛", key=f"mat_{i}")
+        <!-- GREEN HORIZONTAL PARTITIONS -->
+        <div class="h-partition"></div>
+        <div class="h-partition-right"></div>
 
-    with col_rare:
-        # RIGHT WALL BUTTONS
-        for i in range(12):
-            st.button("⬛", key=f"rare_{i}")
+        <!-- COMMAND PROMPT -->
+        <div class="cell" style="grid-column: 1; grid-row: 3;">
+            <div class="cmd-text">command prompt for system programming for project</div>
+        </div>
+
+        <!-- USER PROMPTING -->
+        <div class="cell" style="grid-column: 3; grid-row: 3;">
+            <div class="title-user">USER PROMPTING</div>
+            <textarea style="width:100%; height:100px; background:#eee; border:1px solid black;"></textarea>
+        </div>
+
+        <!-- RARE BUTTONS WALL -->
+        <div style="grid-column: 4; grid-row: 1 / 4; border-left: 1px solid black; background: #c0c0c0;">
+            <div style="text-align:center; font-size:10px; padding:5px;">REARLLY USED</div>
+            {rare_btns_html}
+        </div>
+
+        <!-- FOOTER LEFT -->
+        <div style="grid-column: 1; grid-row: 4; display: flex; border-top: 1px solid black;">
+            <div style="width:30%; border-right:1px solid black; color:green; padding:5px;">small indicators any</div>
+            <div style="width:70%; color:blue; padding:5px;">buttons for controlling we will decide buttons as and when we</div>
+        </div>
+
+        <!-- FOOTER RIGHT (MATRIX) -->
+        <div style="grid-column: 3 / 5; grid-row: 4; border-top: 1px solid black; padding: 10px; background: #808080;">
+            {matrix_html}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
