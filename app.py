@@ -1,29 +1,8 @@
 import streamlit as st
 import os
 
-# Rule 10: Provider Independent. Rule 1: Practical Engineering Layout.
-st.set_page_config(layout="wide", page_title="ToyCreator Workbench Pro", initial_sidebar_state="collapsed")
-
-# Injecting High-Density Engineering UI
-st.markdown("""
-    <style>
-    /* Technical Vibe: Darker accents and condensed spacing */
-    .stApp { background-color: #F5F5F5; font-family: 'Courier New', Courier, monospace; }
-    header { visibility: hidden; }
-    .main .block-container { padding: 10px; }
-    
-    /* Global Component Styling */
-    div.stTextArea textarea { font-size: 12px; background-color: #FAFAFA; border: 1px solid #999; }
-    div.stContainer { border: 1px solid #444 !important; background-color: #FFF; }
-    
-    /* The Right Edge Wall - Dense Icon Strip */
-    .wall-container {
-        border-left: 2px solid #333;
-        height: 95vh;
-        background-color: #E0E0E0;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# Rule 10 & 11: Free, Portable, and Frozen Logic
+st.set_page_config(layout="wide", page_title="ToyCreator Workbench")
 
 def main():
     if 'category' not in st.session_state:
@@ -39,78 +18,81 @@ def main():
         show_workbench()
 
 def show_category_selection():
-    st.title("System Initialization")
-    cat = st.selectbox("CHOOSE SYSTEM DOMAIN:", ["CONSUMER_ELECTRONICS", "INDUSTRIAL_AUTOMATION", "MILITARY_SPEC"])
-    if st.button("PROCEED"):
+    st.title("Select Technology Category")
+    cat = st.radio("Choose the domain:", ["Consumer Electronics", "Industrial Automation", "Military Systems"])
+    if st.button("Initialize Gateway"):
         st.session_state['category'] = cat
         st.rerun()
 
 def show_login_page():
-    st.subheader(f"TERMINAL ACCESS: {st.session_state['category']}")
-    tab1, tab2 = st.tabs(["LOG_IN", "CREATE_ID"])
+    st.title(f"Login: {st.session_state['category']}")
+    if st.button("← Back"):
+        st.session_state['category'] = None
+        st.rerun()
+        
+    tab1, tab2 = st.tabs(["Login", "Sign Up"])
     suffix = st.session_state['category'].replace(' ', '_')
     filename = f"auth_{suffix}.txt"
     
     with tab1:
-        u = st.text_input("UID")
-        p = st.text_input("PWD", type="password")
-        if st.button("AUTHENTICATE"):
+        u = st.text_input("Username", key="l_user")
+        p = st.text_input("Password", type="password", key="l_pass")
+        if st.button("Access Workbench"):
             if check_credentials(u, p, filename):
                 st.session_state['logged_in'] = True
                 st.rerun()
+            else:
+                st.error("Invalid Credentials")
     with tab2:
-        nu = st.text_input("NEW_UID")
-        np = st.text_input("NEW_PWD", type="password")
-        if st.button("REGISTER"):
-            with open(filename, "a") as f: f.write(f"{nu},{np}\n")
-            st.success("ID_CREATED")
+        nu = st.text_input("New Username", key="r_user")
+        np = st.text_input("New Password", type="password", key="r_pass")
+        if st.button("Create Account"):
+            with open(filename, "a") as f:
+                f.write(f"{nu},{np}\n")
+            st.success(f"Account Created for {st.session_state['category']}")
 
 def check_credentials(u, p, filename):
     if not os.path.exists(filename): return False
     with open(filename, "r") as f:
-        for line in f:
-            if f"{u},{p}" == line.strip(): return True
-    return False
+        # Rule 8: Stripping whitespace to ensure precise matching
+        users = [line.strip() for line in f.readlines()]
+        return f"{u},{p}" in users
 
 def show_workbench():
-    # Grid Breakdown for Engineering Density
-    # Left: Workspace (65%) | Right: AI Stack (30%) | Far Right: Tools (5%)
+    # Final Blueprint Layout from image_b135de.png
     col_work, col_ai, col_wall = st.columns([0.65, 0.30, 0.05])
 
     with col_work:
-        # Dynamic CAD/Code Vertical Split
-        st.write(f"**VIEWPORT: {st.session_state.category}**")
-        h_adj = st.slider("V-SCALE", 50, 800, 450, label_visibility="collapsed")
-        st.container(height=h_adj, border=True).write("CAD_RENDER_LAYER_0")
+        st.subheader("Visual Display (CAD/Design)")
+        # Dynamic Height Adjustment for Workspace
+        h_adj = st.slider("Adjust Viewport Height", 100, 800, 400, label_visibility="collapsed")
+        st.container(height=h_adj, border=True).write("CAD Render Area")
         
-        st.write("**CMD_PROMPT_SYSTEM_PRG**")
-        st.text_area("PROGRAM_INPUT", height=250, label_visibility="collapsed")
+        st.subheader("Command Prompt")
+        st.text_area("System Programming", height=200, placeholder="Coding for project...")
 
     with col_ai:
-        st.write("**AI_ANALYSIS_ENGINE**")
-        st.container(height=450, border=True).write("SYSTEM_READY...")
+        st.subheader("AI Replying Window")
+        st.container(height=400, border=True).write("AI Response Feed")
         
-        st.write("**USER_QUERY_INPUT**")
-        st.text_area("PROMPT", height=80, label_visibility="collapsed")
-        st.button("EXECUTE_COMMAND", use_container_width=True)
+        st.subheader("User Prompting")
+        st.text_area("Input Command", height=100, key="prompt")
+        st.button("Execute", use_container_width=True)
 
     with col_wall:
-        # High Density "Wall"
-        st.markdown('<div class="wall-container">', unsafe_allow_html=True)
-        st.button("⚙️", help="SYS_CONFIG")
-        st.button("📂", help="FILE_MGR")
-        st.button("💾", help="MEM_SAVE")
-        st.button("🛰️", help="SYNC_SAT")
-        st.button("🛠️", help="DEBUG_TOOL")
-        st.button("🔒", help="SECURE_X")
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Hover labels enabled via the 'help' parameter (Rule 7 verified)
+        st.button("⚙️", help="Settings")
+        st.button("📁", help="Files")
+        st.button("💾", help="Save")
+        st.button("🛠️", help="Tools")
 
-    # Status Bar
+    # Fixed Bottom Status Bar
     st.divider()
-    s1, s2, s3 = st.columns([2, 1, 1])
-    with s1: st.caption("SYS_STATUS: ONLINE | LATENCY: 24ms | DB: LOCAL_SQLITE")
-    with s3:
-        if st.button("SYSTEM_LOGOUT", use_container_width=True):
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        st.caption(f"Domain: {st.session_state.category} | System Online")
+    with c2:
+        if st.button("LOGOUT", use_container_width=True):
             st.session_state.logged_in = False
             st.rerun()
 
