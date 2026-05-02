@@ -1,82 +1,86 @@
 import streamlit as st
 import os
 
-# Hard-coded Rule: Wide layout and plain gray background
-st.set_page_config(layout="wide")
+# Hard-coded Rule: Wide layout and precise Light-Gray background
+st.set_page_config(layout="wide", page_title="ToyCreator Workbench")
+
+# UI Fix: Injecting clean CSS for the background and removing default borders
 st.markdown("""
     <style>
     .stApp {
         background-color: #D3D3D3;
     }
+    [data-testid="stHeader"] {
+        background-color: rgba(0,0,0,0);
+    }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
+    if 'category' not in st.session_state:
+        st.session_state['category'] = None
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
 
-    if not st.session_state['logged_in']:
+    if st.session_state['category'] is None:
+        show_category_selection()
+    elif not st.session_state['logged_in']:
         show_login_page()
     else:
         show_workbench()
 
+def show_category_selection():
+    st.title("Select Technology Category")
+    # One practical choice: Radio buttons for clean selection
+    cat = st.radio("Choose the domain for this project:", 
+                  ["Consumer Electronics", "Industrial Automation", "Military Grade Systems"])
+    if st.button("Proceed to Login"):
+        st.session_state['category'] = cat
+        st.rerun()
+
 def show_login_page():
-    st.title("ToyCreator Workbench Login")
+    st.title(f"Login: {st.session_state['category']}")
+    if st.button("← Back to Categories"):
+        st.session_state['category'] = None
+        st.rerun()
+        
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
+    # Category-specific credential files ensure migration flexibility (Point 3)
+    filename = f"users_{st.session_state['category'].replace(' ', '_')}.txt"
+    
     with tab1:
-        login_user = st.text_input("Username", key="l_user")
-        login_pass = st.text_input("Password", type="password", key="l_pass")
+        u = st.text_input("Username")
+        p = st.text_input("Password", type="password")
         if st.button("Login"):
-            if check_credentials(login_user, login_pass):
+            if check_credentials(u, p, filename):
                 st.session_state['logged_in'] = True
                 st.rerun()
-            else:
-                st.error("Invalid username/password")
     with tab2:
-        new_user = st.text_input("Choose Username", key="s_user")
-        new_pass = st.text_input("Choose Password", type="password", key="s_pass")
+        nu = st.text_input("New Username")
+        np = st.text_input("New Password", type="password")
         if st.button("Create Account"):
-            save_credentials(new_user, new_pass)
-            st.success("Account created! Please login.")
+            save_credentials(nu, np, filename)
+            st.success("Account created!")
 
-def save_credentials(username, password):
-    with open("users.txt", "a") as f:
-        f.write(f"{username},{password}\n")
+def save_credentials(u, p, filename):
+    with open(filename, "a") as f: f.write(f"{u},{p}\n")
 
-def check_credentials(username, password):
-    if not os.path.exists("users.txt"): return False
-    with open("users.txt", "r") as f:
+def check_credentials(u, p, filename):
+    if not os.path.exists(filename): return False
+    with open(filename, "r") as f:
         for line in f:
-            u, p = line.strip().split(",")
-            if u == username and p == password: return True
+            if f"{u},{p}" == line.strip(): return True
     return False
 
 def show_workbench():
-    # MIRRORED T-PANE ARCHITECTURE
-    # Top Section: Canvas (Left 3/4) and Menu (Right 1/4)
-    col_left, col_right = st.columns([3, 1])
-
-    with col_left:
-        st.subheader("System Canvas")
-        st.info("Architecture Visuals and Form-Factor Validation Area")
-        # Placeholder for AI output visuals
-
-    with col_right:
+    # Mirrored T-Pane (Canvas Left 3/4, Menu Right 1/4)
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        st.subheader(f"System Canvas: {st.session_state['category']}")
+        st.write("---")
+    with c2:
         st.subheader("Control Menu")
-        st.radio("Device Grade", ["Toy", "Industry", "Military"])
-        st.selectbox("Connectivity", ["USB", "PoE", "Coaxial"])
-
-    # Bottom Section: Terminal and Action Bar
-    st.divider()
-    terminal_col = st.container()
-    with terminal_col:
-        st.text_area("Command Terminal / Live Logs", value="System Ready...", height=100)
-    
-    action_col1, action_col2 = st.columns([8, 2])
-    with action_col2:
-        if st.button("Logout", use_container_width=True):
-            st.session_state['logged_in'] = False
-            st.rerun()
+        st.button("Logout", on_click=lambda: st.session_state.update({"logged_in": False}))
 
 if __name__ == "__main__":
     main()
