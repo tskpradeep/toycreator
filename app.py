@@ -1,32 +1,41 @@
 import streamlit as st
 import os
 
-# Rule 10: Provider Independent. Rule 1: Excel-style Draggable UI.
+# Rule 10 & 4: Free, Provider-Independent. 
 st.set_page_config(layout="wide", page_title="Engineering Workbench", initial_sidebar_state="collapsed")
 
-# Rule 6: No explanation. Implementing Zero-Gap Grid and Flex-Drag properties.
+# CSS to lock window height to 100% of the screen (No length scroll)
 st.markdown("""
     <style>
-    .block-container { padding: 0 !important; }
+    /* Force app to fill 100% height and hide main scrollbar */
+    .main .block-container { 
+        padding: 0 !important; 
+        max-height: 100vh; 
+        overflow: hidden; 
+    }
     header { visibility: hidden; }
     
     /* Zero-Gap Engineering Layout */
     .stHorizontalBlock { gap: 0 !important; }
-    div[data-testid="column"] { padding: 0 !important; border: 0.5px solid #444; }
     
-    /* Technical Styling */
+    /* Resizable-ready containers */
+    .resizable-v { 
+        display: flex; 
+        flex-direction: column; 
+        height: 90vh; 
+    }
+    
+    /* Professional Border Styles */
+    div[data-testid="column"] { border: 0.5px solid #444; }
     div.stTextArea textarea { font-family: 'Consolas', monospace; font-size: 11px; border-radius: 0; }
-    .stButton button { border-radius: 0; width: 100%; border: 0.5px solid #444; }
-    
-    /* Custom Scrollbar for density */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-thumb { background: #888; }
     </style>
     """, unsafe_allow_html=True)
 
 def main():
     if 'category' not in st.session_state: st.session_state['category'] = None
     if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
+    # Height state for the "Drag" simulation
+    if 'h_workspace' not in st.session_state: st.session_state['h_workspace'] = 500
 
     if st.session_state['category'] is None:
         show_category_selection()
@@ -65,42 +74,42 @@ def check_credentials(u, p, filename):
     with open(filename, "r") as f:
         return f"{u},{p}" in [line.strip() for line in f.readlines()]
 
-# --- DRAGGABLE WORKBENCH (RECREATED) ---
+# --- DRAGGABLE WORKBENCH ---
 def show_workbench():
-    # Top Menu Ribbon (Density per image_a64cb9.png)
+    # Top Menu Ribbon
     ribbon = st.columns(12)
     icons = ["📄", "📁", "💾", "📐", "🔍", "⚡", "🧩", "🛠️", "🔗", "🔄", "⚙️", "🔒"]
     for i, icon in enumerate(icons):
         ribbon[i].button(icon, key=f"rib_{i}")
 
-    # Main Interaction Logic
-    # Col 1: Main Workspace | Col 2: AI interaction | Col 3: Wall
+    # Column 1: Workspace | Column 2: AI | Column 3: Wall
     c1, c2, c3 = st.columns([0.70, 0.25, 0.05])
 
     with c1:
-        # Drawing View (Top)
-        st.container(height=500, border=True).write("CAD DRAWING / SCHEMATIC")
+        # CAD Window
+        st.container(height=st.session_state['h_workspace'], border=True).write("CAD DRAWING / SCHEMATIC")
         
-        # Drag-Simulation Border (Professional Splitter)
-        st.markdown("<div style='background:#333; height:2px; cursor:row-resize;'></div>", unsafe_allow_html=True)
+        # The Draggable Wall (Functional Trigger)
+        # Rule 1: Manufacturable trigger for resizing height
+        if st.button("↕ DRAG BOUNDARY", help="Click to toggle between Code and CAD focus"):
+            st.session_state['h_workspace'] = 200 if st.session_state['h_workspace'] == 500 else 500
+            st.rerun()
         
-        # Command Window (Full Width of Workspace)
-        st.text_area("COMMAND_LOG", "Ready.", height=200, label_visibility="collapsed")
+        # Command Window
+        st.text_area("COMMAND_LOG", "Ready.", height=250, label_visibility="collapsed")
 
     with c2:
         # AI Stack
         st.container(height=400, border=True).write("AI_ANALYSIS")
-        st.markdown("<div style='background:#333; height:2px;'></div>", unsafe_allow_html=True)
-        st.text_area("USER_PROMPT", placeholder="Enter command...", height=100, label_visibility="collapsed")
-        st.button("EXECUTE")
+        st.text_area("USER_PROMPT", placeholder="Enter command...", height=150, label_visibility="collapsed")
+        st.button("EXECUTE COMMAND")
 
     with c3:
-        # Far Right Edge Wall
         for btn in ["⚙️", "🛠️", "🔒", "📁"]:
             st.button(btn, key=f"wall_{btn}")
 
-    # Status Bar
-    st.markdown("<div style='font-size:10px; padding:2px; border-top:1px solid #444;'>SYS_READY | DOMAIN: "+st.session_state.category+"</div>", unsafe_allow_html=True)
+    # Status Bar fixed to bottom
+    st.markdown(f"<div style='position:fixed; bottom:0; width:100%; background:#eee; font-size:10px; padding:5px; border-top:1px solid #444;'>SYS_READY | DOMAIN: {st.session_state.category}</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
