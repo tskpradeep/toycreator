@@ -2,61 +2,72 @@ import dash
 from dash import html
 import dash_bootstrap_components as dbc
 
-# 1. Initialize the app
-# We do NOT use 'app.run' at the end because the cloud host handles it.
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+# Initialize the app with a clean theme
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
 server = app.server 
 
-# 2. Styles matching image_0d35a5.png
-box_border = {"border": "2px solid black", "padding": "10px", "height": "100%", "backgroundColor": "white"}
-red_line = {"width": "5px", "backgroundColor": "red", "height": "100%"}
-green_line_h = {"height": "5px", "backgroundColor": "green", "width": "100%"}
-small_box = {"width": "30px", "height": "30px", "border": "1px solid black", "margin": "2px", "display": "inline-block"}
+# Explicit styles to override dark mode/black screens
+box_border = {
+    "border": "3px solid #000000", 
+    "padding": "10px", 
+    "height": "100%", 
+    "backgroundColor": "#FFFFFF", 
+    "color": "#000000",
+    "display": "flex",
+    "alignItems": "center",
+    "justifyContent": "center",
+    "textAlign": "center"
+}
 
-# 3. The Layout
+red_line = {"width": "10px", "backgroundColor": "red", "height": "100%"}
+green_line_h = {"height": "10px", "backgroundColor": "green", "width": "100%"}
+small_box = {"width": "35px", "height": "35px", "border": "2px solid black", "margin": "2px", "display": "inline-block", "backgroundColor": "#EEE"}
+
 app.layout = html.Div([
-    # MAIN TOP SECTION (Visuals, AI, and Buttons)
+    # MAIN WRAPPER (FORCING WHITE BACKGROUND)
     html.Div([
-        # Left: Visual Display
-        html.Div("visual displays dynamic between coding and screen/CAD designs", 
-                 style={**box_border, "flex": "6", "fontSize": "22px", "fontWeight": "bold", "color": "darkred"}),
         
-        # RED SEPARATOR
-        html.Div(style=red_line),
-        
-        # Middle: AI Sidebar
+        # TOP HALF
         html.Div([
-            html.Div("AI TEXT REPLYING WINDOW", style={**box_border, "flex": "1", "color": "green"}),
-            html.Div(style=green_line_h), 
-            html.Div("USER PROMPTING", style={**box_border, "flex": "1", "color": "purple"}),
-        ], style={"flex": "3", "display": "flex", "flexDirection": "column"}),
-        
-        # Right: Button Strip
-        html.Div([html.Div(style=small_box) for _ in range(20)], 
-                 style={"flex": "0.5", "padding": "5px", "borderLeft": "2px solid black", "display": "flex", "flexWrap": "wrap", "justifyContent": "center"}),
-        
-    ], style={"display": "flex", "height": "70vh"}),
+            # 1. Visual Display
+            html.Div("visual displays dynamic between coding and screen/CAD designs", 
+                     style={**box_border, "flex": "6", "fontSize": "24px", "fontWeight": "bold", "color": "darkred"}),
+            
+            # RED LINE
+            html.Div(style=red_line),
+            
+            # AI SIDEBAR
+            html.Div([
+                html.Div("AI TEXT REPLYING WINDOW", style={**box_border, "flex": "1", "color": "green"}),
+                html.Div(style=green_line_h), 
+                html.Div("USER PROMPTING", style={**box_border, "flex": "1", "color": "purple"}),
+            ], style={"flex": "3", "display": "flex", "flexDirection": "column"}),
+            
+            # RIGHT BUTTONS
+            html.Div([html.Div(style=small_box) for _ in range(20)], 
+                     style={"flex": "1", "padding": "5px", "borderLeft": "3px solid black", "display": "flex", "flexWrap": "wrap", "justifyContent": "center"}),
+            
+        ], style={"display": "flex", "height": "65vh"}),
 
-    # MAIN GREEN SEPARATOR
-    html.Div(style=green_line_h),
+        # MIDDLE GREEN LINE
+        html.Div(style=green_line_h),
 
-    # BOTTOM SECTION (Console and Grid)
-    html.Div([
-        html.Div("command prompt / system programming / project", 
-                 style={**box_border, "height": "12vh", "color": "darkred"}),
-        
-        # Footer Row
+        # BOTTOM HALF
         html.Div([
-            html.Div("small indicators any", style={**box_border, "flex": "1", "color": "green"}),
-            html.Div("buttons for controlling we will decide buttons as and when we", style={**box_border, "flex": "3", "color": "blue"}),
-            html.Div([html.Div(style=small_box) for _ in range(12)], 
-                     style={**box_border, "flex": "1", "display": "flex", "flexWrap": "wrap"}),
-        ], style={"display": "flex", "height": "13vh"})
-        
-    ], style={"height": "25vh"})
+            html.Div("command prompt / system programming / project", 
+                     style={**box_border, "height": "15vh", "color": "darkred"}),
+            
+            # FOOTER
+            html.Div([
+                html.Div("small indicators any", style={**box_border, "flex": "1", "color": "green"}),
+                html.Div("buttons for controlling", style={**box_border, "flex": "3", "color": "blue"}),
+                html.Div([html.Div(style=small_box) for _ in range(12)], 
+                         style={**box_border, "flex": "1", "display": "flex", "flexWrap": "wrap"}),
+            ], style={"display": "flex", "height": "15vh"})
+            
+        ], style={"height": "30vh"})
 
-], style={"height": "100vh", "padding": "5px", "backgroundColor": "white", "overflow": "hidden"})
+    ], style={"backgroundColor": "white", "height": "100vh", "padding": "10px"})
+], style={"backgroundColor": "white"})
 
-# 4. THE CRITICAL CHANGE:
-# We removed app.run() entirely. 
-# Streamlit/Cloud hosts look for the 'server' variable defined on line 8.
+# NO app.run() here—just let the server handle it
