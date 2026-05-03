@@ -45,22 +45,6 @@ cad_app_html = """
 
     #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
 
-    .fixed-right-strip { 
-        width: 65px; border-left: 1px solid #333; 
-        display: grid; grid-template-columns: 1fr 1fr;
-        grid-auto-rows: min-content; gap: 2px;
-        padding: 5px; background: #000; 
-        overflow-y: scroll; 
-    }
-
-    .btn-cell {
-        aspect-ratio: 1 / 1; width: 20px; height: 20px;
-        background: #e1e1e1; color: #000;
-        border: 1px solid #707070;
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
-        box-sizing: border-box; flex-shrink: 0; font-size: 8px; font-weight: bold;
-    }
-
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; position: relative;}
     .gutter { background-color: #444 !important; }
 
@@ -71,10 +55,13 @@ cad_app_html = """
 
     /* Visual Monitor Styling */
     #visual-monitor { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #050505; }
-    .circuit-block { border: 2px solid #fff; padding: 10px; margin: 10px; min-width: 80px; text-align: center; font-size: 12px; font-family: 'Consolas'; }
-    .wire { width: 2px; height: 30px; background: #0f0; }
+    .circuit-block { border: 2px solid #fff; padding: 10px; margin: 5px; min-width: 100px; text-align: center; font-size: 12px; font-family: 'Consolas'; background: #111; }
+    .wire { width: 2px; height: 20px; background: #0f0; }
 
-    .fixed-footer { height: 64px; display: flex; flex-direction: row; border-top: 2px solid #333; background: #000; flex-shrink: 0; align-items: flex-end; padding: 0px 4px 2px 4px; }
+    .fixed-footer { height: 64px; display: flex; flex-direction: row; border-top: 2px solid #333; background: #000; flex-shrink: 0; align-items: center; padding: 0px 10px; }
+    
+    /* Audio Indicator */
+    .mic-dot { width: 12px; height: 12px; background: #ff0000; border-radius: 50%; box-shadow: 0 0 10px #f00; margin-right: 15px; }
 </style>
 
 <div class="master-container">
@@ -100,20 +87,17 @@ cad_app_html = """
                     <div id="ai-text-box" class="text-display">Architect AI Ready...</div>
                 </div>
                 <div id="ai-input" class="pane">
-                    <textarea id="user-prompt" class="input-area" placeholder="Type 'draw circuit' to test Visual Monitor..."></textarea>
+                    <textarea id="user-prompt" class="input-area" placeholder="Ask for an LED circuit diagram..."></textarea>
                 </div>
             </div>
         </div>
-        <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
     <div class="fixed-footer">
-        <!-- Audio Mic Placeholder -->
-        <div style="width: 40px; height: 40px; background: #222; border-radius: 50%; display:flex; align-items:center; justify-content:center; cursor:pointer; margin: 10px;">
-            <span style="color: #ff0000; font-size: 18px;">●</span>
-        </div>
-        <div id="foot-palette" style="display: grid; grid-template-columns: repeat(6, 20px); gap: 1px; margin-bottom: 4px;"></div>
+        <div class="mic-dot"></div>
+        <div style="color: #666; font-size: 10px; font-family: monospace;">AUDIO CHANNEL: STANDBY</div>
         <div style="flex:1;"></div>
+        <div style="color: #008000; font-size: 11px;">SYSTEM STATUS: ONLINE</div>
     </div>
 </div>
 
@@ -134,24 +118,34 @@ cad_app_html = """
             if(text !== "") {
                 aiOutput.innerHTML += "\\n\\n[USER]: " + text;
                 
-                if(text.toLowerCase().includes("draw circuit")) {
-                    aiOutput.innerHTML += "\\n[ARCHITECT]: Designing Switch-Bulb logic...\\n1. Battery Source (9V)\\n2. Toggle Switch\\n3. Incandescent Load";
+                // ARCHITECT BRAIN: Smart Detection
+                const query = text.toLowerCase();
+                if(query.includes("led") || query.includes("circuit") || query.includes("diagram")) {
                     
-                    // Logic to update the Visual Monitor
+                    aiOutput.innerHTML += "\\n[ARCHITECT]: Logic recognized. Generating Block Diagram for LED Control System...\\n- Integrating 3.3V Source\\n- Adding Series Current-Limiting Resistor (220Ω)\\n- Mapping GPIO Switch Link.";
+                    
+                    // Render Visual
                     monitor.innerHTML = `
-                        <div class="circuit-block">[ BATTERY ]</div>
+                        <div style="color:#0f0; font-size:10px; margin-bottom:10px;">TOP-LEVEL ARCHITECTURE</div>
+                        <div class="circuit-block">[ BATTERY 3.3V ]</div>
                         <div class="wire"></div>
-                        <div class="circuit-block" style="border-style: dashed;">( SWITCH )</div>
+                        <div class="circuit-block" style="border-style: dashed;">( PUSH BUTTON )</div>
                         <div class="wire"></div>
-                        <div class="circuit-block" style="border-color: yellow; color: yellow;">{ BULB }</div>
+                        <div class="circuit-block">[ RESISTOR 220 Ohm ]</div>
+                        <div class="wire"></div>
+                        <div class="circuit-block" style="border-color: #0f0; color: #0f0;">{ GREEN LED }</div>
                     `;
 
-                    terminal.innerHTML += "\\n> GEN_NETLIST: V1 N001 0 9V";
-                    terminal.innerHTML += "\\n> GEN_NETLIST: S1 N001 N002";
-                    terminal.innerHTML += "\\n> GEN_NETLIST: L1 N002 0";
+                    // Generate Technical Data in Command Pane
+                    terminal.innerHTML += "\\n\\n> Initializing LED_Project_v1...";
+                    terminal.innerHTML += "\\n> NET: BATT_POS to SW_IN";
+                    terminal.innerHTML += "\\n> NET: SW_OUT to R1_IN";
+                    terminal.innerHTML += "\\n> NET: R1_OUT to LED_ANODE";
+                    terminal.innerHTML += "\\n> NET: LED_CATHODE to BATT_NEG (GND)";
+                    terminal.innerHTML += "\\n> CALCULATING: If Vcc=3.3V, Vf=2.0V, I=5.9mA. Logic Safe.";
                     terminal.scrollTop = terminal.scrollHeight;
                 } else {
-                    aiOutput.innerHTML += "\\n[ARCHITECT]: Listening for design commands.";
+                    aiOutput.innerHTML += "\\n[ARCHITECT]: Please provide a design specific or architectural requirement.";
                 }
 
                 promptInput.value = ""; 
