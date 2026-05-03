@@ -2,8 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import google.generativeai as genai
 
-# --- 1. BACKEND LOGIC (The "Brain") ---
-# Put your API key here.
+# --- 1. THE BRAIN (GEMINI CONFIG) ---
+# Insert your key from https://aistudio.google.com/app/apikey here
 API_KEY = "PASTE_YOUR_KEY_HERE"
 
 if API_KEY != "PASTE_YOUR_KEY_HERE":
@@ -15,7 +15,7 @@ else:
 # --- 2. PAGE CONFIG ---
 st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# --- 3. UI RESET (No changes) ---
+# --- 3. UI RESET (RETAINED 1:1) ---
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -31,7 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. YOUR 1:1 GUI CODE ---
+# --- 4. YOUR NATIVE UI (RETAINED 1:1) ---
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
@@ -40,14 +40,12 @@ cad_app_html = """
         overflow: hidden !important; background-color: #000; 
         font-family: 'Segoe UI', Tahoma, sans-serif; color: white;
     }
-    
     .master-container { 
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
         border: 2px solid #d3d3d3; box-sizing: border-box;
         position: relative;
     }
-
     #ai-modular-setup {
         position: absolute; top: 10%; left: 15%; width: 70%; height: 75%;
         background: #000; border: 2px solid #00ff00; z-index: 9999;
@@ -57,15 +55,12 @@ cad_app_html = """
     .ai-setup-body { display: flex; flex: 1; overflow: hidden; }
     .ai-setup-sidebar { width: 30%; border-right: 1px solid #00ff00; padding: 10px; background: #050505; overflow-y: auto; }
     .ai-setup-content { width: 70%; padding: 25px; color: #00ff00; font-family: monospace; display: flex; flex-direction: column; gap: 20px; }
-    
     .ai-tool-item { padding: 12px; border: 1px solid #004400; margin-bottom: 8px; cursor: pointer; font-size: 12px; transition: 0.2s; }
     .ai-tool-item:hover { border-color: #00ff00; background: #0a2a0a; }
     .ai-tool-item.active { background: #00ff00; color: #000; font-weight: bold; }
-    
     .ai-select { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; cursor: pointer; font-family: monospace; }
     .ai-input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; box-sizing: border-box; }
     .tool-note { font-size: 11px; color: #008800; border-left: 2px solid #00ff00; padding-left: 10px; margin-top: 5px; }
-
     .window-title-bar { background: #1a1a1a; color: #888; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 12px; border-bottom: 1px solid #333; }
     #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
     .fixed-right-strip { width: 65px; border-left: 1px solid #333; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: min-content; gap: 2px; padding: 5px; background: #000; overflow-y: scroll; }
@@ -125,6 +120,7 @@ cad_app_html = """
                 <div>
                     <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY (IF CLOUD) ↗</a>
                 </div>
                 <div style="margin-top: auto; display: flex; gap: 10px;">
                     <button class="btn-cell" style="width: 120px; height: 35px; background:#00ff00;" onclick="toggleAISet(false)">SAVE TOOL</button>
@@ -186,9 +182,7 @@ cad_app_html = """
     for(let i=0; i<100; i++) document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
     for(let i=0; i<18; i++) document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
 
-    function toggleAISet(show) {
-        document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none';
-    }
+    function toggleAISet(show) { document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none'; }
 
     function updateToolView(el, name, cat, func, note) {
         document.querySelectorAll('.ai-tool-item').forEach(i => i.classList.remove('active'));
@@ -205,9 +199,7 @@ cad_app_html = """
         if(!isActive) el.classList.add('active');
     }
 
-    window.onclick = function() {
-        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
-    };
+    window.onclick = function() { document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active')); };
 
     const promptInput = document.getElementById('user-prompt');
     const chatWindow = document.getElementById('ai-chat');
@@ -221,50 +213,43 @@ cad_app_html = """
                 chatWindow.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
                 terminal.innerHTML += "\\n> PROCESSING CMD: " + text.toUpperCase();
                 
-                // SEND DATA TO STREAMLIT
+                // INVISIBLE BRIDGE: Sends text to Streamlit backend
                 window.parent.postMessage({type: 'streamlit:setComponentValue', value: text}, '*');
                 promptInput.value = "";
             }
         }
     });
 
-    // RECEIVE DATA FROM STREAMLIT
+    // INVISIBLE BRIDGE: Receives text from Streamlit backend
     window.addEventListener('message', function(event) {
         if (event.data.type === 'AI_REPLY') {
             chatWindow.innerHTML += "<br><br><span style='color:#008000'>[GEMINI]:</span> " + event.data.text;
-            terminal.innerHTML += "\\n> AI RESPONSE RECEIVED";
+            terminal.innerHTML += "\\n> AI RESPONSE COMPLETED";
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
     });
 </script>
 """
 
-# --- 5. STREAMLIT BACKEND (Invisible Bridge) ---
-# This component captures the user prompt from the JavaScript
+# --- 5. THE BRIDGE (BACKEND PROCESSING) ---
+# Captures user_prompt from JS
 user_prompt = components.html(cad_app_html, height=0)
 
-# Full-screen height bridge
+# Resizes the iframe to fill the screen
 st.components.v1.html(
-    f"""<script>
-        window.parent.document.querySelector('iframe').style.height = '94vh';
-    </script>""",
+    f"""<script>window.parent.document.querySelector('iframe').style.height = '94vh';</script>""",
     height=0
 )
 
-# AI Processing Loop
+# If the JS sent a message, call Gemini and send it back
 if user_prompt:
     if model:
         response = model.generate_content(user_prompt)
-        ai_text = response.text.replace("'", "\\'").replace("\\n", "<br>")
-        
-        # Send reply back into the HTML window
+        ai_reply = response.text.replace("'", "\\'").replace("\\n", "<br>")
         components.html(f"""
             <script>
-            window.parent.postMessage({{
-                type: 'AI_REPLY',
-                text: '{ai_text}'
-            }}, '*');
+            window.parent.postMessage({{type: 'AI_REPLY', text: '{ai_reply}'}}, '*');
             </script>
         """, height=0)
     else:
-        st.warning("Please configure API_KEY to enable AI replies.")
+        st.error("MISSING API KEY: Open 'AI-SET' to configure connection.")
