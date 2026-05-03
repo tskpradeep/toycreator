@@ -4,29 +4,36 @@ import streamlit.components.v1 as components
 # 1. Page Configuration
 st.set_page_config(layout="wide", page_title="CAD Design Portal")
 
-# 2. Strict CSS to kill Streamlit's internal scrolling and padding
+# 2. Ultra-Strict CSS to force everything into the visible area
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
+        /* Force the Streamlit container to be exactly 100% of the screen */
+        .main {
+            overflow: hidden !important;
+        }
         .block-container {
             padding: 0rem !important;
             max-width: 100% !important;
             height: 100vh !important;
             overflow: hidden !important;
+            display: flex;
+            flex-direction: column;
         }
-        iframe {
-            display: block;
+        /* Remove extra spacing Streamlit adds at the top */
+        .stApp {
+            height: 100vh !important;
+            overflow: hidden !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. The Refined Application Logic
+# 3. The Layout Logic
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
-    /* Force absolute zero scroll on the browser level */
     html, body { 
         margin: 0; 
         padding: 0; 
@@ -41,7 +48,8 @@ cad_app_html = """
         display: flex; 
         flex-direction: column; 
         height: 100vh; 
-        width: 100vw; 
+        width: 100vw;
+        border: 1px solid #333; /* Visual frame */
     }
 
     .window-title-bar {
@@ -55,8 +63,19 @@ cad_app_html = """
         flex-shrink: 0;
     }
 
-    /* Layout Sections */
-    .flex-row { display: flex; flex-direction: row; width: 100%; overflow: hidden; }
+    /* THE DYNAMIC ZONE: 
+       We subtract the Title bar (30px) and Footer (70px) from the total 100vh 
+    */
+    #dynamic-zone { 
+        display: flex;
+        flex-direction: row;
+        height: calc(100vh - 100px); 
+        width: 100%;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .flex-row { display: flex; flex-direction: row; height: 100%; overflow: hidden; }
     .flex-col { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
     
     .pane { 
@@ -69,12 +88,12 @@ cad_app_html = """
         padding: 5px; 
     }
     
-    /* Gutter Styling (The Draggable Lines) */
+    /* Gutter Styling */
     .gutter { background-color: #eee; flex-shrink: 0; }
     .gutter.gutter-horizontal { cursor: col-resize; background-color: red; width: 4px !important; }
     .gutter.gutter-vertical { cursor: row-resize; background-color: green; height: 4px !important; }
 
-    /* Fixed Sections */
+    /* Fixed Sidebar */
     .fixed-right-strip { 
         width: 40px; 
         border-left: 2px solid black; 
@@ -82,40 +101,33 @@ cad_app_html = """
         flex-direction: column; 
         padding: 2px; 
         align-items: center; 
-        flex-shrink: 0; /* Ensures it never resizes */
+        flex-shrink: 0;
         background: white;
     }
 
+    /* Fixed Footer (The Floor) */
     .fixed-footer { 
         height: 70px; 
         display: flex; 
         flex-direction: row; 
         border-top: 2px solid black; 
         background: white; 
-        flex-shrink: 0; 
+        flex-shrink: 0; /* Important: prevents footer from disappearing */
     }
 
-    /* Content Text */
     .text-main { color: darkred; font-size: 1.5vw; font-weight: bold; text-align: center; border: none !important; }
-    .text-ai { color: green; font-weight: bold; border: none !important; }
-    
-    /* UI Elements */
     .footer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; width: 140px; }
     .small-box { width: 16px; height: 16px; border: 1px solid black; background: #eee; margin-bottom: 2px; flex-shrink: 0; }
-
-    #dynamic-zone { flex-grow: 1; min-height: 0; }
 </style>
 
 <div class="master-container">
     <div class="window-title-bar">
-        <div style="font-size: 12px;">CAD DESIGNER PRO - FIXED LAYOUT</div>
+        <div style="font-size: 12px;">CAD DESIGNER PRO - LOCKED VIEW</div>
         <div style="font-size: 14px;"><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
     </div>
 
-    <div id="dynamic-zone" class="flex-row">
-        <!-- THE MOVABLE WORKSPACE -->
+    <div id="dynamic-zone">
         <div id="split-container" class="flex-row" style="flex-grow: 1;">
-            <!-- LEFT PILLAR -->
             <div id="left-side-stack" class="flex-col">
                 <div id="cad-pane" class="pane text-main">
                     visual displays dynamic between coding and screen/CAD designs
@@ -125,27 +137,22 @@ cad_app_html = """
                 </div>
             </div>
 
-            <!-- RIGHT PILLAR (AI ONLY) -->
             <div id="ai-column" class="flex-col">
-                <div id="ai-output" class="pane text-ai">AI TEXT REPLYING WINDOW</div>
+                <div id="ai-output" class="pane" style="color: green; font-weight: bold;">AI TEXT REPLYING WINDOW</div>
                 <div id="ai-input" class="pane" style="color: purple; font-weight: bold;">USER PROMPTING</div>
             </div>
         </div>
-
-        <!-- FIXED SIDEBAR (Outside the Split) -->
         <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
-    <!-- FIXED FOOTER -->
     <div class="fixed-footer">
-        <div style="flex: 1.5; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; color: green; font-size: 12px;">small indicators any</div>
-        <div style="flex: 4; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; color: blue; font-size: 12px; padding: 0 10px;">buttons for controlling we will decide buttons as and when we</div>
+        <div style="flex: 1.5; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; color: green; font-size: 11px;">small indicators any</div>
+        <div style="flex: 4; border-right: 1px solid black; display: flex; align-items: center; justify-content: center; color: blue; font-size: 11px; padding: 0 10px;">buttons for controlling we will decide buttons as and when we</div>
         <div id="footer-grid" class="footer-grid"></div>
     </div>
 </div>
 
 <script>
-    // Split ONLY the workspace, leaving the Right Sidebar alone
     Split(['#left-side-stack', '#ai-column'], {
         sizes: [72, 28],
         gutterSize: 4,
@@ -164,7 +171,6 @@ cad_app_html = """
         gutterSize: 4,
     });
 
-    // Populate Buttons
     const side = document.getElementById('side-strip');
     for(let i=0; i<25; i++) side.innerHTML += '<div class="small-box"></div>';
     const foot = document.getElementById('footer-grid');
@@ -172,5 +178,5 @@ cad_app_html = """
 </script>
 """
 
-# Using 100vh height for the component
+# Streamlit Component Call
 components.html(cad_app_html, height=1000)
