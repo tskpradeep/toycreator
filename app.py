@@ -4,160 +4,217 @@ import streamlit.components.v1 as components
 # 1. Page Configuration
 st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# 2. Force CSS for Classic Style
+# 2. UI Reset
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
-        .stApp { background-color: #000 !important; }
-        .block-container { padding: 0rem !important; max-width: 100% !important; height: 100vh !important; }
+        .stApp { background-color: #000 !important; overflow: hidden !important; }
+        .block-container {
+            padding: 0rem !important;
+            max-width: 100% !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Main Application Component
+# 3. Native UI Application
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
     html, body { 
         margin: 0; padding: 0; height: 100%; width: 100%; 
-        overflow: hidden; background-color: #000; 
-        font-family: 'Segoe UI', Tahoma, sans-serif; color: #fff;
+        overflow: hidden !important; background-color: #000; 
+        font-family: 'Segoe UI', Tahoma, sans-serif; color: white;
     }
     
     .master-container { 
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
-        position: relative;
+        border: 2px solid #d3d3d3; box-sizing: border-box;
     }
 
-    /* PANE STYLING */
-    .pane { background: #000; border: 1px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    
-    /* DULL MOVING WALLS (GUTTERS) */
-    .gutter.gutter-horizontal { background-color: #331a1a !important; cursor: col-resize; } /* Dull Red */
-    .gutter.gutter-vertical { background-color: #1a331a !important; cursor: row-resize; }   /* Dull Green */
-
-    /* AI SETTING MODAL - GREEN VIBE */
-    #ai-modal {
-        position: absolute; top: 15%; left: 20%; width: 60%; height: 60%;
-        background: #000; border: 2px solid #0f0; z-index: 9999;
-        display: none; flex-direction: column; box-shadow: 0 0 30px rgba(0,255,0,0.3);
+    .window-title-bar {
+        background: #1a1a1a; color: #888; height: 30px;
+        flex-shrink: 0; display: flex; align-items: center; 
+        justify-content: space-between; padding: 0 10px; font-size: 12px;
+        border-bottom: 1px solid #333;
     }
-    .modal-header { background: #0a1a0a; border-bottom: 1px solid #0f0; padding: 12px; display: flex; justify-content: space-between; color: #0f0; font-family: monospace; font-weight: bold; }
-    .modal-body { display: flex; flex: 1; overflow: hidden; }
-    .modal-sidebar { width: 35%; border-right: 1px solid #0f0; padding: 10px; background: #050505; overflow-y: auto; }
-    .modal-content { width: 65%; padding: 20px; color: #0f0; font-family: monospace; display: flex; flex-direction: column; gap: 15px; background: #000; }
-    
-    .ai-item { padding: 10px; border: 1px solid #050; margin-bottom: 8px; cursor: pointer; font-size: 11px; color: #0f0; transition: 0.2s; }
-    .ai-item:hover { background: #002200; border-color: #0f0; }
-    .ai-item.active { background: #0f0; color: #000; font-weight: bold; }
 
-    .api-link { color: #0f0; text-decoration: underline; font-size: 10px; cursor: pointer; margin-top: 5px; display: block; }
-    .input-box { background: #000; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 100%; box-sizing: border-box; outline: none; font-family: monospace; }
-    .input-box:focus { box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+    #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
 
-    /* FOOTER & BUTTONS - CLASIC DASHBOARD */
-    .footer { height: 50px; background: #111; border-top: 1px solid #333; display: flex; align-items: center; padding: 0 15px; flex-shrink: 0; }
-    .btn-classic { background: #222; border: 1px solid #444; color: #ccc; padding: 6px 18px; cursor: pointer; font-size: 12px; margin-right: 10px; outline: none; }
-    .btn-classic:hover { background: #333; border-color: #666; }
-    .btn-classic:active { background: #111; }
+    .fixed-right-strip { 
+        width: 65px; border-left: 1px solid #333; 
+        display: grid; grid-template-columns: 1fr 1fr;
+        grid-auto-rows: min-content; gap: 2px;
+        padding: 5px; background: #000; 
+        overflow-y: scroll; 
+    }
+
+    .btn-cell {
+        aspect-ratio: 1 / 1; width: 20px; height: 20px;
+        background: #e1e1e1; color: #000;
+        border-top: 2px solid #fff; border-left: 2px solid #fff;
+        border-right: 2px solid #707070; border-bottom: 2px solid #707070;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        box-sizing: border-box; flex-shrink: 0;
+    }
+    .btn-cell:active { 
+        border-top: 2px solid #707070; border-left: 2px solid #707070;
+        border-right: 2px solid #fff; border-bottom: 2px solid #fff;
+        background: #bebebe;
+    }
+
+    .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    .gutter { background-color: #444 !important; }
+
+    .fixed-footer { 
+        height: 64px; display: flex; flex-direction: row; 
+        border-top: 2px solid #333; background: #000; flex-shrink: 0;
+        align-items: flex-end; 
+        padding: 0px 4px 2px 4px;
+    }
+
+    .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
+    .selection-b-container { width: 130px; height: 62px; margin-left: 5px; }
+    .selection-a-stack { display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px; }
+    .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; }
+
+    .dropup { 
+        position: relative; width: 100%; height: 20px; 
+        background: #e1e1e1; color: #000; border: 1px solid #707070; 
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
+    }
+    .dropup.tall { height: 62px; }
+    .dropup-content { display: none; position: absolute; bottom: 100%; left: -1px; background-color: #f0f0f0; min-width: 140px; border: 1px solid #707070; z-index: 1000; }
+    .dropup.active .dropup-content { display: block; }
+    .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
+
+    /* Logic Styling - NO GUI CHANGE */
+    .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #008000; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
+    .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
+    .cmd-text { width: 100%; height: 100%; color: #0f0; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
 </style>
 
 <div class="master-container">
-    <!-- AI MODAL -->
-    <div id="ai-modal">
-        <div class="modal-header">
-            <span>[ SYSTEM AI CORE CONFIGURATION ]</span>
-            <span onclick="closeAI()" style="cursor:pointer; color: #fff;">[ CLOSE X ]</span>
-        </div>
-        <div class="modal-body">
-            <div class="modal-sidebar" id="model-list">
-                <div class="ai-item active" onclick="setAI(this, 'Gemini 3.0 Pro')">GEMINI 3.0 PRO (STABLE)</div>
-                <div class="ai-item" onclick="setAI(this, 'Gemini 3.0 Flash')">GEMINI 3.0 FLASH</div>
-                <div class="ai-item" onclick="setAI(this, 'Gemini 2.0 Pro')">GEMINI 2.0 PRO</div>
-                <div class="ai-item" onclick="window.open('https://ai.google.dev/models/gemini', '_blank')" style="border-style: dashed; opacity: 0.6; margin-top: 20px;">MODEL REGISTRY ↗</div>
-            </div>
-            <div class="modal-content">
-                <div>
-                    <label style="font-size: 10px; opacity: 0.7;">ACTIVE DISPATCHER:</label>
-                    <div id="current-model-display" style="font-size: 20px; color: #fff; margin-top: 5px;">Gemini 3.0 Pro</div>
-                </div>
-                
-                <div style="margin-top: 10px;">
-                    <label style="font-size: 10px; opacity: 0.7;">API AUTHORIZATION KEY:</label>
-                    <input type="password" class="input-box" placeholder="ENTER GOOGLE API KEY...">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="api-link">ACQUIRE KEY FROM GOOGLE AI STUDIO ↗</a>
-                </div>
+    <div class="window-title-bar">
+        <div>CAD DESIGNER PRO</div>
+        <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
+    </div>
 
-                <div style="margin-top: 10px;">
-                    <label style="font-size: 10px; opacity: 0.7;">TECHNICAL DOMAIN:</label>
-                    <select class="input-box" style="appearance: none;">
-                        <option>Industrial Automation</option>
-                        <option>Hardware Architect</option>
-                        <option>Consumer Electronics</option>
-                    </select>
+    <div id="dynamic-zone">
+        <div id="split-container" style="display:flex; flex:1; width:100%;">
+            <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
+                <div id="cad-pane" class="pane text-main">
+                    <div id="visual-monitor">visual displays dynamic between coding and screen/CAD designs</div>
                 </div>
-                
-                <div style="margin-top: auto; display: flex; gap: 10px;">
-                    <button class="btn-classic" style="border-color: #0f0; color: #0f0; background: transparent;" onclick="closeAI()">INITIALIZE CORE</button>
-                    <button class="btn-classic" onclick="closeAI()">CANCEL</button>
+                <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
+                    <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
+                </div>
+            </div>
+            <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
+                <div id="ai-output" class="pane">
+                    <div id="ai-chat" class="ai-text-area">AI TEXT REPLYING WINDOW</div>
+                </div>
+                <div id="ai-input" class="pane">
+                    <textarea id="user-prompt" class="user-input-area" placeholder="TYPE HERE..."></textarea>
                 </div>
             </div>
         </div>
+        <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="main-layout" style="flex: 1; display: flex; flex-direction: column;">
-        <div id="top-split" style="display: flex; flex: 0.8;">
-            <div id="cad-view" class="pane">CAD VIEWPORT</div>
-            <div id="data-view" class="pane">ENGINE DATA</div>
+    <div class="fixed-footer">
+        <div class="footer-left-content">
+            <span style="color:#008000; font-size: 11px; margin-right: 20px;">READY</span>
+            <span style="color:#0000ff; font-size: 11px;">SYSTEM STATUS: ONLINE</span>
         </div>
-        <div id="bottom-split" class="pane">SYSTEM CONSOLE</div>
-    </div>
-
-    <div class="footer">
-        <button class="btn-classic" onclick="openAI()">AI SETTINGS</button>
-        <button class="btn-classic">HARDWARE</button>
-        <button class="btn-classic">LOGS</button>
-        <button class="btn-classic">EXPORT</button>
-        <div style="margin-left: auto; color: #444; font-size: 10px; font-family: monospace;">SYS_CORE_V4 | 2026.05.04</div>
+        <div id="foot-palette" class="footer-palette-grid"></div>
+        <div class="selection-a-stack">
+            <div class="dropup" onclick="toggleMenu(this)"><span>File</span><span>▲</span><div class="dropup-content"><a>New Project</a><a>Open</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Tools</span><span>▲</span><div class="dropup-content"><a>BOM Gen</a><a>Netlist</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
+        </div>
+        <div class="selection-b-container">
+            <div class="dropup tall" onclick="toggleMenu(this)"><span>Export</span><span>▲</span><div class="dropup-content"><a>Gerber</a><a>STEP</a><a>Tech Bundle</a></div></div>
+        </div>
     </div>
 </div>
 
 <script>
-    // Initialize Split.js
-    Split(['#cad-view', '#data-view'], { 
-        sizes: [70, 30], 
-        gutterSize: 8,
-        minSize: 100
-    });
+    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
+    Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
+    Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
+
+    const side = document.getElementById('side-strip');
+    for(let i=0; i<100; i++) side.innerHTML += '<div class="btn-cell"></div>';
     
-    Split(['#top-split', '#bottom-split'], { 
-        direction: 'vertical', 
-        sizes: [75, 25], 
-        gutterSize: 8,
-        minSize: 50
-    });
+    const palette = document.getElementById('foot-palette');
+    for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
-    function openAI() { document.getElementById('ai-modal').style.display = 'flex'; }
-    function closeAI() { document.getElementById('ai-modal').style.display = 'none'; }
-
-    function setAI(el, name) {
-        document.querySelectorAll('.ai-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('current-model-display').innerText = name;
+    function toggleMenu(el) {
+        event.stopPropagation();
+        const isActive = el.classList.contains('active');
+        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
+        if(!isActive) el.classList.add('active');
     }
+
+    window.onclick = function() {
+        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
+    };
+
+    // LOGIC INTEGRATION
+    const promptInput = document.getElementById('user-prompt');
+    const aiChat = document.getElementById('ai-chat');
+    const terminal = document.getElementById('terminal-out');
+    const monitor = document.getElementById('visual-monitor');
+
+    promptInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const text = promptInput.value.trim();
+            if(text !== "") {
+                aiChat.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
+                const query = text.toLowerCase();
+                
+                if(query.includes("led") || query.includes("circuit") || query.includes("power supply")) {
+                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Architecting system blocks...";
+                    terminal.innerHTML += "\\n> COMPILING TECH BUNDLE LOGIC...";
+                    
+                    // Simple logic-driven visual update inside your text-main pane
+                    monitor.innerHTML = `
+                        <div style="border:1px solid #fff; padding:10px; font-size:12px;">
+                            <svg width="200" height="100">
+                                <rect x="10" y="30" width="50" height="40" stroke="white" fill="none" />
+                                <text x="15" y="55" fill="white" font-size="8">SOURCE</text>
+                                <line x1="60" y1="50" x2="90" y2="50" stroke="#0f0" />
+                                <circle cx="110" cy="50" r="20" stroke="#0f0" fill="none" />
+                                <text x="102" y="53" fill="#0f0" font-size="8">LOAD</text>
+                            </svg>
+                            <div style="font-size:10px; margin-top:5px;">${text.toUpperCase()} DIAGRAM</div>
+                        </div>
+                    `;
+                } else {
+                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Ready for architectural prompts.";
+                }
+
+                promptInput.value = ""; 
+                aiChat.scrollTop = aiChat.scrollHeight;
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+    });
 </script>
 """
 
-# Render component
 components.html(cad_app_html, height=0)
 st.components.v1.html(
     f"""<script>
-        const iframe = window.parent.document.querySelector('iframe');
-        iframe.style.height = '98vh';
-        iframe.style.width = '100%';
+        window.parent.document.querySelector('iframe').style.height = '94vh';
     </script>""",
     height=0
 )
