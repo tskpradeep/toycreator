@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. Page Configuration
-st.set_page_config(layout="wide", page_title="CAD Designer Pro - AI SET")
+st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
 # 2. UI Reset
 st.markdown("""
@@ -34,6 +34,7 @@ cad_app_html = """
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
         border: 2px solid #d3d3d3; box-sizing: border-box;
+        position: relative;
     }
 
     .window-title-bar {
@@ -43,7 +44,7 @@ cad_app_html = """
         border-bottom: 1px solid #333;
     }
 
-    #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; position: relative;}
+    #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
 
     .fixed-right-strip { 
         width: 65px; border-left: 1px solid #333; 
@@ -62,35 +63,9 @@ cad_app_html = """
         box-sizing: border-box; flex-shrink: 0;
     }
 
-    /* CRIMSON VIOLET COMMAND CENTER */
-    #ai-setup-overlay {
-        position: absolute; top: 5%; left: 5%; width: 90%; height: 85%;
-        background: #0a050a; border: 2px solid #8a2be2; z-index: 2000;
-        display: none; flex-direction: column; padding: 15px;
-        box-shadow: 0 0 30px #dc143c;
-    }
-
-    .setup-header { display:flex; justify-content:space-between; border-bottom:1px solid #8a2be2; padding-bottom:10px; margin-bottom:10px; font-family:monospace; }
-    
-    .setup-body { display: flex; flex: 1; gap: 10px; overflow: hidden; }
-    
-    .ai-list-pane { width: 30%; border-right: 1px solid #333; display: flex; flex-direction: column; gap: 5px; padding-right: 10px; }
-    .ai-settings-pane { width: 70%; padding-left: 10px; display: flex; flex-direction: column; }
-
-    .ai-item-btn { 
-        background: #1a001a; border: 1px solid #dc143c; color: #fff; 
-        padding: 8px; font-size: 11px; cursor: pointer; text-align: left;
-        font-family: monospace;
-    }
-    .ai-item-btn:hover { background: #8a2be2; }
-    .add-btn { background: #4b0082; color: #fff; border: 1px solid #fff; padding: 5px; cursor: pointer; margin-top: auto; font-family: monospace; }
-
-    .setting-row { margin-bottom: 20px; font-family: monospace; }
-    .setting-input { width: 100%; background: #000; border: 1px solid #8a2be2; color: #fff; padding: 8px; margin-top: 5px; }
-    .setting-select { width: 100%; background: #000; border: 1px solid #dc143c; color: #fff; padding: 8px; margin-top: 5px; }
-
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
-    
+    .gutter { background-color: #444 !important; }
+
     .fixed-footer { 
         height: 64px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0;
@@ -98,44 +73,62 @@ cad_app_html = """
         padding: 0px 4px 2px 4px;
     }
 
+    /* AI CONFIG MODAL - DEEP COBALT THEME */
+    #ai-modal {
+        position: absolute; top: 15%; left: 15%; width: 70%; height: 60%;
+        background: #050a15; border: 2px solid #005fcc; z-index: 5000;
+        display: none; flex-direction: column; padding: 0;
+        box-shadow: 0 0 20px rgba(0, 95, 204, 0.5);
+    }
+    .modal-header { background: #002b5c; padding: 10px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; color: #ffbf00; }
+    .modal-content { display: flex; flex: 1; overflow: hidden; }
+    .modal-left { width: 35%; border-right: 1px solid #005fcc; display: flex; flex-direction: column; padding: 10px; gap: 8px; }
+    .modal-right { width: 65%; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    
+    .ai-list-item { background: #0a1931; border: 1px solid #005fcc; color: #fff; padding: 10px; cursor: pointer; font-size: 11px; }
+    .ai-list-item:hover { background: #005fcc; }
+    .add-ai-btn { background: #ffbf00; color: #000; border: none; padding: 8px; font-weight: bold; cursor: pointer; margin-top: auto; }
+
+    .input-field { background: #000; border: 1px solid #005fcc; color: #ffbf00; padding: 8px; width: 100%; box-sizing: border-box; }
+    .label-text { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; display: block; }
+
+    .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
     .selection-b-container { width: 130px; height: 62px; margin-left: 5px; }
-    .dropup.tall { height: 62px; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer;}
+    .selection-a-stack { display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px; }
+    .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; }
+
+    .dropup { 
+        position: relative; width: 100%; height: 20px; 
+        background: #e1e1e1; color: #000; border: 1px solid #707070; 
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
+    }
+    .dropup.tall { height: 62px; background: #002b5c; color: #ffbf00; border: 2px solid #005fcc; font-weight: bold;}
+    .dropup-content { display: none; position: absolute; bottom: 100%; left: -1px; background-color: #f0f0f0; min-width: 140px; border: 1px solid #707070; z-index: 1000; }
+    .dropup.active .dropup-content { display: block; }
+    .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
+
+    .text-main { color: #005fcc; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #ffbf00; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
+    .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
+    .cmd-text { width: 100%; height: 100%; color: #005fcc; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
 </style>
 
 <div class="master-container">
-    <!-- MODAL SETUP -->
-    <div id="ai-setup-overlay">
-        <div class="setup-header">
-            <span style="color:#dc143c;">[ AI MULTI-DISPATCHER CONFIG ]</span>
-            <span style="cursor:pointer; color:#8a2be2;" onclick="toggleAI()">[ X CLOSE ]</span>
+    <!-- AI SETTINGS MODAL -->
+    <div id="ai-modal">
+        <div class="modal-header">
+            <span>DISPATCHER CONFIGURATION</span>
+            <span style="cursor:pointer;" onclick="closeModal()">[ CLOSE X ]</span>
         </div>
-        <div class="setup-body">
-            <div class="ai-list-pane" id="ai-list">
-                <div class="ai-item-btn" onclick="showSet('GEMINI 1.5 PRO')">01. GEMINI 1.5 PRO</div>
-                <div class="ai-item-btn" onclick="showSet('GROQ LLAMA-3')">02. GROQ LLAMA-3</div>
-                <button class="add-btn">[ + ADD NEW AI MODULE ]</button>
+        <div class="modal-content">
+            <div class="modal-left">
+                <div class="ai-list-item" onclick="loadAI('Gemini 2.0')">AI 01: Gemini 2.0 (Active)</div>
+                <div class="ai-list-item" onclick="loadAI('Llama 3')">AI 02: Llama 3 (Standby)</div>
+                <button class="add-ai-btn" onclick="alert('Module added to slot 03')">+ ADD NEW AI</button>
             </div>
-            <div class="ai-settings-pane" id="ai-settings">
-                <div id="set-default" style="color:#444; font-family:monospace;">SELECT AN AI FROM THE LEFT TO CONFIGURE...</div>
-                <div id="set-active" style="display:none;">
-                    <h3 id="set-title" style="color:#8a2be2; font-family:monospace; margin-top:0;">CONFIGURATION</h3>
-                    <div class="setting-row">
-                        <label>ENTER API KEY:</label>
-                        <input type="password" class="setting-input" placeholder="PX-XXXX-XXXX-XXXX">
-                    </div>
-                    <div class="setting-row">
-                        <label>ASSIGN TECHNICAL TASK:</label>
-                        <select class="setting-select">
-                            <option>System Architecture (Hardware)</option>
-                            <option>Firmware & Code Generation</option>
-                            <option>BOM & Parts Analysis</option>
-                            <option>Thermal & High-Current Physics</option>
-                        </select>
-                    </div>
-                    <div style="color:#dc143c; font-size:10px; font-family:monospace;">
-                        NOTE: When a prompt involves the assigned task, this AI will trigger automatically.
-                    </div>
-                </div>
+            <div class="modal-right" id="config-panel">
+                <div style="color:#555;">Select an AI from the left to configure assignments...</div>
             </div>
         </div>
     </div>
@@ -148,30 +141,38 @@ cad_app_html = """
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
-                <div id="cad-pane" class="pane" style="color:#b22222; font-size:1.4vw; font-weight:bold;">Visual Monitor Standby</div>
-                <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start; color:#0f0; font-family:monospace; padding:5px;">>_ SYSTEM READY</div>
+                <div id="cad-pane" class="pane text-main">
+                    <div id="visual-monitor">SYSTEM READY</div>
+                </div>
+                <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
+                    <div id="terminal-out" class="cmd-text">>_ CORE ONLINE</div>
+                </div>
             </div>
             <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
-                <div id="ai-output" class="pane" style="color:#008000; font-weight:bold; font-family:monospace; font-size:12px; padding:10px; align-items:flex-start;">AI DISPATCHER LOGS...</div>
-                <div id="ai-input" class="pane"><textarea style="width:100%; height:100%; background:transparent; border:none; color:#800080; font-family:monospace; outline:none; padding:10px;" placeholder="PROMPT SYSTEM..."></textarea></div>
+                <div id="ai-output" class="pane">
+                    <div id="ai-chat" class="ai-text-area">AI MULTI-DISPATCHER ACTIVE</div>
+                </div>
+                <div id="ai-input" class="pane">
+                    <textarea id="user-prompt" class="user-input-area" placeholder="TYPE HERE..."></textarea>
+                </div>
             </div>
         </div>
         <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
     <div class="fixed-footer">
-        <div style="flex:1; display:flex; align-items:center; padding-left:10px;">
-            <span style="color:#008000; font-size: 11px; margin-right: 20px;">CORE: STABLE</span>
-            <span style="color:#0000ff; font-size: 11px;">MODE: MULTI-AI</span>
+        <div class="footer-left-content">
+            <span style="color:#005fcc; font-size: 11px; margin-right: 20px;">READY</span>
+            <span style="color:#ffbf00; font-size: 11px;">MULTI-DISPATCHER: ENABLED</span>
         </div>
         <div id="foot-palette" class="footer-palette-grid"></div>
-        <div class="selection-a-stack" style="display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px;">
-            <div class="dropup" style="background:#e1e1e1; color:#000; height:20px; font-size:9px; padding:0 5px; border:1px solid #707070;">Selection A</div>
-            <div class="dropup" style="background:#e1e1e1; color:#000; height:20px; font-size:9px; padding:0 5px; border:1px solid #707070;">Selection A</div>
-            <div class="dropup" style="background:#e1e1e1; color:#000; height:20px; font-size:9px; padding:0 5px; border:1px solid #707070;">Selection A</div>
+        <div class="selection-a-stack">
+            <div class="dropup" onclick="toggleMenu(this)"><span>File</span><span>▲</span><div class="dropup-content"><a>New Project</a><a>Open</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Tools</span><span>▲</span><div class="dropup-content"><a>BOM Gen</a><a>Netlist</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
         </div>
         <div class="selection-b-container">
-            <div class="dropup tall" style="background:#8a2be2; color:#fff; border:2px solid #dc143c;" onclick="toggleAI()">AI-SET</div>
+            <div class="dropup tall" onclick="openModal()"><span>AI-SET</span><span>▲</span></div>
         </div>
     </div>
 </div>
@@ -187,18 +188,69 @@ cad_app_html = """
     const palette = document.getElementById('foot-palette');
     for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
-    function toggleAI() {
-        const modal = document.getElementById('ai-setup-overlay');
-        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    function openModal() { document.getElementById('ai-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('ai-modal').style.display = 'none'; }
+    
+    function loadAI(name) {
+        const panel = document.getElementById('config-panel');
+        panel.innerHTML = `
+            <div style="color:#ffbf00; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #333;">CONFIGURING: ${name}</div>
+            <div>
+                <span class="label-text">API Key Connection</span>
+                <input type="password" class="input-field" placeholder="sk-....">
+            </div>
+            <div>
+                <span class="label-text">Assigned Technical Domain</span>
+                <select class="input-field" style="background:#000;">
+                    <option>Hardware Architect</option>
+                    <option>Firmware/Software Engineer</option>
+                    <option>Industrial Automation Expert</option>
+                    <option>Data & BOM Analyst</option>
+                </select>
+            </div>
+            <div style="font-size:10px; color:#555; margin-top:10px;">
+                Note: This AI will trigger automatically when prompts match the domain above.
+            </div>
+        `;
     }
 
-    function showSet(aiName) {
-        document.getElementById('set-default').style.display = 'none';
-        document.getElementById('set-active').style.display = 'block';
-        document.getElementById('set-title').innerText = 'CONFIG: ' + aiName;
+    function toggleMenu(el) {
+        event.stopPropagation();
+        const isActive = el.classList.contains('active');
+        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
+        if(!isActive) el.classList.add('active');
     }
+
+    window.onclick = function() {
+        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
+    };
+
+    // Logic Integration
+    const promptInput = document.getElementById('user-prompt');
+    const aiChat = document.getElementById('ai-chat');
+    const terminal = document.getElementById('terminal-out');
+
+    promptInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const text = promptInput.value.trim();
+            if(text !== "") {
+                aiChat.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
+                terminal.innerHTML += "\\n> DISPATCHING TO HARDWARE ARCHITECT...";
+                aiChat.innerHTML += "<br><span style='color:#ffbf00'>[AI]:</span> Analyzing technical intent...";
+                promptInput.value = ""; 
+                aiChat.scrollTop = aiChat.scrollHeight;
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+    });
 </script>
 """
 
 components.html(cad_app_html, height=0)
-st.components.v1.html(f"<script>window.parent.document.querySelector('iframe').style.height = '94vh';</script>", height=0)
+st.components.v1.html(
+    f"""<script>
+        window.parent.document.querySelector('iframe').style.height = '94vh';
+    </script>""",
+    height=0
+)
