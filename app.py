@@ -1,50 +1,82 @@
-import dash
-from dash import html, dcc
-import dash_bootstrap_components as dbc
+import streamlit as st
+import streamlit.components.v1 as components
 
-# Initialize the app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-server = app.server 
+# Set page to wide to use the whole screen
+st.set_page_config(layout="wide")
 
-# Layout logic
-app.layout = html.Div([
-    # TOP SECTION
-    html.Div([
-        # Left CAD Window
-        html.Div("visual displays dynamic between coding and screen/CAD designs", 
-                 style={"flex": "7", "border": "3px solid black", "margin": "5px", "color": "darkred", "fontWeight": "bold", "fontSize": "22px", "display": "flex", "alignItems": "center", "justifyContent": "center", "backgroundColor": "white"}),
-        
-        # RED LINE (The Separator)
-        html.Div(style={"width": "10px", "backgroundColor": "red", "cursor": "col-resize"}),
-        
-        # AI SIDEBAR
-        html.Div([
-            html.Div("AI TEXT REPLYING WINDOW", style={"flex": "1", "border": "3px solid black", "margin": "5px", "color": "green", "display": "flex", "alignItems": "center", "justifyContent": "center", "backgroundColor": "white"}),
-            # GREEN LINE
-            html.Div(style={"height": "10px", "backgroundColor": "green", "cursor": "row-resize"}),
-            html.Div("USER PROMPTING", style={"flex": "1", "border": "3px solid black", "margin": "5px", "color": "purple", "display": "flex", "alignItems": "center", "justifyContent": "center", "backgroundColor": "white"}),
-        ], style={"flex": "3", "display": "flex", "flexDirection": "column"}),
-        
-        # BUTTON STRIP
-        html.Div([html.Div(style={"width": "30px", "height": "30px", "border": "1px solid black", "margin": "2px", "backgroundColor": "#ddd"}) for _ in range(16)], 
-                 style={"width": "50px", "borderLeft": "3px solid black", "display": "flex", "flexWrap": "wrap", "justifyContent": "center", "padding": "5px"})
-        
-    ], style={"display": "flex", "height": "70vh"}),
+# This is the Raw Layout matching image_0d35a5.png
+# It uses "Flexbox" which is the professional way to make windows resizable
+custom_html = """
+<style>
+    body { margin: 0; background-color: #111; color: white; font-family: sans-serif; overflow: hidden; }
+    .container { display: flex; flex-direction: column; height: 95vh; width: 100vw; border: 5px solid #333; }
+    
+    /* Top Section */
+    .top-section { display: flex; flex: 7; min-height: 0; }
+    
+    .visual-display { flex: 6; border: 3px solid black; background: white; color: darkred; 
+                       display: flex; align-items: center; justify-content: center; 
+                       font-size: 2vw; font-weight: bold; text-align: center; margin: 5px; }
+                       
+    .red-line { width: 10px; background: red; cursor: col-resize; }
+    
+    .ai-sidebar { flex: 3; display: flex; flex-direction: column; }
+    .ai-window { flex: 1; border: 3px solid black; background: white; color: green; 
+                 display: flex; align-items: center; justify-content: center; margin: 5px; font-weight: bold; }
+    
+    .green-line { height: 10px; background: green; cursor: row-resize; }
+    
+    .button-strip { width: 60px; border-left: 3px solid black; display: flex; flex-wrap: wrap; padding: 5px; align-content: flex-start; }
+    .small-box { width: 25px; height: 25px; border: 1px solid black; margin: 2px; background: #eee; }
 
-    # MAIN GREEN LINE
-    html.Div(style={"height": "10px", "backgroundColor": "green", "width": "100%", "cursor": "row-resize"}),
+    /* Bottom Section */
+    .bottom-section { flex: 3; display: flex; flex-direction: column; border-top: 10px solid green; background: #000; padding: 10px; }
+    .command-prompt { flex: 1; color: darkred; font-family: monospace; margin-bottom: 10px; }
+    .footer-row { display: flex; height: 60px; }
+    .indicator { flex: 1; border: 2px solid black; color: green; background: white; padding: 5px; margin-right: 5px; }
+    .controls { flex: 3; border: 2px solid black; color: blue; background: white; padding: 5px; margin-right: 5px; }
+    .footer-btns { flex: 1; display: flex; flex-wrap: wrap; }
+</style>
 
-    # BOTTOM SECTION
-    html.Div([
-        html.Div("command prompt / system programming / project", style={"color": "darkred", "fontWeight": "bold", "padding": "10px"}),
-        html.Div([
-            html.Div("small indicators", style={"border": "2px solid black", "flex": "1", "margin": "5px", "color": "green", "padding": "5px"}),
-            html.Div("buttons for controlling", style={"border": "2px solid black", "flex": "3", "margin": "5px", "color": "blue", "padding": "5px"}),
-            html.Div([html.Div(style={"width": "30px", "height": "30px", "border": "1px solid black", "margin": "2px", "backgroundColor": "#ddd"}) for _ in range(8)], 
-                     style={"flex": "1", "display": "flex", "flexWrap": "wrap", "justifyContent": "center"})
-        ], style={"display": "flex"})
-    ], style={"height": "25vh", "backgroundColor": "white", "border": "3px solid black", "margin": "5px"})
+<div class="container">
+    <div class="top-section">
+        <div class="visual-display">visual displays dynamic between coding and screen/CAD designs</div>
+        <div class="red-line"></div>
+        <div class="ai-sidebar">
+            <div class="ai-window">AI TEXT REPLYING WINDOW</div>
+            <div class="green-line"></div>
+            <div class="ai-window" style="color: purple;">USER PROMPTING</div>
+        </div>
+        <div class="button-strip" id="side-btns"></div>
+    </div>
+    
+    <div class="bottom-section">
+        <div class="command-prompt">command prompt for system programming for project >_</div>
+        <div class="footer-row">
+            <div class="indicator">small indicators any</div>
+            <div class="controls">buttons for controlling we will decide buttons as and when we</div>
+            <div class="footer-btns" id="foot-btns"></div>
+        </div>
+    </div>
+</div>
 
-], style={"height": "100vh", "backgroundColor": "#f8f9fa", "padding": "10px", "overflow": "hidden"})
+<script>
+    // Generate the small button boxes automatically
+    const sideBtns = document.getElementById('side-btns');
+    for(let i=0; i<18; i++) {
+        let div = document.createElement('div');
+        div.className = 'small-box';
+        sideBtns.appendChild(div);
+    }
+    
+    const footBtns = document.getElementById('foot-btns');
+    for(let i=0; i<12; i++) {
+        let div = document.createElement('div');
+        div.className = 'small-box';
+        footBtns.appendChild(div);
+    }
+</script>
+"""
 
-# IMPORTANT: Do not add app.run() if you are on a cloud host
+# Render the HTML inside Streamlit
+components.html(custom_html, height=800, scrolling=False)
