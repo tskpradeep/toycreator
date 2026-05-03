@@ -34,6 +34,7 @@ cad_app_html = """
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
         border: 2px solid #d3d3d3; box-sizing: border-box;
+        position: relative;
     }
 
     .window-title-bar {
@@ -44,6 +45,10 @@ cad_app_html = """
     }
 
     #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
+
+    /* DIMMED SLIDERS */
+    .gutter.gutter-horizontal { background-color: #8b0000 !important; cursor: col-resize; } /* Dark Crimson */
+    .gutter.gutter-vertical { background-color: #006400 !important; cursor: row-resize; }   /* Forest Green */
 
     .fixed-right-strip { 
         width: 65px; border-left: 1px solid #333; 
@@ -61,23 +66,31 @@ cad_app_html = """
         cursor: pointer; display: flex; align-items: center; justify-content: center;
         box-sizing: border-box; flex-shrink: 0;
     }
-    .btn-cell:active { 
-        border-top: 2px solid #707070; border-left: 2px solid #707070;
-        border-right: 2px solid #fff; border-bottom: 2px solid #fff;
-        background: #bebebe;
-    }
 
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+
+    /* AI CONFIGURATION MODAL (From image_ef9739.png) */
+    #ai-modal {
+        position: absolute; top: 15%; left: 15%; width: 70%; height: 60%;
+        background: #000; border: 1px solid #0055ff; z-index: 5000;
+        display: none; flex-direction: column; box-shadow: 0 0 20px rgba(0, 85, 255, 0.2);
+    }
+    .modal-header { background: #001133; border-bottom: 1px solid #0055ff; padding: 8px 12px; display: flex; justify-content: space-between; font-size: 11px; color: #00ccff; font-weight: bold; }
+    .modal-body { display: flex; flex: 1; overflow: hidden; }
+    .modal-sidebar { width: 35%; border-right: 1px solid #222; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .modal-main { width: 65%; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
     
-    /* UPDATED SLIDER COLORS */
-    .gutter.gutter-horizontal { background-color: #ff0000 !important; cursor: col-resize; }
-    .gutter.gutter-vertical { background-color: #00ff00 !important; cursor: row-resize; }
+    .ai-slot { background: #111; border: 1px solid #333; color: #aaa; padding: 8px; cursor: pointer; font-size: 11px; }
+    .ai-slot.active { border-color: #00ccff; color: #fff; }
+    .input-group { display: flex; flex-direction: column; gap: 5px; }
+    .input-group label { font-size: 10px; color: #ffcc00; text-transform: uppercase; }
+    .modal-input { background: #000; border: 1px solid #444; color: #fff; padding: 6px; font-size: 12px; outline: none; }
+    .modal-input:focus { border-color: #00ccff; }
 
     .fixed-footer { 
         height: 64px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0;
-        align-items: flex-end; 
-        padding: 0px 4px 2px 4px;
+        align-items: flex-end; padding: 0px 4px 2px 4px;
     }
 
     .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
@@ -91,18 +104,52 @@ cad_app_html = """
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
     }
-    .dropup.tall { height: 62px; }
+    .dropup.tall { height: 62px; font-weight: bold; }
     .dropup-content { display: none; position: absolute; bottom: 100%; left: -1px; background-color: #f0f0f0; min-width: 140px; border: 1px solid #707070; z-index: 1000; }
     .dropup.active .dropup-content { display: block; }
-    .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
 
-    .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+    .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; }
     .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #008000; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
     .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
     .cmd-text { width: 100%; height: 100%; color: #0f0; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
 </style>
 
 <div class="master-container">
+    <!-- AI DISPATCHER MODAL -->
+    <div id="ai-modal">
+        <div class="modal-header">
+            <span>DISPATCHER CONFIGURATION</span>
+            <span style="cursor:pointer" onclick="closeAIModal()">[ CLOSE X ]</span>
+        </div>
+        <div class="modal-body">
+            <div class="modal-sidebar">
+                <div class="ai-slot active">AI 01: Gemini 2.0 (Active)</div>
+                <div class="ai-slot">AI 02: Llama 3 (Standby)</div>
+                <button style="margin-top:auto; background:#ffcc00; border:none; padding:8px; font-weight:bold; cursor:pointer;">+ ADD NEW AI</button>
+            </div>
+            <div class="modal-main">
+                <div class="input-group">
+                    <label>Configuring Module</label>
+                    <div style="color:#fff; font-weight:bold;">Gemini 2.0 Pro</div>
+                </div>
+                <div class="input-group">
+                    <label>API Key Connection</label>
+                    <input type="password" class="modal-input" value="sk-........................">
+                </div>
+                <div class="input-group">
+                    <label>Assigned Technical Domain</label>
+                    <select class="modal-input">
+                        <option>Hardware Architect</option>
+                        <option>Consumer Electronics</option>
+                        <option>Industrial Automation</option>
+                        <option>Firmware Specialist</option>
+                    </select>
+                </div>
+                <p style="font-size:9px; color:#666; margin-top:10px;">Note: This AI will trigger automatically when prompts match the domain above.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="window-title-bar">
         <div>CAD DESIGNER PRO</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
@@ -142,7 +189,7 @@ cad_app_html = """
             <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
         </div>
         <div class="selection-b-container">
-            <div class="dropup tall" onclick="toggleMenu(this)"><span>Export</span><span>▲</span><div class="dropup-content"><a>Gerber</a><a>STEP</a><a>Tech Bundle</a></div></div>
+            <div class="dropup tall" style="background:#003366; color:#00ccff;" onclick="openAIModal()"><span>AI-SET</span><span>▲</span></div>
         </div>
     </div>
 </div>
@@ -158,6 +205,9 @@ cad_app_html = """
     const palette = document.getElementById('foot-palette');
     for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
+    function openAIModal() { document.getElementById('ai-modal').style.display = 'flex'; }
+    function closeAIModal() { document.getElementById('ai-modal').style.display = 'none'; }
+
     function toggleMenu(el) {
         event.stopPropagation();
         const isActive = el.classList.contains('active');
@@ -172,7 +222,6 @@ cad_app_html = """
     const promptInput = document.getElementById('user-prompt');
     const aiChat = document.getElementById('ai-chat');
     const terminal = document.getElementById('terminal-out');
-    const monitor = document.getElementById('visual-monitor');
 
     promptInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -180,16 +229,8 @@ cad_app_html = """
             const text = promptInput.value.trim();
             if(text !== "") {
                 aiChat.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-                const query = text.toLowerCase();
-                
-                if(query.includes("led") || query.includes("circuit")) {
-                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Logic detected. Accessing architectural specs...";
-                    terminal.innerHTML += "\\n> ANALYZING HARDWARE CONSTRAINTS...";
-                    monitor.innerHTML = "DATA ANALYSIS MODE ACTIVE";
-                } else {
-                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Ready for architectural prompts.";
-                }
-
+                terminal.innerHTML += "\\n> DISPATCHING TO HARDWARE ARCHITECT...";
+                aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Executing analysis via Gemini 2.0...";
                 promptInput.value = ""; 
                 aiChat.scrollTop = aiChat.scrollHeight;
                 terminal.scrollTop = terminal.scrollHeight;
