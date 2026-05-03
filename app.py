@@ -68,7 +68,10 @@ cad_app_html = """
     }
 
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
-    .gutter { background-color: #444 !important; }
+    
+    /* UPDATED SLIDER COLORS */
+    .gutter.gutter-horizontal { background-color: #ff0000 !important; cursor: col-resize; }
+    .gutter.gutter-vertical { background-color: #00ff00 !important; cursor: row-resize; }
 
     .fixed-footer { 
         height: 64px; display: flex; flex-direction: row; 
@@ -93,7 +96,6 @@ cad_app_html = """
     .dropup.active .dropup-content { display: block; }
     .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
 
-    /* Logic Styling - NO GUI CHANGE */
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
     .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #008000; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
     .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
@@ -110,7 +112,7 @@ cad_app_html = """
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
                 <div id="cad-pane" class="pane text-main">
-                    <div id="visual-monitor">visual displays dynamic between coding and screen/CAD designs</div>
+                    <div id="visual-monitor">SYSTEM READY</div>
                 </div>
                 <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
                     <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
@@ -146,9 +148,9 @@ cad_app_html = """
 </div>
 
 <script>
-    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
-    Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
-    Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
+    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 6 });
+    Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 6 });
+    Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 6 });
 
     const side = document.getElementById('side-strip');
     for(let i=0; i<100; i++) side.innerHTML += '<div class="btn-cell"></div>';
@@ -167,7 +169,6 @@ cad_app_html = """
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
 
-    // LOGIC INTEGRATION
     const promptInput = document.getElementById('user-prompt');
     const aiChat = document.getElementById('ai-chat');
     const terminal = document.getElementById('terminal-out');
@@ -181,23 +182,10 @@ cad_app_html = """
                 aiChat.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
                 const query = text.toLowerCase();
                 
-                if(query.includes("led") || query.includes("circuit") || query.includes("power supply")) {
-                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Architecting system blocks...";
-                    terminal.innerHTML += "\\n> COMPILING TECH BUNDLE LOGIC...";
-                    
-                    // Simple logic-driven visual update inside your text-main pane
-                    monitor.innerHTML = `
-                        <div style="border:1px solid #fff; padding:10px; font-size:12px;">
-                            <svg width="200" height="100">
-                                <rect x="10" y="30" width="50" height="40" stroke="white" fill="none" />
-                                <text x="15" y="55" fill="white" font-size="8">SOURCE</text>
-                                <line x1="60" y1="50" x2="90" y2="50" stroke="#0f0" />
-                                <circle cx="110" cy="50" r="20" stroke="#0f0" fill="none" />
-                                <text x="102" y="53" fill="#0f0" font-size="8">LOAD</text>
-                            </svg>
-                            <div style="font-size:10px; margin-top:5px;">${text.toUpperCase()} DIAGRAM</div>
-                        </div>
-                    `;
+                if(query.includes("led") || query.includes("circuit")) {
+                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Logic detected. Accessing architectural specs...";
+                    terminal.innerHTML += "\\n> ANALYZING HARDWARE CONSTRAINTS...";
+                    monitor.innerHTML = "DATA ANALYSIS MODE ACTIVE";
                 } else {
                     aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Ready for architectural prompts.";
                 }
