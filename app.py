@@ -1,52 +1,96 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="CAD Design Portal")
 
-# The unified layout with Split.js
-final_layout_html = """
+# The layout now includes a simulated OS-style Title Bar
+cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
-    body { margin: 0; background-color: white; font-family: sans-serif; height: 100vh; width: 100vw; overflow: hidden; }
+    /* Reset and Dynamic Sizing */
+    * { box-sizing: border-box; }
+    body { 
+        margin: 0; 
+        background-color: #f0f0f0; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        height: 100vh; 
+        width: 100vw; 
+        overflow: hidden; 
+        display: flex;
+        flex-direction: column;
+    }
     
-    /* Main wrapper to remove all outer black borders */
-    .master-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+    /* 1. TOP WINDOW BAR (Minimize, Maximize, Close) */
+    .window-title-bar {
+        background: #2c3e50;
+        color: white;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        user-select: none;
+        border-bottom: 1px solid #1a252f;
+    }
+    .window-title { font-size: 14px; font-weight: 600; }
+    .window-controls { display: flex; gap: 15px; }
+    .control-btn { cursor: pointer; font-size: 16px; width: 20px; text-align: center; }
+    .control-btn:hover { color: #bdc3c7; }
+    .close-btn:hover { color: #e74c3c; }
 
-    /* Layout Containers */
+    /* 2. MAIN APP CONTAINER */
+    .master-container { 
+        display: flex; 
+        flex-direction: column; 
+        flex-grow: 1; 
+        height: calc(100vh - 35px); 
+        width: 100vw; 
+        background: white;
+    }
+
     .flex-row { display: flex; flex-direction: row; width: 100%; height: 100%; }
     .flex-col { display: flex; flex-direction: column; width: 100%; height: 100%; }
     
     /* Panes */
-    .pane { background: white; border: 1px solid black; box-sizing: border-box; 
-            display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
+    .pane { background: white; border: 1px solid black; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
     
-    /* Slimmed down Gutters (The Lines) */
-    .gutter { background-color: #eee; background-repeat: no-repeat; background-position: center; }
-    .gutter.gutter-horizontal { cursor: col-resize; background-color: red; width: 6px !important; }
-    .gutter.gutter-vertical { cursor: row-resize; background-color: green; height: 6px !important; }
+    /* Slimmed Dividers */
+    .gutter { background-color: #f8f9fa; background-repeat: no-repeat; background-position: center; }
+    .gutter.gutter-horizontal { cursor: col-resize; background-color: red; width: 5px !important; }
+    .gutter.gutter-vertical { cursor: row-resize; background-color: green; height: 5px !important; }
 
-    /* Content Text Styles */
+    /* Content Text */
     .text-main { color: darkred; font-size: 1.8vw; font-weight: bold; text-align: center; border: none !important; }
     .text-ai { color: green; font-weight: bold; border: none !important; }
     .text-prompt { color: purple; font-weight: bold; border: none !important; }
     
-    /* The Fixed Bottom Section (Below the imaginary brown line) */
-    .fixed-footer { height: 80px; display: flex; flex-direction: row; border-top: 2px solid black; background: white; }
-    .footer-item { border-right: 2px solid black; display: flex; align-items: center; justify-content: center; padding: 5px; }
+    /* Fixed Bottom Base */
+    .fixed-footer { height: 75px; display: flex; flex-direction: row; border-top: 2px solid black; background: white; }
+    .footer-item { border-right: 1px solid black; display: flex; align-items: center; justify-content: center; padding: 5px; }
 
-    /* Button Grids */
+    /* Buttons */
     .sidebar-btns { width: 45px; border-left: 2px solid black; display: flex; flex-direction: column; padding: 4px; background: white; }
-    .footer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; width: 160px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; width: 150px; }
     .small-box { width: 18px; height: 18px; border: 1px solid black; background: #f0f0f0; margin-bottom: 3px; }
 </style>
 
+<!-- WINDOW TITLE BAR -->
+<div class="window-title-bar">
+    <div class="window-title">CAD Tool Portal - Professional Edition</div>
+    <div class="window-controls">
+        <span class="control-btn">−</span>
+        <span class="control-btn">❐</span>
+        <span class="control-btn close-btn">×</span>
+    </div>
+</div>
+
+<!-- MAIN DASHBOARD -->
 <div class="master-container">
-    <!-- DYNAMIC AREA (Above the brown line) -->
     <div id="dynamic-zone" class="flex-row">
         
-        <!-- LEFT SIDE: CAD + Command Prompt (Unified by the Red Line) -->
+        <!-- LEFT PILLAR -->
         <div id="left-side-stack" class="flex-col">
-            <div id="cad-pane" class="pane text-main" style="border: 1px solid #ccc;">
+            <div id="cad-pane" class="pane text-main">
                 visual displays dynamic between coding and screen/CAD designs
             </div>
             <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start; border-top: 2px solid black;">
@@ -54,7 +98,7 @@ final_layout_html = """
             </div>
         </div>
 
-        <!-- RIGHT SIDE: AI + Right Button Strip -->
+        <!-- RIGHT PILLAR -->
         <div id="right-side-stack" class="flex-row">
             <div id="ai-column" class="flex-col">
                 <div id="ai-output" class="pane text-ai">AI TEXT REPLYING WINDOW</div>
@@ -64,10 +108,10 @@ final_layout_html = """
         </div>
     </div>
 
-    <!-- FIXED FOOTER (The base indicators and buttons) -->
+    <!-- BOTTOM FIXED BASE -->
     <div class="fixed-footer">
-        <div class="footer-item" style="flex: 1.5; color: green; font-size: 0.9vw;">small indicators any</div>
-        <div class="footer-item" style="flex: 4; color: blue; font-size: 0.9vw; border-right: 2px solid black;">
+        <div class="footer-item" style="flex: 1.5; color: green; font-size: 13px;">small indicators any</div>
+        <div class="footer-item" style="flex: 4; color: blue; font-size: 13px;">
             buttons for controlling we will decide buttons as and when we
         </div>
         <div id="footer-grid" class="footer-grid"></div>
@@ -75,36 +119,31 @@ final_layout_html = """
 </div>
 
 <script>
-    // 1. MAIN VERTICAL SPLIT (The Red Line)
-    // This moves the Left Stack (CAD+CMD) and Right Stack (AI+Btns) together
+    // Maintain the 1:1 Dynamic Logic
     Split(['#left-side-stack', '#right-side-stack'], {
         sizes: [70, 30],
-        gutterSize: 6,
+        gutterSize: 5,
         cursor: 'col-resize',
     });
 
-    // 2. CAD vs COMMAND PROMPT SPLIT (Lower Green Line)
-    // Moves ONLY between CAD and CMD windows
     Split(['#cad-pane', '#cmd-pane'], {
         direction: 'vertical',
-        sizes: [80, 20],
-        gutterSize: 6,
+        sizes: [75, 25],
+        gutterSize: 5,
     });
 
-    // 3. AI TOP vs AI BOTTOM SPLIT (Upper Green Line)
     Split(['#ai-output', '#ai-input'], {
         direction: 'vertical',
         sizes: [50, 50],
-        gutterSize: 6,
+        gutterSize: 5,
     });
 
-    // Generate Buttons
     const side = document.getElementById('side-strip');
     for(let i=0; i<18; i++) side.innerHTML += '<div class="small-box"></div>';
-    
     const foot = document.getElementById('footer-grid');
     for(let i=0; i<12; i++) foot.innerHTML += '<div class="small-box"></div>';
 </script>
 """
 
-components.html(final_layout_html, height=900, scrolling=False)
+# Render with height set to occupy 100% of the Streamlit container
+components.html(cad_app_html, height=1000, scrolling=False)
