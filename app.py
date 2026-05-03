@@ -30,9 +30,12 @@ cad_app_html = """
         font-family: 'Segoe UI', sans-serif;
     }
     
+    /* ADDED: Outer light gray border all around the master container */
     .master-container { 
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
+        border: 2px solid #d3d3d3; 
+        box-sizing: border-box; /* Ensures border doesn't cause overflow */
     }
 
     .window-title-bar {
@@ -50,7 +53,6 @@ cad_app_html = """
     .flex-row { display: flex; flex-direction: row; height: 100%; width: 100%; overflow: hidden; }
     .flex-col { display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
     
-    /* ALL PANES: Now Black background with Dark Gray borders */
     .pane { 
         background: #000 !important; 
         border: 1px solid #333 !important; 
@@ -58,15 +60,13 @@ cad_app_html = """
         overflow: hidden; padding: 5px; 
     }
 
-    /* Gutters (The Moving Lines): Changed to Dark Gray */
     .gutter { background-color: #222; flex-shrink: 0; }
     .gutter.gutter-horizontal { cursor: col-resize; background-color: #444 !important; width: 4px !important; }
     .gutter.gutter-vertical { cursor: row-resize; background-color: #444 !important; height: 4px !important; }
 
-    /* Fixed Sidebar (2-Column) */
     .fixed-right-strip { 
         width: 60px; 
-        border-left: 2px solid #333; 
+        border-left: 1px solid #333; 
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-auto-rows: min-content;
@@ -75,15 +75,12 @@ cad_app_html = """
         background: #000;
     }
 
-    /* Fixed Footer (The Floor) */
     .fixed-footer { 
         height: 75px; display: flex; flex-direction: row; 
-        border-top: 2px solid #333; background: #000; flex-shrink: 0; 
+        border-top: 1px solid #333; background: #000; flex-shrink: 0; 
     }
 
     .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 5px; font-size: 11px; }
-    
-    /* Buttons in Dark Mode */
     .small-box { width: 18px; height: 18px; border: 1px solid #444; background: #111; flex-shrink: 0; }
     
     .footer-btn-grid {
@@ -91,7 +88,6 @@ cad_app_html = """
         gap: 2px; padding: 5px; align-items: center;
     }
 
-    /* Content Text */
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; border: none !important; }
     .text-ai { color: #008000; font-weight: bold; }
     .text-prompt { color: #800080; font-weight: bold; }
@@ -140,11 +136,11 @@ cad_app_html = """
 </script>
 """
 
-# Dynamic Height Adjustment for Footer Visibility
+# Dynamic Height Adjustment
 components.html(cad_app_html, height=0)
 st.components.v1.html(
     f"""<script>
-        window.parent.document.querySelector('iframe').style.height = '92vh';
+        window.parent.document.querySelector('iframe').style.height = '94vh';
     </script>""",
     height=0
 )
