@@ -2,11 +2,11 @@ import dash
 from dash import html
 import dash_bootstrap_components as dbc
 
-# This version uses standard layout to avoid the TypeError loop
+# Updated for compatibility with the latest Dash versions
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server 
 
-# Styles to match image_0d35a5.png
+# Styles to match image_0d35a5.png exactly
 box_border = {"border": "2px solid black", "padding": "10px", "height": "100%", "backgroundColor": "white"}
 red_line = {"width": "5px", "backgroundColor": "red", "height": "100%"}
 green_line_h = {"height": "5px", "backgroundColor": "green", "width": "100%"}
@@ -17,7 +17,7 @@ app.layout = html.Div([
     html.Div([
         # 1. Left: Visual Display
         html.Div("visual displays dynamic between coding and screen/CAD designs", 
-                 style={**box_border, "flex": "6", "fontSize": "24px", "fontWeight": "bold", "color": "darkred"}),
+                 style={**box_border, "flex": "6", "fontSize": "22px", "fontWeight": "bold", "color": "darkred"}),
         
         # 2. RED LINE
         html.Div(style=red_line),
@@ -25,11 +25,11 @@ app.layout = html.Div([
         # 3. Middle: AI Sidebar
         html.Div([
             html.Div("AI TEXT REPLYING WINDOW", style={**box_border, "flex": "1", "color": "green"}),
-            html.Div(style=green_line_h), # Inner Green Line
+            html.Div(style=green_line_h), 
             html.Div("USER PROMPTING", style={**box_border, "flex": "1", "color": "purple"}),
         ], style={"flex": "3", "display": "flex", "flexDirection": "column"}),
         
-        # 4. Right: Button Strip
+        # 4. Right: Vertical Button Strip
         html.Div([html.Div(style=small_box) for _ in range(20)], 
                  style={"flex": "0.5", "padding": "5px", "borderLeft": "2px solid black", "display": "flex", "flexWrap": "wrap", "justifyContent": "center"}),
         
@@ -41,7 +41,7 @@ app.layout = html.Div([
     # BOTTOM SECTION (Console and Grid)
     html.Div([
         html.Div("command prompt / system programming / project", 
-                 style={**box_border, "height": "15vh", "color": "darkred"}),
+                 style={**box_border, "height": "12vh", "color": "darkred"}),
         
         # Footer Row
         html.Div([
@@ -49,11 +49,12 @@ app.layout = html.Div([
             html.Div("buttons for controlling we will decide buttons as and when we", style={**box_border, "flex": "3", "color": "blue"}),
             html.Div([html.Div(style=small_box) for _ in range(12)], 
                      style={**box_border, "flex": "1", "display": "flex", "flexWrap": "wrap"}),
-        ], style={"display": "flex", "height": "10vh"})
+        ], style={"display": "flex", "height": "13vh"})
         
     ], style={"height": "25vh"})
 
-], style={"height": "100vh", "padding": "10px", "backgroundColor": "white", "overflow": "hidden"})
+], style={"height": "100vh", "padding": "5px", "backgroundColor": "white", "overflow": "hidden"})
 
+# Use .run() instead of .run_server() to fix the ObsoleteAttributeException
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
