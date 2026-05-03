@@ -51,17 +51,17 @@ cad_app_html = """
         display: grid; grid-template-columns: 1fr 1fr;
         grid-auto-rows: min-content; gap: 2px;
         padding: 5px; background: #000; 
-        overflow-y: scroll; /* Native scrollbar */
+        overflow-y: scroll; 
     }
 
     /* Square Native Button */
     .btn-cell {
-        aspect-ratio: 1 / 1; width: 100%;
+        aspect-ratio: 1 / 1; width: 22px; height: 22px;
         background: #e1e1e1; color: #000;
         border-top: 2px solid #fff; border-left: 2px solid #fff;
         border-right: 2px solid #707070; border-bottom: 2px solid #707070;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        box-sizing: border-box;
+        box-sizing: border-box; flex-shrink: 0;
     }
     .btn-cell:active { 
         border-top: 2px solid #707070; border-left: 2px solid #707070;
@@ -72,30 +72,49 @@ cad_app_html = """
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     .gutter { background-color: #444 !important; }
 
-    /* Footer Layout */
+    /* FOOTER ARRANGEMENT - RIGHT TO LEFT PACKING */
     .fixed-footer { 
-        height: 85px; display: flex; flex-direction: row; 
-        border-top: 2px solid #333; background: #000; flex-shrink: 0; 
+        height: 100px; display: flex; flex-direction: row; 
+        border-top: 2px solid #333; background: #000; flex-shrink: 0;
+        align-items: flex-end; /* Align all items to bottom window line */
+        padding: 5px;
     }
-    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 4px; }
 
-    /* Native Selection Box */
+    .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; }
+
+    /* Right-side Dropup B (Tall/Single) */
+    .selection-b-container {
+        width: 140px; height: 75px; margin-left: 5px;
+    }
+    
+    /* Selection A Stack (3 Vertical) */
+    .selection-a-stack {
+        display: flex; flex-direction: column; gap: 2px; width: 140px; margin-left: 5px;
+    }
+
+    /* 6 Column x 3 Row Button Grid */
+    .footer-palette-grid {
+        display: grid; grid-template-columns: repeat(6, 22px); grid-template-rows: repeat(3, 22px);
+        gap: 2px; margin-left: 10px;
+    }
+
+    /* Native Selection Box Styling */
     .dropup { 
-        position: relative; width: 100%; height: 22px; 
+        position: relative; width: 100%; height: 23px; 
         background: #e1e1e1; color: #000; border: 1px solid #707070; 
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 5px; cursor: pointer; font-size: 10px; box-sizing: border-box;
     }
+    /* Tall version for B */
+    .dropup.tall { height: 100%; }
+
     .dropup-content {
         display: none; position: absolute; bottom: 100%; left: -1px;
         background-color: #f0f0f0; min-width: 150px; 
         border: 1px solid #707070; z-index: 1000;
     }
     .dropup.active .dropup-content { display: block; }
-    .dropup-content a { color: #000; padding: 8px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; }
-    .dropup-content a:hover { background: #0078d7; color: white; }
-
-    .footer-palette { display: grid; grid-template-columns: repeat(6, 22px); gap: 2px; }
+    .dropup-content a { color: #000; padding: 8px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 11px; }
 
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; }
 </style>
@@ -120,21 +139,26 @@ cad_app_html = """
         <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
+    <!-- FOOTER PACKED RIGHT-TO-LEFT -->
     <div class="fixed-footer">
-        <div class="footer-item" style="flex: 1; color:#008000; font-size:10px;">small indicators</div>
-        <div class="footer-item" style="flex: 2; color:#0000ff; font-size:10px;">buttons for controlling...</div>
-        
-        <div class="footer-item" style="flex: 1.5; flex-direction:column; gap:4px; padding: 8px;">
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Tool Config 1</a><a>Tool Config 2</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option Set 1</a><a>Option Set 2</a></div></div>
+        <div class="footer-left-content">
+            <span style="color:#008000; margin-right: 20px;">small indicators</span>
+            <span style="color:#0000ff;">buttons for controlling...</span>
         </div>
 
-        <div class="footer-item" style="flex: 1.5;">
-            <div id="foot-palette" class="footer-palette"></div>
+        <!-- 6 column 3 row buttons -->
+        <div id="foot-palette" class="footer-palette-grid"></div>
+
+        <!-- 3 dropups one below other -->
+        <div class="selection-a-stack">
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A1</a><a>Option A2</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option B1</a><a>Option B2</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option C1</a><a>Option C2</a></div></div>
         </div>
 
-        <div class="footer-item" style="flex: 1.2; border-right:none;">
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>System Properties</a><a>Export STL</a></div></div>
+        <!-- 1 dropup B to extreme right touching line -->
+        <div class="selection-b-container">
+            <div class="dropup tall" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>Main Settings</a><a>Export View</a></div></div>
         </div>
     </div>
 </div>
@@ -144,9 +168,11 @@ cad_app_html = """
     Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
     Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
 
+    // Sidebar buttons (unlimited)
     const side = document.getElementById('side-strip');
     for(let i=0; i<100; i++) side.innerHTML += '<div class="btn-cell"></div>';
     
+    // Footer palette (6 columns x 3 rows = 18 buttons)
     const palette = document.getElementById('foot-palette');
     for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
