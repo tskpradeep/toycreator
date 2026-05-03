@@ -30,12 +30,11 @@ cad_app_html = """
         font-family: 'Segoe UI', sans-serif;
     }
     
-    /* ADDED: Outer light gray border all around the master container */
     .master-container { 
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
         border: 2px solid #d3d3d3; 
-        box-sizing: border-box; /* Ensures border doesn't cause overflow */
+        box-sizing: border-box;
     }
 
     .window-title-bar {
@@ -64,33 +63,50 @@ cad_app_html = """
     .gutter.gutter-horizontal { cursor: col-resize; background-color: #444 !important; width: 4px !important; }
     .gutter.gutter-vertical { cursor: row-resize; background-color: #444 !important; height: 4px !important; }
 
-    .fixed-right-strip { 
-        width: 60px; 
-        border-left: 1px solid #333; 
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-auto-rows: min-content;
-        gap: 4px;
-        padding: 5px; 
-        background: #000;
+    /* YELLOW AREAS: Clickable Button Logic */
+    .btn-cell {
+        width: 18px; height: 18px; border: 1px solid #444; 
+        background: #111; flex-shrink: 0; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s;
     }
+    .btn-cell:hover { background: #333; border-color: #888; }
+    .btn-cell:active { background: #555; }
+
+    .fixed-right-strip { 
+        width: 60px; border-left: 1px solid #333; 
+        display: grid; grid-template-columns: 1fr 1fr;
+        grid-auto-rows: min-content; gap: 4px;
+        padding: 5px; background: #000;
+    }
+
+    /* RED AREAS: Drop-up Menu Logic */
+    .dropup { position: relative; display: inline-block; width: 100%; height: 100%; }
+    .dropup-content {
+        display: none; position: absolute; bottom: 100%; left: 0;
+        background-color: #1a1a1a; min-width: 120px;
+        border: 1px solid #444; z-index: 10;
+    }
+    .dropup-content a {
+        color: #888; padding: 8px 12px; text-decoration: none;
+        display: block; font-size: 10px; border-bottom: 1px solid #333;
+    }
+    .dropup-content a:hover { background-color: #333; color: white; }
+    .dropup:hover .dropup-content { display: block; }
 
     .fixed-footer { 
         height: 75px; display: flex; flex-direction: row; 
         border-top: 1px solid #333; background: #000; flex-shrink: 0; 
     }
 
-    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 5px; font-size: 11px; }
-    .small-box { width: 18px; height: 18px; border: 1px solid #444; background: #111; flex-shrink: 0; }
+    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 2px; font-size: 11px; }
     
     .footer-btn-grid {
         display: grid; grid-template-columns: repeat(6, 1fr); 
-        gap: 2px; padding: 5px; align-items: center;
+        gap: 2px; padding: 2px;
     }
 
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; border: none !important; }
-    .text-ai { color: #008000; font-weight: bold; }
-    .text-prompt { color: #800080; font-weight: bold; }
 </style>
 
 <div class="master-container">
@@ -108,18 +124,43 @@ cad_app_html = """
                 </div>
             </div>
             <div id="ai-column" class="flex-col">
-                <div id="ai-output" class="pane text-ai">AI TEXT REPLYING WINDOW</div>
-                <div id="ai-input" class="pane text-prompt">USER PROMPTING</div>
+                <div id="ai-output" class="pane" style="color: #008000; font-weight: bold;">AI TEXT REPLYING WINDOW</div>
+                <div id="ai-input" class="pane" style="color: #800080; font-weight: bold;">USER PROMPTING</div>
             </div>
         </div>
-        <div class="fixed-right-strip" id="side-strip"></div>
+        <div class="fixed-right-strip" id="side-strip">
+            <!-- Densely packed yellow-area buttons -->
+        </div>
     </div>
 
     <div class="fixed-footer">
         <div class="footer-item" style="flex: 1.5; color: #008000;">small indicators</div>
         <div class="footer-item" style="flex: 3; color: #0000ff;">buttons for controlling...</div>
-        <div class="footer-item" style="flex: 1.5;" id="moved-btns-grid" class="footer-btn-grid"></div>
-        <div class="footer-item" style="flex: 1; border-right: none;"></div>
+        
+        <!-- RED AREA (Left Drop-up) -->
+        <div class="footer-item" style="flex: 1.5;">
+            <div class="dropup">
+                <div style="color: #666; font-size: 10px;">SELECTION A ▲</div>
+                <div class="dropup-content">
+                    <a>Option 1</a><a>Option 2</a><a>Option 3</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- YELLOW AREA (Small Footer Buttons) -->
+        <div class="footer-item" style="flex: 1.5;">
+            <div id="footer-btn-grid" class="footer-btn-grid"></div>
+        </div>
+
+        <!-- RED AREA (Right Drop-up) -->
+        <div class="footer-item" style="flex: 1; border-right: none;">
+            <div class="dropup">
+                <div style="color: #666; font-size: 10px;">SELECTION B ▲</div>
+                <div class="dropup-content">
+                    <a>Setting 1</a><a>Setting 2</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -128,15 +169,21 @@ cad_app_html = """
     Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
     Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
 
+    // Fill Sidebar Buttons (Yellow Area)
     const side = document.getElementById('side-strip');
-    for(let i=0; i<30; i++) side.innerHTML += '<div class="small-box"></div>';
+    for(let i=0; i<40; i++) {
+        side.innerHTML += '<div class="btn-cell" onclick="console.log(\'Btn \'+'+i+')"></div>';
+    }
     
-    const foot = document.getElementById('moved-btns-grid');
-    for(let i=0; i<12; i++) foot.innerHTML += '<div class="small-box"></div>';
+    // Fill Footer Grid Buttons (Yellow Area)
+    const footGrid = document.getElementById('footer-btn-grid');
+    for(let i=0; i<12; i++) {
+        footGrid.innerHTML += '<div class="btn-cell" onclick="console.log(\'Foot \'+'+i+')"></div>';
+    }
 </script>
 """
 
-# Dynamic Height Adjustment
+# Re-anchor for visibility
 components.html(cad_app_html, height=0)
 st.components.v1.html(
     f"""<script>
