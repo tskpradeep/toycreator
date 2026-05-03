@@ -34,17 +34,33 @@ cad_app_html = """
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
         border: 2px solid #d3d3d3; box-sizing: border-box;
+        position: relative;
     }
 
+    /* --- NEW AI MODULAR WINDOW (GREEN VIBE) --- */
+    #ai-modular-setup {
+        position: absolute; top: 10%; left: 15%; width: 70%; height: 75%;
+        background: #000; border: 2px solid #00ff00; z-index: 9999;
+        display: none; flex-direction: column; box-shadow: 0 0 40px rgba(0,255,0,0.2);
+    }
+    .ai-setup-header { background: #0a1a0a; border-bottom: 1px solid #00ff00; padding: 10px; display: flex; justify-content: space-between; color: #00ff00; font-family: monospace; }
+    .ai-setup-body { display: flex; flex: 1; overflow: hidden; }
+    .ai-setup-sidebar { width: 30%; border-right: 1px solid #00ff00; padding: 10px; background: #050505; overflow-y: auto; }
+    .ai-setup-content { width: 70%; padding: 20px; color: #00ff00; font-family: monospace; display: flex; flex-direction: column; gap: 15px; }
+    .ai-model-item { padding: 8px; border: 1px solid #004400; margin-bottom: 5px; cursor: pointer; font-size: 11px; }
+    .ai-model-item:hover { border-color: #00ff00; background: #0a1a0a; }
+    .ai-model-item.active { background: #00ff00; color: #000; font-weight: bold; }
+    .ai-input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; box-sizing: border-box; }
+    .live-link { color: #00ff00; text-decoration: underline; font-size: 11px; cursor: pointer; }
+
+    /* --- ORIGINAL GUI CSS --- */
     .window-title-bar {
         background: #1a1a1a; color: #888; height: 30px;
         flex-shrink: 0; display: flex; align-items: center; 
         justify-content: space-between; padding: 0 10px; font-size: 12px;
         border-bottom: 1px solid #333;
     }
-
     #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
-
     .fixed-right-strip { 
         width: 65px; border-left: 1px solid #333; 
         display: grid; grid-template-columns: 1fr 1fr;
@@ -52,7 +68,6 @@ cad_app_html = """
         padding: 5px; background: #000; 
         overflow-y: scroll; 
     }
-
     .btn-cell {
         aspect-ratio: 1 / 1; width: 20px; height: 20px;
         background: #e1e1e1; color: #000;
@@ -66,22 +81,18 @@ cad_app_html = """
         border-right: 2px solid #fff; border-bottom: 2px solid #fff;
         background: #bebebe;
     }
-
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     .gutter { background-color: #444 !important; }
-
     .fixed-footer { 
         height: 64px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0;
         align-items: flex-end; 
         padding: 0px 4px 2px 4px;
     }
-
     .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
     .selection-b-container { width: 130px; height: 62px; margin-left: 5px; }
     .selection-a-stack { display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px; }
     .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; }
-
     .dropup { 
         position: relative; width: 100%; height: 20px; 
         background: #e1e1e1; color: #000; border: 1px solid #707070; 
@@ -92,8 +103,6 @@ cad_app_html = """
     .dropup-content { display: none; position: absolute; bottom: 100%; left: -1px; background-color: #f0f0f0; min-width: 140px; border: 1px solid #707070; z-index: 1000; }
     .dropup.active .dropup-content { display: block; }
     .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
-
-    /* Logic Styling - NO GUI CHANGE */
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
     .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #008000; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
     .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
@@ -101,6 +110,42 @@ cad_app_html = """
 </style>
 
 <div class="master-container">
+    <!-- MODULAR SETUP WINDOW -->
+    <div id="ai-modular-setup">
+        <div class="ai-setup-header">
+            <span>[ SYSTEM AI-SET : DISPATCHER CONFIG ]</span>
+            <span onclick="toggleAISet(false)" style="cursor:pointer">[ EXIT ]</span>
+        </div>
+        <div class="ai-setup-body">
+            <div class="ai-setup-sidebar" id="model-list">
+                <div class="ai-model-item active" onclick="configModel(this, 'Gemini 3.0 Pro', 'Hardware Architect')">GEMINI 3.0 PRO (AUTO)</div>
+                <div class="ai-model-item" onclick="configModel(this, 'Gemini 3.0 Flash', 'Code Specialist')">GEMINI 3.0 FLASH</div>
+                <div class="ai-model-item" onclick="configModel(this, 'Gemini 2.0 Pro', 'Layout Optimizer')">GEMINI 2.0 PRO</div>
+                <div class="ai-model-item" onclick="configModel(this, 'Gemini 1.5 Ultra', 'BOM Manager')">GEMINI 1.5 ULTRA</div>
+            </div>
+            <div class="ai-setup-content">
+                <div style="font-size: 18px; border-bottom: 1px solid #004400; padding-bottom: 5px;">ACTIVE: <span id="model-title">Gemini 3.0 Pro</span></div>
+                <div>
+                    <label>MANUFACTURER ENDPOINT:</label>
+                    <input type="text" class="ai-input" id="ai-endpoint" value="https://generativelanguage.googleapis.com/v1beta/">
+                </div>
+                <div>
+                    <label>AUTHORIZATION KEY:</label>
+                    <input type="password" class="ai-input" placeholder="ENTER API KEY...">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="live-link">GENERATE KEY VIA GOOGLE AI STUDIO ↗</a>
+                </div>
+                <div>
+                    <label>AUTO-ASSIGNED ROLE:</label>
+                    <input type="text" class="ai-input" id="ai-role" value="Hardware Architect">
+                </div>
+                <div style="margin-top: auto; display: flex; gap: 10px;">
+                    <button class="btn-cell" style="width: auto; height: 30px; padding: 0 15px;" onclick="toggleAISet(false)">APPLY</button>
+                    <button class="btn-cell" style="width: auto; height: 30px; padding: 0 15px;" onclick="toggleAISet(false)">RESET</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="window-title-bar">
         <div>CAD DESIGNER PRO</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
@@ -140,7 +185,7 @@ cad_app_html = """
             <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
         </div>
         <div class="selection-b-container">
-            <div class="dropup tall" onclick="toggleMenu(this)"><span>Export</span><span>▲</span><div class="dropup-content"><a>Gerber</a><a>STEP</a><a>Tech Bundle</a></div></div>
+            <div class="dropup tall" onclick="toggleAISet(true)"><span>AI-SET</span><span>▲</span><div class="dropup-content"><a>Gerber</a><a>STEP</a><a>Tech Bundle</a></div></div>
         </div>
     </div>
 </div>
@@ -156,6 +201,18 @@ cad_app_html = """
     const palette = document.getElementById('foot-palette');
     for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
+    /* AI SETUP LOGIC */
+    function toggleAISet(show) {
+        document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none';
+    }
+
+    function configModel(el, name, role) {
+        document.querySelectorAll('.ai-model-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('model-title').innerText = name;
+        document.getElementById('ai-role').value = role;
+    }
+
     function toggleMenu(el) {
         event.stopPropagation();
         const isActive = el.classList.contains('active');
@@ -167,7 +224,6 @@ cad_app_html = """
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
 
-    // LOGIC INTEGRATION
     const promptInput = document.getElementById('user-prompt');
     const aiChat = document.getElementById('ai-chat');
     const terminal = document.getElementById('terminal-out');
@@ -185,7 +241,6 @@ cad_app_html = """
                     aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Architecting system blocks...";
                     terminal.innerHTML += "\\n> COMPILING TECH BUNDLE LOGIC...";
                     
-                    // Simple logic-driven visual update inside your text-main pane
                     monitor.innerHTML = `
                         <div style="border:1px solid #fff; padding:10px; font-size:12px;">
                             <svg width="200" height="100">
