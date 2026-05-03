@@ -45,7 +45,6 @@ cad_app_html = """
 
     #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
 
-    /* Side Strip with Scrollbar */
     .fixed-right-strip { 
         width: 65px; border-left: 1px solid #333; 
         display: grid; grid-template-columns: 1fr 1fr;
@@ -54,7 +53,6 @@ cad_app_html = """
         overflow-y: scroll; 
     }
 
-    /* Square Native Button */
     .btn-cell {
         aspect-ratio: 1 / 1; width: 20px; height: 20px;
         background: #e1e1e1; color: #000;
@@ -63,39 +61,37 @@ cad_app_html = """
         cursor: pointer; display: flex; align-items: center; justify-content: center;
         box-sizing: border-box; flex-shrink: 0;
     }
-    .btn-cell:active { 
-        border-top: 2px solid #707070; border-left: 2px solid #707070;
-        border-right: 2px solid #fff; border-bottom: 2px solid #fff;
-        background: #bebebe;
-    }
 
-    .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; position: relative;}
     .gutter { background-color: #444 !important; }
 
-    /* ABSOLUTE BOTTOM FOOTER */
+    /* Layout for Text Windows */
+    .text-display {
+        width: 100%; height: 100%; padding: 10px;
+        overflow-y: auto; font-family: 'Consolas', monospace;
+        font-size: 13px; color: #008000; text-align: left;
+        white-space: pre-wrap; align-self: flex-start;
+    }
+
+    .input-area {
+        width: 100%; height: 100%; background: transparent;
+        border: none; color: #800080; padding: 10px;
+        font-family: 'Consolas', monospace; font-size: 13px;
+        outline: none; resize: none;
+    }
+
     .fixed-footer { 
         height: 64px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0;
         align-items: flex-end; 
-        padding: 0px 4px 2px 4px; /* Flushed to bottom window line */
+        padding: 0px 4px 2px 4px; 
     }
 
     .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
+    .selection-b-container { width: 130px; height: 62px; margin-left: 5px; }
+    .selection-a-stack { display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px; }
+    .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; }
 
-    .selection-b-container {
-        width: 130px; height: 62px; margin-left: 5px;
-    }
-    
-    .selection-a-stack {
-        display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px;
-    }
-
-    .footer-palette-grid {
-        display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px);
-        gap: 1px; margin-left: 8px;
-    }
-
-    /* Native Selection Box Styling */
     .dropup { 
         position: relative; width: 100%; height: 20px; 
         background: #e1e1e1; color: #000; border: 1px solid #707070; 
@@ -111,8 +107,6 @@ cad_app_html = """
     }
     .dropup.active .dropup-content { display: block; }
     .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
-
-    .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; }
 </style>
 
 <div class="master-container">
@@ -124,12 +118,18 @@ cad_app_html = """
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
-                <div id="cad-pane" class="pane text-main">visual displays dynamic between coding and screen/CAD designs</div>
+                <div id="cad-pane" class="pane" style="color:#b22222; font-weight:bold; font-size:1.4vw; text-align:center;">CAD VISUALS</div>
                 <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start; color:#0f0; font-family:monospace; padding:5px;">>_</div>
             </div>
             <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
-                <div id="ai-output" class="pane" style="color:#008000; font-weight:bold;">AI TEXT REPLYING WINDOW</div>
-                <div id="ai-input" class="pane" style="color:#800080; font-weight:bold;">USER PROMPTING</div>
+                <!-- AI OUTPUT PANE -->
+                <div id="ai-output" class="pane">
+                    <div id="ai-text-box" class="text-display">AI System Ready...</div>
+                </div>
+                <!-- USER INPUT PANE -->
+                <div id="ai-input" class="pane">
+                    <textarea id="user-prompt" class="input-area" placeholder="Type prompt and press Enter..."></textarea>
+                </div>
             </div>
         </div>
         <div class="fixed-right-strip" id="side-strip"></div>
@@ -140,39 +140,55 @@ cad_app_html = """
             <span style="color:#008000; font-size: 11px; margin-right: 20px;">small indicators</span>
             <span style="color:#0000ff; font-size: 11px;">buttons for controlling...</span>
         </div>
-
         <div id="foot-palette" class="footer-palette-grid"></div>
-
         <div class="selection-a-stack">
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A1</a><a>Option A2</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option B1</a><a>Option B2</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option C1</a><a>Option C2</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A1</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A2</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A3</a></div></div>
         </div>
-
         <div class="selection-b-container">
-            <div class="dropup tall" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>Settings</a><a>Export</a></div></div>
+            <div class="dropup tall" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>Settings</a></div></div>
         </div>
     </div>
 </div>
 
 <script>
+    // 1. Initialize Resizable Split Panes
     Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
     Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
     Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
 
+    // 2. Generate UI Grid Buttons
     const side = document.getElementById('side-strip');
-    for(let i=0; i<100; i++) side.innerHTML += '<div class="btn-cell"></div>';
-    
+    for(let i=0; i<60; i++) side.innerHTML += '<div class="btn-cell"></div>';
     const palette = document.getElementById('foot-palette');
     for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
+    // 3. LOGIC: Continuity Test (Wiring Input to Output)
+    const promptInput = document.getElementById('user-prompt');
+    const aiOutput = document.getElementById('ai-text-box');
+
+    promptInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const text = promptInput.value;
+            if(text.trim() !== "") {
+                // This is where we simulate the "Response"
+                aiOutput.innerHTML += "\\n\\n[USER]: " + text;
+                aiOutput.innerHTML += "\\n[ARCHITECT]: Logic path clear. Signal received.";
+                promptInput.value = ""; // Clear input
+                aiOutput.scrollTop = aiOutput.scrollHeight; // Auto-scroll
+            }
+        }
+    });
+
+    // 4. Dropup Menu Logic
     function toggleMenu(el) {
         event.stopPropagation();
         const isActive = el.classList.contains('active');
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
         if(!isActive) el.classList.add('active');
     }
-
     window.onclick = function() {
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
