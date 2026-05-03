@@ -81,7 +81,6 @@ cad_app_html = """
 </style>
 
 <div class="master-container">
-    <!-- MODULAR AI-SET WINDOW -->
     <div id="ai-modular-setup">
         <div class="ai-setup-header">
             <span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
@@ -97,7 +96,6 @@ cad_app_html = """
             </div>
             <div class="ai-setup-content">
                 <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Luvia AI</span></div>
-                
                 <div>
                     <label>CORE FUNCTION (OUTPUT):</label>
                     <select class="ai-select" id="function-select">
@@ -109,7 +107,6 @@ cad_app_html = """
                     </select>
                     <div class="tool-note" id="tool-desc">Sourcing only.</div>
                 </div>
-
                 <div>
                     <label>DEPLOYMENT MODE:</label>
                     <select class="ai-select">
@@ -117,13 +114,11 @@ cad_app_html = """
                         <option>Virtual Machine (Cloud Server)</option>
                     </select>
                 </div>
-
                 <div>
                     <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY (IF CLOUD) ↗</a>
                 </div>
-
                 <div style="margin-top: auto; display: flex; gap: 10px;">
                     <button class="btn-cell" style="width: 120px; height: 35px; background:#00ff00;" onclick="toggleAISet(false)">SAVE TOOL</button>
                     <button class="btn-cell" style="width: 120px; height: 35px; background:#444; color:#fff;" onclick="toggleAISet(false)">CANCEL</button>
@@ -132,7 +127,6 @@ cad_app_html = """
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
     <div class="window-title-bar">
         <div>CAD DESIGNER PRO</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
@@ -172,7 +166,6 @@ cad_app_html = """
             <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
         </div>
         <div class="selection-b-container">
-            <!-- TRIGGER FOR AI-SET -->
             <div class="dropup tall" onclick="toggleAISet(true)"><span>AI-SET</span><span>▲</span><div class="dropup-content"><a>Tool Config</a><a>AI Dispatcher</a></div></div>
         </div>
     </div>
@@ -186,7 +179,6 @@ cad_app_html = """
     for(let i=0; i<100; i++) document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
     for(let i=0; i<18; i++) document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
 
-    /* AI-SET MODULAR LOGIC */
     function toggleAISet(show) {
         document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none';
     }
@@ -210,26 +202,65 @@ cad_app_html = """
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
 
-    // Terminal Logic
     const promptInput = document.getElementById('user-prompt');
+    const chatWindow = document.getElementById('ai-chat');
+    const terminal = document.getElementById('terminal-out');
+
     promptInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             const text = promptInput.value.trim();
             if(text !== "") {
-                document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-                document.getElementById('terminal-out').innerHTML += "\\n> PROCESSING CMD: " + text.toUpperCase();
+                chatWindow.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
+                terminal.innerHTML += "\\n> PROCESSING CMD: " + text.toUpperCase();
+                
+                // Streamlit Communication Bridge
+                window.parent.postMessage({
+                    type: 'streamlit:setComponentValue',
+                    value: text
+                }, '*');
+                
                 promptInput.value = "";
             }
+        }
+    });
+
+    // Listen for AI Response from Streamlit
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'AI_RESPONSE') {
+            chatWindow.innerHTML += "<br><br><span style='color:#008000'>[GEMINI]:</span> " + event.data.text;
+            terminal.innerHTML += "\\n> AI RESPONSE RECEIVED";
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         }
     });
 </script>
 """
 
-components.html(cad_app_html, height=0)
+# 4. Streamlit Backend Logic
+# Use a session state variable to catch the prompt from the HTML component
+user_query = components.html(cad_app_html, height=0)
+
+# This hidden component handles the height and the logic bridge
 st.components.v1.html(
     f"""<script>
         window.parent.document.querySelector('iframe').style.height = '94vh';
     </script>""",
     height=0
 )
+
+# Handle the AI response without re-rendering the whole GUI
+if "last_query" not in st.session_state:
+    st.session_state.last_query = ""
+
+# Since you are interacting with Gemini, this is where the model call happens
+# For this implementation, we use the session state to detect changes from the JavaScript postMessage
+import time
+
+# Placeholder for actual Gemini API call
+def get_gemini_response(prompt):
+    # Simulated response - replace with your actual model.generate_content(prompt)
+    return f"Processed request for: {prompt}. System optimized."
+
+# Use a query param or hidden input to trigger the backend (Streamlit pattern)
+# For a seamless feel, we check if the query changed
+# Note: In a real app, you'd use a custom component for bidirectional data
