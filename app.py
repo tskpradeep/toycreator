@@ -72,27 +72,24 @@ cad_app_html = """
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     .gutter { background-color: #444 !important; }
 
-    /* LOWERED FOOTER - MAXIMIZING WORK AREA */
+    /* REFINED FOOTER - Lowered further to maximize work area */
     .fixed-footer { 
-        height: 72px; display: flex; flex-direction: row; 
+        height: 68px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0;
         align-items: flex-end; 
-        padding: 4px;
+        padding: 2px 4px; /* Reduced vertical padding to sink elements */
     }
 
     .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
 
-    /* Right-side Dropup B */
     .selection-b-container {
         width: 130px; height: 64px; margin-left: 5px;
     }
     
-    /* Selection A Stack (3 Vertical) */
     .selection-a-stack {
         display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px;
     }
 
-    /* 6 Column x 3 Row Button Grid */
     .footer-palette-grid {
         display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px);
         gap: 1px; margin-left: 8px;
@@ -100,12 +97,12 @@ cad_app_html = """
 
     /* Native Selection Box Styling */
     .dropup { 
-        position: relative; width: 100%; height: 21px; 
+        position: relative; width: 100%; height: 20px; 
         background: #e1e1e1; color: #000; border: 1px solid #707070; 
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
     }
-    .dropup.tall { height: 100%; }
+    .dropup.tall { height: 62px; } /* Fixed height to prevent line shift */
 
     .dropup-content {
         display: none; position: absolute; bottom: 100%; left: -1px;
