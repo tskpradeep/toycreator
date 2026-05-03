@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. Page Configuration
-st.set_page_config(layout="wide", page_title="CAD Designer Pro")
+st.set_page_config(layout="wide", page_title="Architect AI Workbench")
 
 # 2. UI Reset
 st.markdown("""
@@ -56,79 +56,51 @@ cad_app_html = """
     .btn-cell {
         aspect-ratio: 1 / 1; width: 20px; height: 20px;
         background: #e1e1e1; color: #000;
-        border-top: 2px solid #fff; border-left: 2px solid #fff;
-        border-right: 2px solid #707070; border-bottom: 2px solid #707070;
+        border: 1px solid #707070;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        box-sizing: border-box; flex-shrink: 0;
+        box-sizing: border-box; flex-shrink: 0; font-size: 8px; font-weight: bold;
     }
 
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; position: relative;}
     .gutter { background-color: #444 !important; }
 
-    /* Layout for Text Windows */
-    .text-display {
-        width: 100%; height: 100%; padding: 10px;
-        overflow-y: auto; font-family: 'Consolas', monospace;
-        font-size: 13px; color: #008000; text-align: left;
-        white-space: pre-wrap; align-self: flex-start;
-    }
+    /* Text & Visual Area Styles */
+    .text-display { width: 100%; height: 100%; padding: 10px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 13px; color: #008000; white-space: pre-wrap; }
+    .cmd-display { width: 100%; height: 100%; padding: 10px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #0f0; background: #000; }
+    .input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; font-size: 13px; outline: none; resize: none; }
 
-    .input-area {
-        width: 100%; height: 100%; background: transparent;
-        border: none; color: #800080; padding: 10px;
-        font-family: 'Consolas', monospace; font-size: 13px;
-        outline: none; resize: none;
-    }
+    /* Visual Monitor Styling */
+    #visual-monitor { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #050505; }
+    .circuit-block { border: 2px solid #fff; padding: 10px; margin: 10px; min-width: 80px; text-align: center; font-size: 12px; font-family: 'Consolas'; }
+    .wire { width: 2px; height: 30px; background: #0f0; }
 
-    .fixed-footer { 
-        height: 64px; display: flex; flex-direction: row; 
-        border-top: 2px solid #333; background: #000; flex-shrink: 0;
-        align-items: flex-end; 
-        padding: 0px 4px 2px 4px; 
-    }
-
-    .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
-    .selection-b-container { width: 130px; height: 62px; margin-left: 5px; }
-    .selection-a-stack { display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px; }
-    .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; }
-
-    .dropup { 
-        position: relative; width: 100%; height: 20px; 
-        background: #e1e1e1; color: #000; border: 1px solid #707070; 
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
-    }
-    .dropup.tall { height: 62px; }
-
-    .dropup-content {
-        display: none; position: absolute; bottom: 100%; left: -1px;
-        background-color: #f0f0f0; min-width: 140px; 
-        border: 1px solid #707070; z-index: 1000;
-    }
-    .dropup.active .dropup-content { display: block; }
-    .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
+    .fixed-footer { height: 64px; display: flex; flex-direction: row; border-top: 2px solid #333; background: #000; flex-shrink: 0; align-items: flex-end; padding: 0px 4px 2px 4px; }
 </style>
 
 <div class="master-container">
     <div class="window-title-bar">
-        <div>CAD DESIGNER PRO</div>
+        <div>ARCHITECT AI - SYSTEM DESIGNER</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
     </div>
 
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
-                <div id="cad-pane" class="pane" style="color:#b22222; font-weight:bold; font-size:1.4vw; text-align:center;">CAD VISUALS</div>
-                <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start; color:#0f0; font-family:monospace; padding:5px;">>_</div>
+                <div id="cad-pane" class="pane">
+                    <div id="visual-monitor">
+                        <div style="color: #444; font-size: 14px;">VISUAL MONITOR IDLE</div>
+                    </div>
+                </div>
+                <div id="cmd-pane" class="pane">
+                    <div id="terminal-out" class="cmd-display">>_ System Kernel Loaded...</div>
+                </div>
             </div>
             <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
-                <!-- AI OUTPUT PANE -->
                 <div id="ai-output" class="pane">
-                    <div id="ai-text-box" class="text-display">AI System Ready...</div>
+                    <div id="ai-text-box" class="text-display">Architect AI Ready...</div>
                 </div>
-                <!-- USER INPUT PANE -->
                 <div id="ai-input" class="pane">
-                    <textarea id="user-prompt" class="input-area" placeholder="Type prompt and press Enter..."></textarea>
+                    <textarea id="user-prompt" class="input-area" placeholder="Type 'draw circuit' to test Visual Monitor..."></textarea>
                 </div>
             </div>
         </div>
@@ -136,62 +108,57 @@ cad_app_html = """
     </div>
 
     <div class="fixed-footer">
-        <div class="footer-left-content">
-            <span style="color:#008000; font-size: 11px; margin-right: 20px;">small indicators</span>
-            <span style="color:#0000ff; font-size: 11px;">buttons for controlling...</span>
+        <!-- Audio Mic Placeholder -->
+        <div style="width: 40px; height: 40px; background: #222; border-radius: 50%; display:flex; align-items:center; justify-content:center; cursor:pointer; margin: 10px;">
+            <span style="color: #ff0000; font-size: 18px;">●</span>
         </div>
-        <div id="foot-palette" class="footer-palette-grid"></div>
-        <div class="selection-a-stack">
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A1</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A2</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option A3</a></div></div>
-        </div>
-        <div class="selection-b-container">
-            <div class="dropup tall" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>Settings</a></div></div>
-        </div>
+        <div id="foot-palette" style="display: grid; grid-template-columns: repeat(6, 20px); gap: 1px; margin-bottom: 4px;"></div>
+        <div style="flex:1;"></div>
     </div>
 </div>
 
 <script>
-    // 1. Initialize Resizable Split Panes
     Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
     Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
     Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
 
-    // 2. Generate UI Grid Buttons
-    const side = document.getElementById('side-strip');
-    for(let i=0; i<60; i++) side.innerHTML += '<div class="btn-cell"></div>';
-    const palette = document.getElementById('foot-palette');
-    for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
-
-    // 3. LOGIC: Continuity Test (Wiring Input to Output)
     const promptInput = document.getElementById('user-prompt');
     const aiOutput = document.getElementById('ai-text-box');
+    const terminal = document.getElementById('terminal-out');
+    const monitor = document.getElementById('visual-monitor');
 
     promptInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            const text = promptInput.value;
-            if(text.trim() !== "") {
-                // This is where we simulate the "Response"
+            const text = promptInput.value.trim();
+            if(text !== "") {
                 aiOutput.innerHTML += "\\n\\n[USER]: " + text;
-                aiOutput.innerHTML += "\\n[ARCHITECT]: Logic path clear. Signal received.";
-                promptInput.value = ""; // Clear input
-                aiOutput.scrollTop = aiOutput.scrollHeight; // Auto-scroll
+                
+                if(text.toLowerCase().includes("draw circuit")) {
+                    aiOutput.innerHTML += "\\n[ARCHITECT]: Designing Switch-Bulb logic...\\n1. Battery Source (9V)\\n2. Toggle Switch\\n3. Incandescent Load";
+                    
+                    // Logic to update the Visual Monitor
+                    monitor.innerHTML = `
+                        <div class="circuit-block">[ BATTERY ]</div>
+                        <div class="wire"></div>
+                        <div class="circuit-block" style="border-style: dashed;">( SWITCH )</div>
+                        <div class="wire"></div>
+                        <div class="circuit-block" style="border-color: yellow; color: yellow;">{ BULB }</div>
+                    `;
+
+                    terminal.innerHTML += "\\n> GEN_NETLIST: V1 N001 0 9V";
+                    terminal.innerHTML += "\\n> GEN_NETLIST: S1 N001 N002";
+                    terminal.innerHTML += "\\n> GEN_NETLIST: L1 N002 0";
+                    terminal.scrollTop = terminal.scrollHeight;
+                } else {
+                    aiOutput.innerHTML += "\\n[ARCHITECT]: Listening for design commands.";
+                }
+
+                promptInput.value = ""; 
+                aiOutput.scrollTop = aiOutput.scrollHeight;
             }
         }
     });
-
-    // 4. Dropup Menu Logic
-    function toggleMenu(el) {
-        event.stopPropagation();
-        const isActive = el.classList.contains('active');
-        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
-        if(!isActive) el.classList.add('active');
-    }
-    window.onclick = function() {
-        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
-    };
 </script>
 """
 
