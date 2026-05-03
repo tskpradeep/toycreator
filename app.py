@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # 1. Page Configuration
 st.set_page_config(layout="wide", page_title="CAD Design Portal")
 
-# 2. Reset Streamlit's default padding to 0
+# 2. Reset Streamlit's default padding
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -20,14 +20,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. The Re-Stabilized App Code
+# 3. The Refined App Code
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
     html, body { 
         margin: 0; padding: 0; height: 100%; width: 100%; 
         overflow: hidden !important; background-color: #000; 
-        font-family: 'Segoe UI', sans-serif; color: white;
+        font-family: 'Segoe UI', Tahoma, sans-serif; color: white;
     }
     
     .master-container { 
@@ -64,13 +64,27 @@ cad_app_html = """
     .gutter.gutter-horizontal { cursor: col-resize; background-color: #444 !important; width: 4px !important; }
     .gutter.gutter-vertical { cursor: row-resize; background-color: #444 !important; height: 4px !important; }
 
-    /* Buttons Style */
+    /* NATIVE BUTTON STYLE (Excel/PowerShell/Tcl Style) */
     .btn-cell {
-        width: 18px; height: 18px; border: 1px solid #444; 
-        background: #111; flex-shrink: 0; cursor: pointer;
+        width: 20px; height: 20px; 
+        background: #e1e1e1; /* Classic Light Gray */
+        color: #000;
+        border-top: 2px solid #fff;
+        border-left: 2px solid #fff;
+        border-right: 2px solid #707070;
+        border-bottom: 2px solid #707070;
+        flex-shrink: 0; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
+        box-sizing: border-box;
     }
-    .btn-cell:hover { background: #333; border-color: #888; }
+    .btn-cell:hover { background: #cfcfcf; }
+    .btn-cell:active { 
+        border-top: 2px solid #707070;
+        border-left: 2px solid #707070;
+        border-right: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        background: #bebebe;
+    }
 
     .fixed-right-strip { 
         width: 60px; border-left: 1px solid #333; 
@@ -79,22 +93,29 @@ cad_app_html = """
         padding: 5px; background: #000; overflow-y: auto;
     }
 
-    /* Drop-up Logic */
-    .dropup { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    /* NATIVE DROP-UP STYLE */
+    .dropup { 
+        position: relative; width: 90%; height: 24px; 
+        background: #e1e1e1; color: #000;
+        border: 1px solid #707070; 
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 5px; cursor: pointer; font-size: 10px;
+    }
     .dropup-content {
-        display: none; position: absolute; bottom: 100%; left: 0;
-        background-color: #1a1a1a; min-width: 120px; border: 1px solid #444;
+        display: none; position: absolute; bottom: 100%; left: -1px;
+        background-color: #f0f0f0; min-width: 120px; 
+        border: 1px solid #707070; box-shadow: 2px -2px 5px rgba(0,0,0,0.5);
     }
     .dropup:hover .dropup-content { display: block; }
-    .dropup-content a { color: #888; padding: 8px; text-decoration: none; display: block; font-size: 10px; }
-    .dropup-content a:hover { background: #333; color: white; }
+    .dropup-content a { color: #000; padding: 6px 10px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; }
+    .dropup-content a:hover { background: #0078d7; color: white; }
 
     .fixed-footer { 
         height: 75px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0; 
     }
 
-    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 2px; font-size: 11px; overflow: hidden; }
+    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 2px; font-size: 11px; }
     .footer-btn-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
 
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; border: none !important; }
@@ -111,7 +132,7 @@ cad_app_html = """
             <div id="left-side-stack" class="flex-col">
                 <div id="cad-pane" class="pane text-main">visual displays dynamic between coding and screen/CAD designs</div>
                 <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
-                    <code style="color: #00FF00; font-family: monospace;">>_</code>
+                    <code style="color: #00FF00; font-family: monospace; padding: 5px;">>_</code>
                 </div>
             </div>
             <div id="ai-column" class="flex-col">
@@ -127,8 +148,13 @@ cad_app_html = """
         <div class="footer-item" style="flex: 3; color: #0000ff;">buttons for controlling...</div>
         
         <div class="footer-item" style="flex: 1.5;">
-            <div class="dropup"><span style="color:#666">SELECTION A ▲</span>
-                <div class="dropup-content"><a>Option 1</a><a>Option 2</a></div>
+            <div class="dropup">
+                <span>Selection A</span>
+                <span style="font-size: 8px;">▲</span>
+                <div class="dropup-content">
+                    <a>Excel Mode</a>
+                    <a>PowerShell View</a>
+                </div>
             </div>
         </div>
 
@@ -137,30 +163,32 @@ cad_app_html = """
         </div>
 
         <div class="footer-item" style="flex: 1.5; border-right: none;">
-            <div class="dropup"><span style="color:#666">SELECTION B ▲</span>
-                <div class="dropup-content"><a>Settings</a><a>Export</a></div>
+            <div class="dropup">
+                <span>Selection B</span>
+                <span style="font-size: 8px;">▲</span>
+                <div class="dropup-content">
+                    <a>System Settings</a>
+                    <a>Tcl Console</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Correctly initialize splitters on the preserved IDs
     Split(['#left-side-stack', '#ai-column'], { sizes: [70, 30], gutterSize: 4 });
     Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
     Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
 
-    // Populate Sidebar
     const side = document.getElementById('side-strip');
     for(let i=0; i<40; i++) side.innerHTML += '<div class="btn-cell"></div>';
     
-    // Populate Footer
     const foot = document.getElementById('foot-grid');
     for(let i=0; i<12; i++) foot.innerHTML += '<div class="btn-cell"></div>';
 </script>
 """
 
-# Deploy with the safety height fix
+# Maintain fixed screen height
 components.html(cad_app_html, height=0)
 st.components.v1.html(
     f"""<script>
