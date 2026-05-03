@@ -1,82 +1,93 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Set page to wide to use the whole screen
 st.set_page_config(layout="wide")
 
-# This is the Raw Layout matching image_0d35a5.png
-# It uses "Flexbox" which is the professional way to make windows resizable
-custom_html = """
+# This code uses Split.js to enable real mouse dragging for the red and green lines
+draggable_html = """
+<script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
-    body { margin: 0; background-color: #111; color: white; font-family: sans-serif; overflow: hidden; }
-    .container { display: flex; flex-direction: column; height: 95vh; width: 100vw; border: 5px solid #333; }
+    body { margin: 0; background-color: white; font-family: sans-serif; height: 100vh; overflow: hidden; }
     
-    /* Top Section */
-    .top-section { display: flex; flex: 7; min-height: 0; }
+    /* Layout Containers */
+    .flex-row { display: flex; flex-direction: row; height: 100%; width: 100%; }
+    .flex-col { display: flex; flex-direction: column; height: 100%; width: 100%; }
     
-    .visual-display { flex: 6; border: 3px solid black; background: white; color: darkred; 
-                       display: flex; align-items: center; justify-content: center; 
-                       font-size: 2vw; font-weight: bold; text-align: center; margin: 5px; }
-                       
-    .red-line { width: 10px; background: red; cursor: col-resize; }
+    /* Panes */
+    .pane { background: white; border: 2px solid black; box-sizing: border-box; 
+            display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
     
-    .ai-sidebar { flex: 3; display: flex; flex-direction: column; }
-    .ai-window { flex: 1; border: 3px solid black; background: white; color: green; 
-                 display: flex; align-items: center; justify-content: center; margin: 5px; font-weight: bold; }
-    
-    .green-line { height: 10px; background: green; cursor: row-resize; }
-    
-    .button-strip { width: 60px; border-left: 3px solid black; display: flex; flex-wrap: wrap; padding: 5px; align-content: flex-start; }
-    .small-box { width: 25px; height: 25px; border: 1px solid black; margin: 2px; background: #eee; }
+    /* Gutter (The Draggable Lines) */
+    .gutter { background-color: #eee; background-repeat: no-repeat; background-position: center; }
+    .gutter.gutter-horizontal { cursor: col-resize; background-color: red; width: 10px !important; }
+    .gutter.gutter-vertical { cursor: row-resize; background-color: green; height: 10px !important; }
 
-    /* Bottom Section */
-    .bottom-section { flex: 3; display: flex; flex-direction: column; border-top: 10px solid green; background: #000; padding: 10px; }
-    .command-prompt { flex: 1; color: darkred; font-family: monospace; margin-bottom: 10px; }
-    .footer-row { display: flex; height: 60px; }
-    .indicator { flex: 1; border: 2px solid black; color: green; background: white; padding: 5px; margin-right: 5px; }
-    .controls { flex: 3; border: 2px solid black; color: blue; background: white; padding: 5px; margin-right: 5px; }
-    .footer-btns { flex: 1; display: flex; flex-wrap: wrap; }
+    /* Content Styles */
+    .text-main { color: darkred; font-size: 2vw; font-weight: bold; text-align: center; }
+    .text-ai { color: green; font-weight: bold; }
+    .text-prompt { color: purple; font-weight: bold; }
+    
+    /* Button Grids */
+    .sidebar-btns { width: 50px; border-left: 2px solid black; display: flex; flex-direction: column; padding: 5px; background: white; }
+    .footer-btns { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; }
+    .small-box { width: 20px; height: 20px; border: 1px solid black; background: #f0f0f0; margin-bottom: 4px; }
 </style>
 
-<div class="container">
-    <div class="top-section">
-        <div class="visual-display">visual displays dynamic between coding and screen/CAD designs</div>
-        <div class="red-line"></div>
-        <div class="ai-sidebar">
-            <div class="ai-window">AI TEXT REPLYING WINDOW</div>
-            <div class="green-line"></div>
-            <div class="ai-window" style="color: purple;">USER PROMPTING</div>
+<div class="flex-col" id="vertical-stack">
+    <!-- TOP SECTION -->
+    <div id="top-section" class="flex-row">
+        <div id="cad-pane" class="pane text-main">
+            visual displays dynamic between coding and screen/CAD designs
         </div>
-        <div class="button-strip" id="side-btns"></div>
+        <div id="ai-sidebar" class="flex-col">
+            <div id="ai-top" class="pane text-ai">AI TEXT REPLYING WINDOW</div>
+            <div id="ai-bottom" class="pane text-prompt">USER PROMPTING</div>
+        </div>
+        <div class="sidebar-btns" id="side-strip"></div>
     </div>
-    
-    <div class="bottom-section">
-        <div class="command-prompt">command prompt for system programming for project >_</div>
-        <div class="footer-row">
-            <div class="indicator">small indicators any</div>
-            <div class="controls">buttons for controlling we will decide buttons as and when we</div>
-            <div class="footer-btns" id="foot-btns"></div>
+
+    <!-- BOTTOM SECTION -->
+    <div id="bottom-section" class="flex-col" style="background: white; border-top: 2px solid black;">
+        <div style="padding: 10px; color: darkred; font-family: monospace;">command prompt for system programming for project >_</div>
+        <div class="flex-row" style="height: 60px;">
+            <div class="pane" style="flex: 1; color: green;">small indicators any</div>
+            <div class="pane" style="flex: 3; color: blue;">buttons for controlling we will decide buttons as and when we</div>
+            <div id="footer-grid" class="footer-btns"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // Generate the small button boxes automatically
-    const sideBtns = document.getElementById('side-btns');
-    for(let i=0; i<18; i++) {
-        let div = document.createElement('div');
-        div.className = 'small-box';
-        sideBtns.appendChild(div);
-    }
+    // 1. Initialize Horizontal Split (The Red Line)
+    Split(['#cad-pane', '#ai-sidebar'], {
+        sizes: [70, 30],
+        minSize: 100,
+        gutterSize: 10,
+        cursor: 'col-resize',
+    });
+
+    // 2. Initialize Vertical Split inside AI Sidebar (Upper Green Line)
+    Split(['#ai-top', '#ai-bottom'], {
+        direction: 'vertical',
+        sizes: [50, 50],
+        gutterSize: 10,
+    });
+
+    // 3. Initialize Main Vertical Split (Lower Green Line)
+    Split(['#top-section', '#bottom-section'], {
+        direction: 'vertical',
+        sizes: [75, 25],
+        gutterSize: 10,
+    });
+
+    // Generate Buttons
+    const side = document.getElementById('side-strip');
+    for(let i=0; i<15; i++) side.innerHTML += '<div class="small-box"></div>';
     
-    const footBtns = document.getElementById('foot-btns');
-    for(let i=0; i<12; i++) {
-        let div = document.createElement('div');
-        div.className = 'small-box';
-        footBtns.appendChild(div);
-    }
+    const foot = document.getElementById('footer-grid');
+    for(let i=0; i<12; i++) foot.innerHTML += '<div class="small-box"></div>';
 </script>
 """
 
-# Render the HTML inside Streamlit
-components.html(custom_html, height=800, scrolling=False)
+# Increase height to 900 to ensure it fills the page
+components.html(draggable_html, height=900)
