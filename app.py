@@ -2,40 +2,42 @@ import dash
 from dash import html
 import dash_bootstrap_components as dbc
 
-# Updated for compatibility with the latest Dash versions
+# 1. Initialize the app
+# We do NOT use 'app.run' at the end because the cloud host handles it.
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server 
 
-# Styles to match image_0d35a5.png exactly
+# 2. Styles matching image_0d35a5.png
 box_border = {"border": "2px solid black", "padding": "10px", "height": "100%", "backgroundColor": "white"}
 red_line = {"width": "5px", "backgroundColor": "red", "height": "100%"}
 green_line_h = {"height": "5px", "backgroundColor": "green", "width": "100%"}
 small_box = {"width": "30px", "height": "30px", "border": "1px solid black", "margin": "2px", "display": "inline-block"}
 
+# 3. The Layout
 app.layout = html.Div([
     # MAIN TOP SECTION (Visuals, AI, and Buttons)
     html.Div([
-        # 1. Left: Visual Display
+        # Left: Visual Display
         html.Div("visual displays dynamic between coding and screen/CAD designs", 
                  style={**box_border, "flex": "6", "fontSize": "22px", "fontWeight": "bold", "color": "darkred"}),
         
-        # 2. RED LINE
+        # RED SEPARATOR
         html.Div(style=red_line),
         
-        # 3. Middle: AI Sidebar
+        # Middle: AI Sidebar
         html.Div([
             html.Div("AI TEXT REPLYING WINDOW", style={**box_border, "flex": "1", "color": "green"}),
             html.Div(style=green_line_h), 
             html.Div("USER PROMPTING", style={**box_border, "flex": "1", "color": "purple"}),
         ], style={"flex": "3", "display": "flex", "flexDirection": "column"}),
         
-        # 4. Right: Vertical Button Strip
+        # Right: Button Strip
         html.Div([html.Div(style=small_box) for _ in range(20)], 
                  style={"flex": "0.5", "padding": "5px", "borderLeft": "2px solid black", "display": "flex", "flexWrap": "wrap", "justifyContent": "center"}),
         
     ], style={"display": "flex", "height": "70vh"}),
 
-    # MAIN GREEN LINE
+    # MAIN GREEN SEPARATOR
     html.Div(style=green_line_h),
 
     # BOTTOM SECTION (Console and Grid)
@@ -55,6 +57,6 @@ app.layout = html.Div([
 
 ], style={"height": "100vh", "padding": "5px", "backgroundColor": "white", "overflow": "hidden"})
 
-# Use .run() instead of .run_server() to fix the ObsoleteAttributeException
-if __name__ == "__main__":
-    app.run(debug=True)
+# 4. THE CRITICAL CHANGE:
+# We removed app.run() entirely. 
+# Streamlit/Cloud hosts look for the 'server' variable defined on line 8.
