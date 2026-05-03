@@ -1,73 +1,91 @@
-import dash
-from dash import html
-import dash_bootstrap_components as dbc
+import streamlit as st
 
-# Initialize the app with a clean theme
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
-server = app.server 
+# 1. Set the page to wide mode to match a dashboard layout
+st.set_page_config(layout="wide")
 
-# Explicit styles to override dark mode/black screens
-box_border = {
-    "border": "3px solid #000000", 
-    "padding": "10px", 
-    "height": "100%", 
-    "backgroundColor": "#FFFFFF", 
-    "color": "#000000",
-    "display": "flex",
-    "alignItems": "center",
-    "justifyContent": "center",
-    "textAlign": "center"
-}
+# 2. CSS to force the exact colors and lines from image_0d35a5.png
+st.markdown("""
+    <style>
+    .main-box {
+        border: 2px solid black;
+        padding: 15px;
+        background-color: white;
+        height: 450px;
+        color: darkred;
+        font-weight: bold;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .red-line {
+        background-color: red;
+        width: 10px;
+        height: 100%;
+    }
+    .green-line-v {
+        background-color: green;
+        width: 10px;
+        height: 100%;
+    }
+    .green-line-h {
+        background-color: green;
+        height: 10px;
+        width: 100%;
+        margin: 10px 0;
+    }
+    .ai-box {
+        border: 2px solid black;
+        background-color: white;
+        height: 215px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+    .small-btn {
+        border: 1px solid black;
+        height: 30px;
+        width: 30px;
+        background: #f0f0f0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-red_line = {"width": "10px", "backgroundColor": "red", "height": "100%"}
-green_line_h = {"height": "10px", "backgroundColor": "green", "width": "100%"}
-small_box = {"width": "35px", "height": "35px", "border": "2px solid black", "margin": "2px", "display": "inline-block", "backgroundColor": "#EEE"}
+# 3. TOP SECTION
+col1, red, col2, buttons = st.columns([6, 0.2, 3, 0.5])
 
-app.layout = html.Div([
-    # MAIN WRAPPER (FORCING WHITE BACKGROUND)
-    html.Div([
-        
-        # TOP HALF
-        html.Div([
-            # 1. Visual Display
-            html.Div("visual displays dynamic between coding and screen/CAD designs", 
-                     style={**box_border, "flex": "6", "fontSize": "24px", "fontWeight": "bold", "color": "darkred"}),
-            
-            # RED LINE
-            html.Div(style=red_line),
-            
-            # AI SIDEBAR
-            html.Div([
-                html.Div("AI TEXT REPLYING WINDOW", style={**box_border, "flex": "1", "color": "green"}),
-                html.Div(style=green_line_h), 
-                html.Div("USER PROMPTING", style={**box_border, "flex": "1", "color": "purple"}),
-            ], style={"flex": "3", "display": "flex", "flexDirection": "column"}),
-            
-            # RIGHT BUTTONS
-            html.Div([html.Div(style=small_box) for _ in range(20)], 
-                     style={"flex": "1", "padding": "5px", "borderLeft": "3px solid black", "display": "flex", "flexWrap": "wrap", "justifyContent": "center"}),
-            
-        ], style={"display": "flex", "height": "65vh"}),
+with col1:
+    st.markdown('<div class="main-box">visual displays dynamic between coding and screen/CAD designs</div>', unsafe_allow_html=True)
 
-        # MIDDLE GREEN LINE
-        html.Div(style=green_line_h),
+with red:
+    st.markdown('<div class="red-line"></div>', unsafe_allow_html=True)
 
-        # BOTTOM HALF
-        html.Div([
-            html.Div("command prompt / system programming / project", 
-                     style={**box_border, "height": "15vh", "color": "darkred"}),
-            
-            # FOOTER
-            html.Div([
-                html.Div("small indicators any", style={**box_border, "flex": "1", "color": "green"}),
-                html.Div("buttons for controlling", style={**box_border, "flex": "3", "color": "blue"}),
-                html.Div([html.Div(style=small_box) for _ in range(12)], 
-                         style={**box_border, "flex": "1", "display": "flex", "flexWrap": "wrap"}),
-            ], style={"display": "flex", "height": "15vh"})
-            
-        ], style={"height": "30vh"})
+with col2:
+    st.markdown('<div class="ai-box" style="color: green;">AI TEXT REPLYING WINDOW</div>', unsafe_allow_html=True)
+    st.markdown('<div class="green-line-h"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="ai-box" style="color: purple;">USER PROMPTING</div>', unsafe_allow_html=True)
 
-    ], style={"backgroundColor": "white", "height": "100vh", "padding": "10px"})
-], style={"backgroundColor": "white"})
+with buttons:
+    # Small vertical button strip
+    for _ in range(12):
+        st.markdown('<div class="small-btn"></div>', unsafe_allow_html=True)
 
-# NO app.run() here—just let the server handle it
+# 4. MIDDLE SEPARATOR
+st.markdown('<div class="green-line-h"></div>', unsafe_allow_html=True)
+
+# 5. BOTTOM SECTION
+st.markdown('<div style="border: 2px solid black; padding: 10px; color: darkred; height: 100px;">command prompt for system programming for project</div>', unsafe_allow_html=True)
+
+foot1, foot2, foot3 = st.columns([1, 3, 1])
+with foot1:
+    st.markdown('<div style="border: 2px solid black; padding: 5px; color: green;">small indicators any</div>', unsafe_allow_html=True)
+with foot2:
+    st.markdown('<div style="border: 2px solid black; padding: 5px; color: blue;">buttons for controlling we will decide buttons as and when we</div>', unsafe_allow_html=True)
+with foot3:
+    st.markdown('<div class="btn-grid">' + '<div class="small-btn"></div>'*8 + '</div>', unsafe_allow_html=True)
