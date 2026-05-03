@@ -1,73 +1,77 @@
 import dash
-from dash import html, dcc
+from dash import html
 import dash_resizable_panels as drp
 import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server 
 
-# Styling for the buttons and placeholders
-box_style = {"border": "1px solid black", "height": "100%", "width": "100%", "padding": "10px"}
-sidebar_btn_style = {"width": "30px", "height": "30px", "border": "1px solid black", "margin": "2px"}
+# Visual styles
+box_style = {"border": "2px solid black", "height": "100%", "width": "100%", "padding": "10px", "backgroundColor": "white"}
+btn_small = {"width": "35px", "height": "35px", "border": "1px solid black", "margin": "2px", "display": "inline-block"}
 
 app.layout = html.Div([
-    # MAIN HORIZONTAL SPLIT (Top Area vs Bottom Console/Buttons)
     drp.PanelGroup(
+        id="main-v-group",
         direction="vertical",
         children=[
-            # TOP SECTION (Visual Display + AI Sidebar)
+            # TOP SECTION
             drp.Panel(
-                drp.PanelGroup(
+                id="top-section",
+                defaultSize=70,
+                children=drp.PanelGroup(
                     direction="horizontal",
                     children=[
-                        # Visual Display / CAD Window
-                        drp.Panel(
-                            html.Div("Visual Displays: Coding & CAD", style=box_style),
-                            defaultSize=70
-                        ),
-                        # RED VERTICAL SEPARATOR
+                        # Visual Display
+                        drp.Panel(children=html.Div("visual displays dynamic between coding and screen/CAD designs", style=box_style), id="cad-view", defaultSize=60),
+                        
+                        # RED LINE
                         drp.PanelResizeHandle(html.Div(style={"width": "5px", "backgroundColor": "red", "cursor": "col-resize"})),
-                        # AI WINDOWS
+                        
+                        # AI SIDEBAR
                         drp.Panel(
-                            drp.PanelGroup(
+                            id="ai-sidebar",
+                            defaultSize=30,
+                            children=drp.PanelGroup(
                                 direction="vertical",
                                 children=[
-                                    drp.Panel(html.Div("AI Text Replying", style=box_style), defaultSize=50),
-                                    # GREEN HORIZONTAL SEPARATOR
+                                    drp.Panel(children=html.Div("AI TEXT REPLYING WINDOW", style=box_style), defaultSize=50),
+                                    # GREEN LINE
                                     drp.PanelResizeHandle(html.Div(style={"height": "5px", "backgroundColor": "green", "cursor": "row-resize"})),
-                                    drp.Panel(html.Div("User Prompting", style=box_style), defaultSize=50),
+                                    drp.Panel(children=html.Div("USER PROMPTING", style=box_style), defaultSize=50),
                                 ]
-                            ),
-                            defaultSize=25
+                            )
                         ),
-                        # FAR RIGHT BUTTON COLUMN
+                        
+                        # FAR RIGHT BUTTONS
                         drp.Panel(
-                            html.Div([html.Div(style=sidebar_btn_style) for _ in range(12)], style={"padding": "5px"}),
-                            defaultSize=5
+                            children=html.Div([html.Div(style=btn_small) for _ in range(15)], style={"padding": "5px"}),
+                            defaultSize=10
                         ),
                     ]
-                ),
-                defaultSize=70
+                )
             ),
             
-            # GREEN HORIZONTAL SEPARATOR
+            # GREEN LINE (Main Horizontal)
             drp.PanelResizeHandle(html.Div(style={"height": "5px", "backgroundColor": "green", "cursor": "row-resize"})),
             
-            # BOTTOM SECTION (Command Prompt & System Buttons)
+            # BOTTOM SECTION
             drp.Panel(
-                html.Div([
-                    html.Div("Command Prompt / System Programming", style=box_style),
+                id="bottom-section",
+                defaultSize=30,
+                children=html.Div([
+                    html.Div("command prompt / system programming / project", style=box_style),
                     html.Div([
-                        html.Div("Small Indicators", style={"border": "1px solid black", "width": "20%", "display": "inline-block"}),
-                        html.Div("Control Buttons Area", style={"border": "1px solid black", "width": "60%", "display": "inline-block"}),
-                        html.Div("Grid Buttons", style={"border": "1px solid black", "width": "20%", "display": "inline-block"}),
-                    ], style={"display": "flex", "height": "40%"})
-                ]),
-                defaultSize=30
+                        html.Div("small indicators", style={"border": "1px solid green", "flex": "1", "padding": "5px"}),
+                        html.Div("buttons for controlling", style={"border": "1px solid blue", "flex": "3", "padding": "5px"}),
+                        html.Div([html.Div(style=btn_small) for _ in range(8)], style={"flex": "1", "border": "1px solid black"})
+                    ], style={"display": "flex", "height": "50px", "marginTop": "5px"})
+                ])
             ),
         ],
-        style={"height": "100vh"} # Full Screen
+        style={"height": "100vh"}
     )
-], style={"height": "100vh", "margin": "0", "overflow": "hidden"})
+], style={"height": "100vh", "overflow": "hidden", "margin": "0"})
 
 if __name__ == "__main__":
     app.run_server(debug=True)
