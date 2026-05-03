@@ -33,12 +33,12 @@ cad_app_html = """
     .master-container { 
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
-        border: 2px solid #333; box-sizing: border-box;
+        border: 2px solid #222; box-sizing: border-box;
         position: relative;
     }
 
     .window-title-bar {
-        background: #1a1a1a; color: #888; height: 30px;
+        background: #111; color: #666; height: 30px;
         flex-shrink: 0; display: flex; align-items: center; 
         justify-content: space-between; padding: 0 10px; font-size: 12px;
         border-bottom: 1px solid #333;
@@ -63,26 +63,26 @@ cad_app_html = """
         box-sizing: border-box; flex-shrink: 0;
     }
 
-    .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+    .pane { background: #000 !important; border: 1px solid #222 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     
-    /* THE EMERALD MODAL - COMBINING GREEN VIBE + NEW ARCHITECTURE */
+    /* THE MAGMA MODAL - AMBER GLOW + MASTER-DETAIL ARCHITECTURE */
     #ai-modal {
         position: absolute; top: 10%; left: 10%; width: 80%; height: 75%;
-        background: #000; border: 2px solid #0f0; z-index: 5000;
+        background: #000; border: 2px solid #ffaa00; z-index: 5000;
         display: none; flex-direction: column; padding: 0;
-        box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+        box-shadow: 0 0 40px rgba(255, 170, 0, 0.3);
     }
-    .modal-header { background: #0a1a0a; border-bottom: 1px solid #0f0; padding: 10px; display: flex; justify-content: space-between; font-size: 12px; color: #0f0; font-family: monospace; }
+    .modal-header { background: #1a1000; border-bottom: 1px solid #ffaa00; padding: 10px; display: flex; justify-content: space-between; font-size: 12px; color: #ffaa00; font-family: monospace; font-weight: bold;}
     .modal-content { display: flex; flex: 1; overflow: hidden; background: #000; }
-    .modal-left { width: 30%; border-right: 1px solid #0f0; display: flex; flex-direction: column; padding: 10px; gap: 10px; }
-    .modal-right { width: 70%; padding: 20px; display: flex; flex-direction: column; gap: 20px; background: #050505; }
+    .modal-left { width: 30%; border-right: 1px solid #ffaa00; display: flex; flex-direction: column; padding: 10px; gap: 10px; background: #050300; }
+    .modal-right { width: 70%; padding: 20px; display: flex; flex-direction: column; gap: 20px; background: #000; }
     
-    .ai-list-item { background: #001a00; border: 1px solid #0f0; color: #0f0; padding: 10px; cursor: pointer; font-family: monospace; font-size: 11px; }
-    .ai-list-item:hover { background: #004400; }
-    .add-ai-btn { background: #0f0; color: #000; border: none; padding: 10px; font-weight: bold; cursor: pointer; margin-top: auto; font-family: monospace; }
+    .ai-list-item { background: #1a1000; border: 1px solid #ffaa00; color: #ffaa00; padding: 10px; cursor: pointer; font-family: monospace; font-size: 11px; }
+    .ai-list-item:hover { background: #332200; }
+    .add-ai-btn { background: #ffaa00; color: #000; border: none; padding: 10px; font-weight: bold; cursor: pointer; margin-top: auto; font-family: monospace; }
 
-    .input-field { background: #000; border: 1px solid #0f0; color: #0f0; padding: 8px; width: 100%; box-sizing: border-box; font-family: monospace; outline: none; }
-    .label-text { font-size: 10px; color: #0f0; text-transform: uppercase; margin-bottom: 5px; display: block; font-family: monospace; }
+    .input-field { background: #000; border: 1px solid #ffaa00; color: #ffaa00; padding: 8px; width: 100%; box-sizing: border-box; font-family: monospace; outline: none; }
+    .label-text { font-size: 10px; color: #ffaa00; text-transform: uppercase; margin-bottom: 5px; display: block; font-family: monospace; opacity: 0.8; }
 
     .fixed-footer { 
         height: 64px; display: flex; flex-direction: row; 
@@ -102,32 +102,31 @@ cad_app_html = """
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
     }
-    .dropup.tall { height: 62px; background: #0f0; color: #000; border: 1px solid #fff; font-weight: bold; }
+    .dropup.tall { height: 62px; background: #ffaa00; color: #000; border: 1px solid #fff; font-weight: bold; font-size: 11px; }
     .dropup-content { display: none; position: absolute; bottom: 100%; left: -1px; background-color: #f0f0f0; min-width: 140px; border: 1px solid #707070; z-index: 1000; }
     .dropup.active .dropup-content { display: block; }
     .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
 
-    .text-main { color: #0f0; font-size: 1.4vw; font-weight: bold; font-family: monospace; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #0f0; font-family: monospace; font-size: 13px; overflow-y: auto; text-align: left; }
-    .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #fff; padding: 10px; font-family: monospace; outline: none; resize: none; }
-    .cmd-text { width: 100%; height: 100%; color: #0f0; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
+    .text-main { color: #ffaa00; font-size: 1.4vw; font-weight: bold; font-family: monospace; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #ffaa00; font-family: monospace; font-size: 13px; overflow-y: auto; text-align: left; }
+    .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #fff; padding: 10px; font-family: monospace; outline: none; resize: none; font-weight: bold; }
+    .cmd-text { width: 100%; height: 100%; color: #ffaa00; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; opacity: 0.9; }
 </style>
 
 <div class="master-container">
-    <!-- MODAL WITH GREEN VIBE & TWO-PANE ARCHITECTURE -->
     <div id="ai-modal">
         <div class="modal-header">
-            <span>[ AI COMMAND CENTER - MULTI-DISPATCHER ]</span>
-            <span style="cursor:pointer;" onclick="closeModal()">[ CLOSE ]</span>
+            <span>[ AI DISPATCH COMMANDER ]</span>
+            <span style="cursor:pointer;" onclick="closeModal()">[ EXIT ]</span>
         </div>
         <div class="modal-content">
             <div class="modal-left">
-                <div class="ai-list-item" onclick="loadAI('AI SLOT 01: GEMINI 1.5')">AI 01: GEMINI 1.5 (ARCHITECT)</div>
-                <div class="ai-list-item" onclick="loadAI('AI SLOT 02: GROQ')">AI 02: GROQ (CODE)</div>
-                <button class="add-ai-btn">[ + ADD MODULE ]</button>
+                <div class="ai-list-item" onclick="loadAI('UNIT 01: GEMINI 1.5')">UNIT 01: GEMINI 1.5 (ARCHITECT)</div>
+                <div class="ai-list-item" onclick="loadAI('UNIT 02: GROQ')">UNIT 02: GROQ (SYSTEMS)</div>
+                <button class="add-ai-btn">[ + INITIALIZE NEW MODULE ]</button>
             </div>
             <div class="modal-right" id="config-panel">
-                <div style="color:#040; font-family:monospace;">SELECT SLOT TO ASSIGN PARAMETERS...</div>
+                <div style="color:#442200; font-family:monospace; text-align:center; margin-top:20%;">SELECT MODULE TO ACCESS CORE SETTINGS...</div>
             </div>
         </div>
     </div>
@@ -141,18 +140,18 @@ cad_app_html = """
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
                 <div id="cad-pane" class="pane text-main">
-                    <div id="visual-monitor" style="color:#0f0;">CORE ENGINE STANDBY</div>
+                    <div id="visual-monitor">SYSTEM READY</div>
                 </div>
                 <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
-                    <div id="terminal-out" class="cmd-text">>_ NODE-01: READY</div>
+                    <div id="terminal-out" class="cmd-text">>_ BOOT SEQUENCE COMPLETE</div>
                 </div>
             </div>
             <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
                 <div id="ai-output" class="pane">
-                    <div id="ai-chat" class="ai-text-area">AI TEXT REPLYING WINDOW</div>
+                    <div id="ai-chat" class="ai-text-area">AWAITING TECHNICAL PROMPTS...</div>
                 </div>
                 <div id="ai-input" class="pane">
-                    <textarea id="user-prompt" class="user-input-area" placeholder="USER PROMPTING..."></textarea>
+                    <textarea id="user-prompt" class="user-input-area" placeholder="TYPE COMMAND..."></textarea>
                 </div>
             </div>
         </div>
@@ -161,8 +160,8 @@ cad_app_html = """
 
     <div class="fixed-footer">
         <div class="footer-left-content">
-            <span style="color:#0f0; font-size: 11px; margin-right: 20px;">NODE-01: READY</span>
-            <span style="color:#0f0; font-size: 11px;">SYSTEM STATUS: ONLINE</span>
+            <span style="color:#ffaa00; font-size: 11px; margin-right: 20px; font-weight:bold;">MAGMA-LINK: ACTIVE</span>
+            <span style="color:#666; font-size: 11px;">ENCRYPTION: AES-256</span>
         </div>
         <div id="foot-palette" class="footer-palette-grid"></div>
         <div class="selection-a-stack">
@@ -193,22 +192,22 @@ cad_app_html = """
     function loadAI(name) {
         const panel = document.getElementById('config-panel');
         panel.innerHTML = `
-            <div style="color:#0f0; font-weight:bold; margin-bottom:10px; border-bottom:1px solid #0f0; font-family:monospace;">${name}</div>
+            <div style="color:#ffaa00; font-weight:bold; margin-bottom:15px; border-bottom:1px solid #ffaa00; font-family:monospace; font-size:14px;">CONFIGURING ${name}</div>
             <div>
-                <span class="label-text">ENTER API KEY:</span>
-                <input type="password" class="input-field" placeholder="PX-XXXX-XXXX-XXXX">
+                <span class="label-text">SECURITY ACCESS KEY:</span>
+                <input type="password" class="input-field" placeholder="AMBER-XXXX-XXXX">
             </div>
             <div>
-                <span class="label-text">DOMAIN ASSIGNMENT:</span>
+                <span class="label-text">PRIMARY ARCHITECTURAL ROLE:</span>
                 <select class="input-field">
                     <option>Hardware Architect</option>
                     <option>Industrial Automation</option>
-                    <option>BOM / Logistics</option>
-                    <option>Firmware Specialist</option>
+                    <option>Logistics / BOM Manager</option>
+                    <option>Code & Logic Engineer</option>
                 </select>
             </div>
-            <div style="font-size:10px; color:#0f0; margin-top:10px; opacity:0.6; font-family:monospace;">
-                AUTO-DISPATCHER WILL ROUTE TRAFFIC TO THIS SLOT BASED ON KEYWORDS.
+            <div style="font-size:10px; color:#ffaa00; margin-top:20px; opacity:0.5; font-family:monospace; line-height:1.4;">
+                CRITICAL: THIS UNIT WILL INTERCEPT QUERIES TAGGED WITH THE ASSIGNED ROLE. ENSURE KEYS ARE VALID FOR CONTINUOUS UPTIME.
             </div>
         `;
     }
@@ -234,8 +233,8 @@ cad_app_html = """
             const text = promptInput.value.trim();
             if(text !== "") {
                 aiChat.innerHTML += "<br><br><span style='color:#fff'>[USER]:</span> " + text;
-                terminal.innerHTML += "\\n> DISPATCHING TO HARDWARE ARCHITECT...";
-                aiChat.innerHTML += "<br><span style='color:#0f0'>[AI]:</span> Processing technical specifications for request...";
+                terminal.innerHTML += "\\n> DISPATCHING COMMAND TO CORE ARCHITECT...";
+                aiChat.innerHTML += "<br><span style='color:#ffaa00'>[AI]:</span> Executing analysis on request parameters...";
                 promptInput.value = ""; 
                 aiChat.scrollTop = aiChat.scrollHeight;
                 terminal.scrollTop = terminal.scrollHeight;
