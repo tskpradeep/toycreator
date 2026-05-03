@@ -1,46 +1,47 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# 1. Force the Streamlit page to wide mode and hide standard padding
+# 1. Force the Streamlit page to wide mode
 st.set_page_config(layout="wide", page_title="CAD Design Portal")
 
-# CSS to hide Streamlit's header, footer, and default padding
+# 2. Corrected CSS block to hide Streamlit elements
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
+        /* This removes the extra padding around the app */
         .block-container {
-            padding-top: 0rem;
-            padding-bottom: 0rem;
-            padding-left: 0rem;
-            padding-right: 0rem;
+            padding: 0rem !important;
+            max-width: 100% !important;
+        }
+        /* This prevents the browser from showing any scrollbars on the main page */
+        html, body {
+            overflow: hidden;
         }
     </style>
-""", unsafe_allow_stdio=True)
+""", unsafe_allow_html=True)
 
-# 2. The Application Logic
+# 3. The Application Logic
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
-    /* Force the window to be exactly the size of the browser with NO scroll */
+    /* Force the internal window to be exactly the size of the browser */
     html, body { 
         margin: 0; 
         padding: 0; 
         height: 100vh; 
         width: 100vw; 
         overflow: hidden; 
-        background-color: #111; 
+        background-color: white; 
         font-family: 'Segoe UI', sans-serif;
     }
     
-    /* The main wrapper that fills the screen */
     .master-container { 
         display: flex; 
         flex-direction: column; 
         height: 100vh; 
         width: 100vw; 
-        background: white;
     }
 
     /* Top Window Bar */
@@ -52,7 +53,7 @@ cad_app_html = """
         align-items: center;
         justify-content: space-between;
         padding: 0 10px;
-        flex-shrink: 0; /* Prevents bar from shrinking */
+        flex-shrink: 0;
     }
     .window-controls span { margin-left: 10px; cursor: pointer; }
 
@@ -80,7 +81,7 @@ cad_app_html = """
     .text-ai { color: green; font-weight: bold; border: none !important; font-size: 14px; }
     .text-prompt { color: purple; font-weight: bold; border: none !important; font-size: 14px; }
     
-    /* Fixed Bottom Base (The "Brown Line" logic) */
+    /* Fixed Bottom Base */
     .fixed-footer { 
         height: 70px; 
         display: flex; 
@@ -92,11 +93,10 @@ cad_app_html = """
     .footer-item { border-right: 1px solid black; display: flex; align-items: center; justify-content: center; padding: 5px; font-size: 12px; }
 
     /* Button Columns */
-    .sidebar-btns { width: 40px; border-left: 2px solid black; display: flex; flex-direction: column; padding: 2px; align-items: center; overflow-y: auto; }
+    .sidebar-btns { width: 40px; border-left: 2px solid black; display: flex; flex-direction: column; padding: 2px; align-items: center; }
     .footer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; width: 140px; }
     .small-box { width: 16px; height: 16px; border: 1px solid black; background: #eee; margin-bottom: 2px; flex-shrink: 0; }
 
-    /* Dynamic Area Calculation */
     #dynamic-zone { flex-grow: 1; }
 </style>
 
@@ -107,7 +107,6 @@ cad_app_html = """
     </div>
 
     <div id="dynamic-zone" class="flex-row">
-        <!-- LEFT PILLAR -->
         <div id="left-side-stack" class="flex-col">
             <div id="cad-pane" class="pane text-main">
                 visual displays dynamic between coding and screen/CAD designs
@@ -117,7 +116,6 @@ cad_app_html = """
             </div>
         </div>
 
-        <!-- RIGHT PILLAR -->
         <div id="right-side-stack" class="flex-row">
             <div id="ai-column" class="flex-col">
                 <div id="ai-output" class="pane text-ai">AI TEXT REPLYING WINDOW</div>
@@ -127,7 +125,6 @@ cad_app_html = """
         </div>
     </div>
 
-    <!-- FIXED BASE -->
     <div class="fixed-footer">
         <div class="footer-item" style="flex: 1.5; color: green;">small indicators any</div>
         <div class="footer-item" style="flex: 4; color: blue;">buttons for controlling we will decide buttons as and when we</div>
@@ -136,7 +133,6 @@ cad_app_html = """
 </div>
 
 <script>
-    // Initialize splits with percentages to ensure landscape-dynamic scaling
     Split(['#left-side-stack', '#right-side-stack'], {
         sizes: [72, 28],
         gutterSize: 4,
@@ -155,7 +151,6 @@ cad_app_html = """
         gutterSize: 4,
     });
 
-    // Populate Buttons
     const side = document.getElementById('side-strip');
     for(let i=0; i<25; i++) side.innerHTML += '<div class="small-box"></div>';
     const foot = document.getElementById('footer-grid');
@@ -163,5 +158,5 @@ cad_app_html = """
 </script>
 """
 
-# Render with height set to 100vh via the component
-components.html(cad_app_html, height=2000) # Component container is large, but internal CSS handles the 'fixed' feel
+# Render with 100vh height
+components.html(cad_app_html, height=1000)
