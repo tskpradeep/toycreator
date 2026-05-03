@@ -4,9 +4,9 @@ import google.generativeai as genai
 
 # --- 1. THE BRAIN (GEMINI CONFIG) ---
 # Insert your key from https://aistudio.google.com/app/apikey here
-API_KEY = "PASTE_YOUR_KEY_HERE"
+API_KEY = "AIzaSyDKkohD9a0D0AF1yMr5QDzCzDUEUjebfSs"
 
-if API_KEY != "PASTE_YOUR_KEY_HERE":
+if API_KEY != "AIzaSyDKkohD9a0D0AF1yMr5QDzCzDUEUjebfSs":
     genai.configure(api_key=API_KEY)
     model = genai.GenerativeModel('gemini-1.5-flash')
 else:
