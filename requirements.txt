@@ -1,3 +1,2 @@
 dash
-dash-resizable-panels
 dash-bootstrap-components
