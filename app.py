@@ -72,18 +72,18 @@ cad_app_html = """
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     .gutter { background-color: #444 !important; }
 
-    /* REFINED FOOTER - Lowered further to maximize work area */
+    /* ABSOLUTE BOTTOM FOOTER */
     .fixed-footer { 
-        height: 68px; display: flex; flex-direction: row; 
+        height: 64px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0;
         align-items: flex-end; 
-        padding: 2px 4px; /* Reduced vertical padding to sink elements */
+        padding: 0px 4px 2px 4px; /* Flushed to bottom window line */
     }
 
     .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
 
     .selection-b-container {
-        width: 130px; height: 64px; margin-left: 5px;
+        width: 130px; height: 62px; margin-left: 5px;
     }
     
     .selection-a-stack {
@@ -102,7 +102,7 @@ cad_app_html = """
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 5px; cursor: pointer; font-size: 9px; box-sizing: border-box;
     }
-    .dropup.tall { height: 62px; } /* Fixed height to prevent line shift */
+    .dropup.tall { height: 62px; }
 
     .dropup-content {
         display: none; position: absolute; bottom: 100%; left: -1px;
