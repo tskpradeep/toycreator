@@ -2,8 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import google.generativeai as genai
 
-# --- 1. THE BRAIN (GEMINI CONFIG) ---
-# Insert your key from https://aistudio.google.com/app/apikey here
+# --- [SYSTEM CONFIG] ---
+# Insert key: https://aistudio.google.com/app/apikey
 API_KEY = "PASTE_YOUR_KEY_HERE"
 
 if API_KEY != "PASTE_YOUR_KEY_HERE":
@@ -12,10 +12,10 @@ if API_KEY != "PASTE_YOUR_KEY_HERE":
 else:
     model = None
 
-# --- 2. PAGE CONFIG ---
+# --- [UI INITIALIZATION] ---
 st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# --- 3. UI RESET (RETAINED 1:1) ---
+# 2. UI Reset (Untouched)
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -31,7 +31,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. YOUR NATIVE UI (RETAINED 1:1) ---
+# 3. Native UI Application (1:1 Layout)
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
@@ -120,7 +120,6 @@ cad_app_html = """
                 <div>
                     <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY (IF CLOUD) ↗</a>
                 </div>
                 <div style="margin-top: auto; display: flex; gap: 10px;">
                     <button class="btn-cell" style="width: 120px; height: 35px; background:#00ff00;" onclick="toggleAISet(false)">SAVE TOOL</button>
@@ -183,7 +182,6 @@ cad_app_html = """
     for(let i=0; i<18; i++) document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
 
     function toggleAISet(show) { document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none'; }
-
     function updateToolView(el, name, cat, func, note) {
         document.querySelectorAll('.ai-tool-item').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
@@ -191,16 +189,15 @@ cad_app_html = """
         document.getElementById('function-select').value = func;
         document.getElementById('tool-desc').innerText = note;
     }
-
     function toggleMenu(el) {
         event.stopPropagation();
         const isActive = el.classList.contains('active');
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
         if(!isActive) el.classList.add('active');
     }
-
     window.onclick = function() { document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active')); };
 
+    // --- GEMINI INVISIBLE BRIDGE ---
     const promptInput = document.getElementById('user-prompt');
     const chatWindow = document.getElementById('ai-chat');
     const terminal = document.getElementById('terminal-out');
@@ -212,15 +209,12 @@ cad_app_html = """
             if(text !== "") {
                 chatWindow.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
                 terminal.innerHTML += "\\n> PROCESSING CMD: " + text.toUpperCase();
-                
-                // INVISIBLE BRIDGE: Sends text to Streamlit backend
                 window.parent.postMessage({type: 'streamlit:setComponentValue', value: text}, '*');
                 promptInput.value = "";
             }
         }
     });
 
-    // INVISIBLE BRIDGE: Receives text from Streamlit backend
     window.addEventListener('message', function(event) {
         if (event.data.type === 'AI_REPLY') {
             chatWindow.innerHTML += "<br><br><span style='color:#008000'>[GEMINI]:</span> " + event.data.text;
@@ -231,25 +225,25 @@ cad_app_html = """
 </script>
 """
 
-# --- 5. THE BRIDGE (BACKEND PROCESSING) ---
-# Captures user_prompt from JS
-user_prompt = components.html(cad_app_html, height=0)
+# --- 4. STREAMLIT BACKEND ---
+user_query = components.html(cad_app_html, height=0)
 
-# Resizes the iframe to fill the screen
+# Full-screen bridge
 st.components.v1.html(
     f"""<script>window.parent.document.querySelector('iframe').style.height = '94vh';</script>""",
     height=0
 )
 
-# If the JS sent a message, call Gemini and send it back
-if user_prompt:
+# Process Gemini logic only when a message arrives
+if user_query:
     if model:
-        response = model.generate_content(user_prompt)
+        response = model.generate_content(user_query)
         ai_reply = response.text.replace("'", "\\'").replace("\\n", "<br>")
+        # Send reply back into the HTML shell
         components.html(f"""
             <script>
             window.parent.postMessage({{type: 'AI_REPLY', text: '{ai_reply}'}}, '*');
             </script>
         """, height=0)
     else:
-        st.error("MISSING API KEY: Open 'AI-SET' to configure connection.")
+        st.error("SYSTEM OFFLINE: Configure API_KEY in source.")
