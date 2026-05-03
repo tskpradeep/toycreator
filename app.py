@@ -10,22 +10,23 @@ st.markdown("""
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
-        /* Force the Streamlit container to be exactly 100% of the screen */
-        .main {
+        
+        /* This is the critical fix for Streamlit Cloud burial */
+        .stApp {
+            height: 100vh !important;
             overflow: hidden !important;
         }
         .block-container {
             padding: 0rem !important;
             max-width: 100% !important;
             height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
             overflow: hidden !important;
-            display: flex;
-            flex-direction: column;
         }
-        /* Remove extra spacing Streamlit adds at the top */
-        .stApp {
-            height: 100vh !important;
-            overflow: hidden !important;
+        iframe {
+            flex-grow: 1 !important;
+            height: 100% !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -37,46 +38,44 @@ cad_app_html = """
     html, body { 
         margin: 0; 
         padding: 0; 
-        height: 100vh; 
-        width: 100vw; 
+        height: 100%; 
+        width: 100%; 
         overflow: hidden !important; 
-        background-color: white; 
+        background-color: #f0f0f0; 
         font-family: 'Segoe UI', sans-serif;
     }
     
+    /* Using Flexbox to anchor the footer to the bottom of the viewport */
     .master-container { 
         display: flex; 
         flex-direction: column; 
         height: 100vh; 
         width: 100vw;
-        border: 1px solid #333; /* Visual frame */
+        background: white;
     }
 
     .window-title-bar {
         background: #2c3e50;
         color: white;
         height: 30px;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 10px;
-        flex-shrink: 0;
     }
 
-    /* THE DYNAMIC ZONE: 
-       We subtract the Title bar (30px) and Footer (70px) from the total 100vh 
-    */
+    /* THE DYNAMIC ZONE: It takes ALL remaining space (flex: 1) */
     #dynamic-zone { 
         display: flex;
         flex-direction: row;
-        height: calc(100vh - 100px); 
+        flex: 1; 
+        min-height: 0; /* Critical for inner scrolling/splitting */
         width: 100%;
-        overflow: hidden;
-        min-height: 0;
     }
 
-    .flex-row { display: flex; flex-direction: row; height: 100%; overflow: hidden; }
-    .flex-col { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    .flex-row { display: flex; flex-direction: row; height: 100%; width: 100%; overflow: hidden; }
+    .flex-col { display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
     
     .pane { 
         background: white; 
@@ -93,7 +92,7 @@ cad_app_html = """
     .gutter.gutter-horizontal { cursor: col-resize; background-color: red; width: 4px !important; }
     .gutter.gutter-vertical { cursor: row-resize; background-color: green; height: 4px !important; }
 
-    /* Fixed Sidebar */
+    /* Fixed Sidebar (Far Right) */
     .fixed-right-strip { 
         width: 40px; 
         border-left: 2px solid black; 
@@ -105,14 +104,15 @@ cad_app_html = """
         background: white;
     }
 
-    /* Fixed Footer (The Floor) */
+    /* Fixed Footer (The Floor) - Now with a small bottom margin for visibility */
     .fixed-footer { 
-        height: 70px; 
+        height: 75px; 
         display: flex; 
         flex-direction: row; 
         border-top: 2px solid black; 
         background: white; 
-        flex-shrink: 0; /* Important: prevents footer from disappearing */
+        flex-shrink: 0; 
+        margin-bottom: 5px; 
     }
 
     .text-main { color: darkred; font-size: 1.5vw; font-weight: bold; text-align: center; border: none !important; }
@@ -122,7 +122,7 @@ cad_app_html = """
 
 <div class="master-container">
     <div class="window-title-bar">
-        <div style="font-size: 12px;">CAD DESIGNER PRO - LOCKED VIEW</div>
+        <div style="font-size: 12px;">CAD DESIGNER PRO - RE-ANCHORED VIEW</div>
         <div style="font-size: 14px;"><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
     </div>
 
@@ -178,5 +178,5 @@ cad_app_html = """
 </script>
 """
 
-# Streamlit Component Call
-components.html(cad_app_html, height=1000)
+# Reduced height slightly to 95vh to "pull" the bottom up into the visible iframe
+components.html(cad_app_html, height=850)
