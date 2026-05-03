@@ -2,9 +2,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # 1. Page Configuration
-st.set_page_config(layout="wide", page_title="CAD Design Portal")
+st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# 2. Reset Streamlit interface
+# 2. UI Reset
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -20,7 +20,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. The Stabilized "Native-Feel" App
+# 3. Native UI Application
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
@@ -33,8 +33,7 @@ cad_app_html = """
     .master-container { 
         display: flex; flex-direction: column; 
         height: 100vh; width: 100vw; background: #000;
-        border: 2px solid #d3d3d3; 
-        box-sizing: border-box;
+        border: 2px solid #d3d3d3; box-sizing: border-box;
     }
 
     .window-title-bar {
@@ -44,21 +43,18 @@ cad_app_html = """
         border-bottom: 1px solid #333;
     }
 
-    #dynamic-zone { 
-        display: flex; flex-direction: row; flex: 1; 
-        min-height: 0; width: 100%;
-    }
+    #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
 
-    /* Side Strip with Native Scrollbar */
+    /* Side Strip with Scrollbar */
     .fixed-right-strip { 
-        width: 60px; border-left: 1px solid #333; 
+        width: 65px; border-left: 1px solid #333; 
         display: grid; grid-template-columns: 1fr 1fr;
         grid-auto-rows: min-content; gap: 2px;
-        padding: 4px; background: #000; 
-        overflow-y: scroll; /* Native scrollbar enabled */
+        padding: 5px; background: #000; 
+        overflow-y: scroll; /* Native scrollbar */
     }
 
-    /* Beveled Native Button */
+    /* Square Native Button */
     .btn-cell {
         aspect-ratio: 1 / 1; width: 100%;
         background: #e1e1e1; color: #000;
@@ -73,36 +69,33 @@ cad_app_html = """
         background: #bebebe;
     }
 
-    /* Panes & Gutters */
     .pane { background: #000 !important; border: 1px solid #333 !important; overflow: hidden; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     .gutter { background-color: #444 !important; }
 
     /* Footer Layout */
     .fixed-footer { 
-        height: 80px; display: flex; flex-direction: row; 
+        height: 85px; display: flex; flex-direction: row; 
         border-top: 2px solid #333; background: #000; flex-shrink: 0; 
     }
-    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 2px; }
+    .footer-item { border-right: 1px solid #333; display: flex; align-items: center; justify-content: center; padding: 4px; }
 
-    /* Drop-up Styling */
+    /* Native Selection Box */
     .dropup { 
-        position: relative; width: 95%; height: 24px; 
+        position: relative; width: 100%; height: 22px; 
         background: #e1e1e1; color: #000; border: 1px solid #707070; 
         display: flex; align-items: center; justify-content: space-between;
-        padding: 0 5px; cursor: pointer; font-size: 10px;
+        padding: 0 5px; cursor: pointer; font-size: 10px; box-sizing: border-box;
     }
     .dropup-content {
         display: none; position: absolute; bottom: 100%; left: -1px;
-        background-color: #f0f0f0; min-width: 140px; 
+        background-color: #f0f0f0; min-width: 150px; 
         border: 1px solid #707070; z-index: 1000;
     }
     .dropup.active .dropup-content { display: block; }
-    .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; }
+    .dropup-content a { color: #000; padding: 8px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; }
+    .dropup-content a:hover { background: #0078d7; color: white; }
 
-    /* Specific palette grid for the footer */
-    .footer-palette { 
-        display: grid; grid-template-columns: repeat(8, 20px); gap: 2px; 
-    }
+    .footer-palette { display: grid; grid-template-columns: repeat(6, 22px); gap: 2px; }
 
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; }
 </style>
@@ -115,11 +108,11 @@ cad_app_html = """
 
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex; flex:1; width:100%;">
-            <div id="left-side-stack" style="display:flex; flex-direction:column; width:70%;">
+            <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
                 <div id="cad-pane" class="pane text-main">visual displays dynamic between coding and screen/CAD designs</div>
-                <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start; color:#0f0; font-family:monospace;">>_</div>
+                <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start; color:#0f0; font-family:monospace; padding:5px;">>_</div>
             </div>
-            <div id="ai-column" style="display:flex; flex-direction:column; width:30%;">
+            <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
                 <div id="ai-output" class="pane" style="color:#008000; font-weight:bold;">AI TEXT REPLYING WINDOW</div>
                 <div id="ai-input" class="pane" style="color:#800080; font-weight:bold;">USER PROMPTING</div>
             </div>
@@ -131,44 +124,41 @@ cad_app_html = """
         <div class="footer-item" style="flex: 1; color:#008000; font-size:10px;">small indicators</div>
         <div class="footer-item" style="flex: 2; color:#0000ff; font-size:10px;">buttons for controlling...</div>
         
-        <div class="footer-item" style="flex: 1.5; flex-direction:column; gap:2px;">
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Tool 1</a><a>Tool 2</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Data 1</a><a>Data 2</a></div></div>
+        <div class="footer-item" style="flex: 1.5; flex-direction:column; gap:4px; padding: 8px;">
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Tool Config 1</a><a>Tool Config 2</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection A</span><span>▲</span><div class="dropup-content"><a>Option Set 1</a><a>Option Set 2</a></div></div>
         </div>
 
-        <div class="footer-item" style="flex: 2;">
+        <div class="footer-item" style="flex: 1.5;">
             <div id="foot-palette" class="footer-palette"></div>
         </div>
 
         <div class="footer-item" style="flex: 1.2; border-right:none;">
-            <div class="dropup" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>Settings</a><a>Export</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Selection B</span><span>▲</span><div class="dropup-content"><a>System Properties</a><a>Export STL</a></div></div>
         </div>
     </div>
 </div>
 
 <script>
-    Split(['#left-side-stack', '#ai-column'], { sizes: [70, 30], gutterSize: 4 });
+    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
     Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
     Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
 
-    // Sidebar: Fill with many buttons to trigger scroll
     const side = document.getElementById('side-strip');
-    for(let i=0; i<80; i++) side.innerHTML += '<div class="btn-cell"></div>';
+    for(let i=0; i<100; i++) side.innerHTML += '<div class="btn-cell"></div>';
     
-    // Footer: Palette grid
     const palette = document.getElementById('foot-palette');
-    for(let i=0; i<24; i++) palette.innerHTML += '<div class="btn-cell"></div>';
+    for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
 
     function toggleMenu(el) {
+        event.stopPropagation();
         const isActive = el.classList.contains('active');
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
         if(!isActive) el.classList.add('active');
     }
 
-    window.onclick = function(event) {
-        if (!event.target.closest('.dropup')) {
-            document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
-        }
+    window.onclick = function() {
+        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
 </script>
 """
