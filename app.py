@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # 1. Page Configuration
 st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# 2. UI Reset
+# 2. UI Reset & Dark Theme Enforcement
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -54,12 +54,12 @@ cad_app_html = """
     }
 
     .btn-cell {
-        aspect-ratio: 1 / 1; width: 20px; height: 20px;
+        aspect-ratio: 1 / 1; width: 22px; height: 22px;
         background: #e1e1e1; color: #000;
         border-top: 2px solid #fff; border-left: 2px solid #fff;
         border-right: 2px solid #707070; border-bottom: 2px solid #707070;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        box-sizing: border-box; flex-shrink: 0;
+        box-sizing: border-box; flex-shrink: 0; font-size: 8px;
     }
     .btn-cell:active { 
         border-top: 2px solid #707070; border-left: 2px solid #707070;
@@ -80,7 +80,7 @@ cad_app_html = """
     .footer-left-content { flex: 1; display: flex; height: 100%; align-items: center; padding-left: 10px;}
     .selection-b-container { width: 130px; height: 62px; margin-left: 5px; }
     .selection-a-stack { display: flex; flex-direction: column; gap: 1px; width: 130px; margin-left: 5px; }
-    .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; }
+    .footer-palette-grid { display: grid; grid-template-columns: repeat(6, 20px); grid-template-rows: repeat(3, 20px); gap: 1px; margin-left: 8px; margin-bottom: 2px; }
 
     .dropup { 
         position: relative; width: 100%; height: 20px; 
@@ -93,35 +93,36 @@ cad_app_html = """
     .dropup.active .dropup-content { display: block; }
     .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
 
-    /* Logic Styling - NO GUI CHANGE */
-    .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #008000; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
-    .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
+    .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; }
+    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #00ff00; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
+    .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #ff00ff; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
     .cmd-text { width: 100%; height: 100%; color: #0f0; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
 </style>
 
 <div class="master-container">
     <div class="window-title-bar">
-        <div>CAD DESIGNER PRO</div>
+        <div>[SYSTEM] CAD DESIGNER PRO - INDUSTRIAL CORE</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
     </div>
 
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
-                <div id="cad-pane" class="pane text-main">
-                    <div id="visual-monitor">visual displays dynamic between coding and screen/CAD designs</div>
+                <div id="cad-pane" class="pane">
+                    <div id="visual-monitor" class="text-main">
+                        <div style="font-size: 12px; color: #555;">IDLE: AWAITING COMPILER INPUT</div>
+                    </div>
                 </div>
                 <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
-                    <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
+                    <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED... READY.</div>
                 </div>
             </div>
             <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
                 <div id="ai-output" class="pane">
-                    <div id="ai-chat" class="ai-text-area">AI TEXT REPLYING WINDOW</div>
+                    <div id="ai-chat" class="ai-text-area">[AI CORE]: ONLINE</div>
                 </div>
                 <div id="ai-input" class="pane">
-                    <textarea id="user-prompt" class="user-input-area" placeholder="TYPE HERE..."></textarea>
+                    <textarea id="user-prompt" class="user-input-area" placeholder="ENTER ARCHITECTURAL CMD..."></textarea>
                 </div>
             </div>
         </div>
@@ -130,31 +131,40 @@ cad_app_html = """
 
     <div class="fixed-footer">
         <div class="footer-left-content">
-            <span style="color:#008000; font-size: 11px; margin-right: 20px;">READY</span>
-            <span style="color:#0000ff; font-size: 11px;">SYSTEM STATUS: ONLINE</span>
+            <span style="color:#00ff00; font-family:monospace; font-size: 11px; margin-right: 20px;">[READY]</span>
+            <span style="color:#0088ff; font-family:monospace; font-size: 11px;">BUS STATUS: NOMINAL</span>
         </div>
         <div id="foot-palette" class="footer-palette-grid"></div>
         <div class="selection-a-stack">
-            <div class="dropup" onclick="toggleMenu(this)"><span>File</span><span>▲</span><div class="dropup-content"><a>New Project</a><a>Open</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Tools</span><span>▲</span><div class="dropup-content"><a>BOM Gen</a><a>Netlist</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>FILE</span><span>▲</span><div class="dropup-content"><a>NEW PROJECT</a><a>OPEN SCHEMA</a><a>SAVE ALL</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>TOOLS</span><span>▲</span><div class="dropup-content"><a>BOM GEN</a><a>NETLIST</a><a>PART SEARCH</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>VIEW</span><span>▲</span><div class="dropup-content"><a>2D TRACE</a><a>3D MESH</a><a>LAYERS</a></div></div>
         </div>
         <div class="selection-b-container">
-            <div class="dropup tall" onclick="toggleMenu(this)"><span>Export</span><span>▲</span><div class="dropup-content"><a>Gerber</a><a>STEP</a><a>Tech Bundle</a></div></div>
+            <div class="dropup tall" onclick="toggleMenu(this)"><span>EXPORT TECH BUNDLE</span><span>▲</span><div class="dropup-content"><a>GERBER (RS-274X)</a><a>STEP (3D)</a><a>PDF DOCUMENTATION</a></div></div>
         </div>
     </div>
 </div>
 
 <script>
-    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
-    Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 4 });
-    Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [50, 50], gutterSize: 4 });
+    // Partitioning
+    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 6 });
+    Split(['#cad-pane', '#cmd-pane'], { direction: 'vertical', sizes: [80, 20], gutterSize: 6 });
+    Split(['#ai-output', '#ai-input'], { direction: 'vertical', sizes: [60, 40], gutterSize: 6 });
 
+    // Populate Sidebar Buttons
     const side = document.getElementById('side-strip');
-    for(let i=0; i<100; i++) side.innerHTML += '<div class="btn-cell"></div>';
+    const icons = ['+', '-', '⬚', '○', '▧', '▨', '▤', '▥', '▦', '▧'];
+    for(let i=0; i<100; i++) {
+        side.innerHTML += `<div class="btn-cell">${icons[i%10]}</div>`;
+    }
     
+    // Populate Footer Palette
     const palette = document.getElementById('foot-palette');
-    for(let i=0; i<18; i++) palette.innerHTML += '<div class="btn-cell"></div>';
+    const colors = ['#000', '#800', '#080', '#880', '#008', '#808', '#088', '#ccc', '#888', '#f00', '#0f0', '#ff0', '#00f', '#f0f', '#0ff', '#fff', '#ddd', '#444'];
+    colors.forEach(c => {
+        palette.innerHTML += `<div class="btn-cell" style="background:${c}"></div>`;
+    });
 
     function toggleMenu(el) {
         event.stopPropagation();
@@ -167,7 +177,7 @@ cad_app_html = """
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
 
-    // LOGIC INTEGRATION
+    // Logic Integration
     const promptInput = document.getElementById('user-prompt');
     const aiChat = document.getElementById('ai-chat');
     const terminal = document.getElementById('terminal-out');
@@ -178,28 +188,29 @@ cad_app_html = """
             e.preventDefault();
             const text = promptInput.value.trim();
             if(text !== "") {
-                aiChat.innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
+                aiChat.innerHTML += `<br><br><span style="color:#ff00ff">[USR]:</span> ${text}`;
                 const query = text.toLowerCase();
                 
-                if(query.includes("led") || query.includes("circuit") || query.includes("power supply")) {
-                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Architecting system blocks...";
-                    terminal.innerHTML += "\\n> COMPILING TECH BUNDLE LOGIC...";
+                terminal.innerHTML += `\\n> PROCESSING REQUEST: ${text.toUpperCase()}`;
+                
+                if(query.includes("circuit") || query.includes("led") || query.includes("block")) {
+                    aiChat.innerHTML += "<br><span style='color:#00ff00'>[AI]:</span> ARCHITECTING BLOCK DIAGRAM...";
+                    terminal.innerHTML += "\\n> COMPILING SCHEMA DATA... DONE.";
                     
-                    // Simple logic-driven visual update inside your text-main pane
                     monitor.innerHTML = `
-                        <div style="border:1px solid #fff; padding:10px; font-size:12px;">
-                            <svg width="200" height="100">
-                                <rect x="10" y="30" width="50" height="40" stroke="white" fill="none" />
-                                <text x="15" y="55" fill="white" font-size="8">SOURCE</text>
-                                <line x1="60" y1="50" x2="90" y2="50" stroke="#0f0" />
-                                <circle cx="110" cy="50" r="20" stroke="#0f0" fill="none" />
-                                <text x="102" y="53" fill="#0f0" font-size="8">LOAD</text>
+                        <div style="padding:20px; border:1px dashed #444; background:#050505;">
+                            <svg width="300" height="150" viewBox="0 0 300 150">
+                                <rect x="20" y="50" width="80" height="50" stroke="#00ff00" fill="none" stroke-width="2"/>
+                                <text x="35" y="80" fill="#00ff00" font-size="10">INPUT</text>
+                                <line x1="100" y1="75" x2="150" y2="75" stroke="#ff00ff" stroke-width="2" />
+                                <circle cx="180" cy="75" r="30" stroke="#0088ff" fill="none" stroke-width="2"/>
+                                <text x="165" y="80" fill="#0088ff" font-size="10">CORE</text>
                             </svg>
-                            <div style="font-size:10px; margin-top:5px;">${text.toUpperCase()} DIAGRAM</div>
+                            <div style="font-size:10px; color:#aaa;">SYS_GEN: ${text.toUpperCase()}</div>
                         </div>
                     `;
                 } else {
-                    aiChat.innerHTML += "<br><span style='color:#008000'>[AI]:</span> Ready for architectural prompts.";
+                    aiChat.innerHTML += "<br><span style='color:#00ff00'>[AI]:</span> COMMAND RECOGNIZED. READY FOR NEXT TASK.";
                 }
 
                 promptInput.value = ""; 
