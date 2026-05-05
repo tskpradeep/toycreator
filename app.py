@@ -37,7 +37,7 @@ cad_app_html = """
         position: relative;
     }
 
-    /* --- SYSTEM AI-SET MODULAR WINDOW (GREEN VIBE) --- */
+    /* --- SYSTEM AI-SET MODULAR WINDOW --- */
     #ai-modular-setup {
         position: absolute; top: 10%; left: 15%; width: 70%; height: 75%;
         background: #000; border: 2px solid #00ff00; z-index: 9999;
@@ -52,7 +52,7 @@ cad_app_html = """
     .ai-tool-item:hover { border-color: #00ff00; background: #0a2a0a; }
     .ai-tool-item.active { background: #00ff00; color: #000; font-weight: bold; }
     
-    .ai-select { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; cursor: pointer; font-family: monospace; }
+    .ai-select { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; cursor: pointer; font-family: monospace; appearance: none; }
     .ai-input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; box-sizing: border-box; }
     .tool-note { font-size: 11px; color: #008800; border-left: 2px solid #00ff00; padding-left: 10px; margin-top: 5px; }
 
@@ -99,6 +99,17 @@ cad_app_html = """
             <div class="ai-setup-content">
                 <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Google Gemini</span></div>
                 
+                <div id="version-container">
+                    <label>AVAILABLE VERSIONS (DYNAMIC):</label>
+                    <select class="ai-select" id="version-select">
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast, Efficient)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Reasoning, Complex Tasks)</option>
+                        <option value="gemini-1.0-pro">Gemini 1.0 Pro (Standard)</option>
+                        <option value="gemini-experimental">Gemini 2.0 (Experimental)</option>
+                    </select>
+                    <div class="tool-note" id="version-desc">Live available free tools from Google Cloud/AI Studio.</div>
+                </div>
+
                 <div>
                     <label>CORE FUNCTION (OUTPUT):</label>
                     <select class="ai-select" id="function-select">
@@ -124,7 +135,7 @@ cad_app_html = """
                 <div>
                     <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY (IF CLOUD) ↗</a>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY ↗</a>
                 </div>
 
                 <div style="margin-top: auto; display: flex; gap: 10px;">
@@ -175,7 +186,6 @@ cad_app_html = """
             <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
         </div>
         <div class="selection-b-container">
-            <!-- TRIGGER FOR AI-SET -->
             <div class="dropup tall" onclick="toggleAISet(true)"><span>AI-SET</span><span>▲</span><div class="dropup-content"><a>Tool Config</a><a>AI Dispatcher</a></div></div>
         </div>
     </div>
@@ -189,7 +199,6 @@ cad_app_html = """
     for(let i=0; i<100; i++) document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
     for(let i=0; i<18; i++) document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
 
-    /* AI-SET MODULAR LOGIC */
     function toggleAISet(show) {
         document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none';
     }
@@ -200,6 +209,10 @@ cad_app_html = """
         document.getElementById('tool-name').innerText = name;
         document.getElementById('function-select').value = func;
         document.getElementById('tool-desc').innerText = note;
+        
+        // Dynamic Versioning visibility for Gemini
+        const versionBox = document.getElementById('version-container');
+        versionBox.style.display = (name === 'Google Gemini') ? 'block' : 'none';
     }
 
     function toggleMenu(el) {
@@ -213,7 +226,6 @@ cad_app_html = """
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
     };
 
-    // Terminal Logic
     const promptInput = document.getElementById('user-prompt');
     promptInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
