@@ -89,30 +89,33 @@ cad_app_html = """
         </div>
         <div class="ai-setup-body">
             <div class="ai-setup-sidebar" id="tool-list">
-                <div class="ai-tool-item active" onclick="updateToolView(this, 'Luvia AI', 'Selection', 'MPN Text', 'Sourcing only.')">LUVIA AI</div>
+                <div class="ai-tool-item active" onclick="updateToolView(this, 'Google Gemini', 'Intelligence', 'Multi-modal', 'Official Google Integration.')">GOOGLE GEMINI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Luvia AI', 'Selection', 'MPN Text', 'Sourcing only.')">LUVIA AI</div>
                 <div class="ai-tool-item" onclick="updateToolView(this, 'Flux.ai', 'Schematic', '.json / .net', 'Non-proprietary concept.')">FLUX.AI</div>
                 <div class="ai-tool-item" onclick="updateToolView(this, 'KiCad', 'Analysis', '.kicad_sch', 'Local & Private.')">KICAD</div>
                 <div class="ai-tool-item" onclick="updateToolView(this, 'Quilter', 'Layout', 'ODB++', 'Best for high-end CAM.')">QUILTER</div>
                 <div class="ai-tool-item" onclick="updateToolView(this, 'nTop / Fusion', 'Enclosure', 'STEP / STL', 'Physics-verified.')">NTOP / FUSION</div>
             </div>
             <div class="ai-setup-content">
-                <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Luvia AI</span></div>
+                <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Google Gemini</span></div>
                 
                 <div>
                     <label>CORE FUNCTION (OUTPUT):</label>
                     <select class="ai-select" id="function-select">
+                        <option value="Multi-modal">Multi-modal Reasoning</option>
                         <option value="MPN Text">MPN Text / Sourcing only</option>
                         <option value="json">.json / .net</option>
                         <option value="kicad">.kicad_sch</option>
                         <option value="odb">ODB++</option>
                         <option value="step">STEP / STL</option>
                     </select>
-                    <div class="tool-note" id="tool-desc">Sourcing only.</div>
+                    <div class="tool-note" id="tool-desc">Official Google Integration.</div>
                 </div>
 
                 <div>
                     <label>DEPLOYMENT MODE:</label>
                     <select class="ai-select">
+                        <option>Cloud API (Vertex / AI Studio)</option>
                         <option>Local / Dropbox (Privacy Mode)</option>
                         <option>Virtual Machine (Cloud Server)</option>
                     </select>
