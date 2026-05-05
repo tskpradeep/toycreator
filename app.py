@@ -43,7 +43,13 @@ cad_app_html = """
         background: #000; border: 2px solid #00ff00; z-index: 9999;
         display: none; flex-direction: column; box-shadow: 0 0 50px rgba(0,255,0,0.3);
     }
-    .ai-setup-header { background: #0a1a0a; border-bottom: 1px solid #00ff00; padding: 10px; display: flex; justify-content: space-between; color: #00ff00; font-family: monospace; font-weight: bold; }
+    .ai-setup-header { 
+        background: #0a1a0a; border-bottom: 1px solid #00ff00; 
+        padding: 10px; display: flex; justify-content: space-between; 
+        color: #00ff00; font-family: monospace; font-weight: bold; 
+        align-items: center;
+    }
+    .ai-header-controls { display: flex; gap: 10px; align-items: center; }
     .ai-setup-body { display: flex; flex: 1; overflow: hidden; }
     .ai-setup-sidebar { width: 30%; border-right: 1px solid #00ff00; padding: 10px; background: #050505; overflow-y: auto; }
     .ai-setup-content { width: 70%; padding: 25px; color: #00ff00; font-family: monospace; display: flex; flex-direction: column; gap: 20px; }
@@ -55,6 +61,15 @@ cad_app_html = """
     .ai-select { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; cursor: pointer; font-family: monospace; appearance: none; }
     .ai-input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; box-sizing: border-box; }
     .tool-note { font-size: 11px; color: #008800; border-left: 2px solid #00ff00; padding-left: 10px; margin-top: 5px; }
+
+    /* Small Title Bar Action Buttons */
+    .title-action-btn { 
+        padding: 2px 12px; font-size: 10px; cursor: pointer; 
+        border: 1px solid #00ff00; background: #000; color: #00ff00;
+        font-family: monospace; text-transform: uppercase;
+    }
+    .title-action-btn:hover { background: #00ff00; color: #000; }
+    .title-action-btn.close { border-color: #fff; color: #fff; }
 
     /* --- ORIGINAL GUI CSS --- */
     .window-title-bar { background: #1a1a1a; color: #888; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 12px; border-bottom: 1px solid #333; }
@@ -85,7 +100,10 @@ cad_app_html = """
     <div id="ai-modular-setup">
         <div class="ai-setup-header">
             <span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
-            <span onclick="toggleAISet(false)" style="cursor:pointer; color:#fff;">[ X ]</span>
+            <div class="ai-header-controls">
+                <button class="title-action-btn" onclick="toggleAISet(false)">SAVE</button>
+                <button class="title-action-btn close" onclick="toggleAISet(false)">[ X ]</button>
+            </div>
         </div>
         <div class="ai-setup-body">
             <div class="ai-setup-sidebar" id="tool-list">
@@ -137,11 +155,6 @@ cad_app_html = """
                     <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
                     <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY ↗</a>
-                </div>
-
-                <div style="margin-top: auto; display: flex; gap: 10px;">
-                    <button class="btn-cell" style="width: 120px; height: 35px; background:#00ff00;" onclick="toggleAISet(false)">SAVE TOOL</button>
-                    <button class="btn-cell" style="width: 120px; height: 35px; background:#444; color:#fff;" onclick="toggleAISet(false)">CANCEL</button>
                 </div>
             </div>
         </div>
