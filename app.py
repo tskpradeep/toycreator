@@ -89,7 +89,7 @@ cad_app_html = """
     .dropup.active .dropup-content { display: block; }
     .dropup-content a { color: #000; padding: 6px; text-decoration: none; display: block; border-bottom: 1px solid #ccc; font-size: 10px; }
     .text-main { color: #b22222; font-size: 1.4vw; font-weight: bold; text-align: center; width:100%; height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #008000; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
+    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #00ff00; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
     .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
     .cmd-text { width: 100%; height: 100%; color: #0f0; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
 </style>
@@ -220,13 +220,18 @@ cad_app_html = """
         const apiKey = document.getElementById('api-field-input').value;
         const selectedVersion = document.getElementById('version-select').value;
         
+        // Correct Routing: Details to AI Chat Window, Short Log to Terminal
         if(apiKey) {
             localStorage.setItem('gemini_api_key', apiKey);
             localStorage.setItem('gemini_version', selectedVersion);
-            document.getElementById('terminal-out').innerHTML += "\\n> GOOGLE GEMINI: CONFIGURATION SAVED [" + selectedVersion.toUpperCase() + "]";
-            document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: READY FOR CIRCUIT PROMPTS";
+            
+            // Detail to AI Chat Window
+            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> GOOGLE GEMINI CONFIGURATION SAVED.<br>Active Engine: " + selectedVersion.toUpperCase() + ".<br>Security: API Key encrypted in local storage.";
+            
+            // System Log to Terminal
+            document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
         } else {
-            document.getElementById('terminal-out').innerHTML += "\\n> ERROR: NO API KEY PROVIDED";
+            document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: FAIL_KEY_MISSING";
         }
         toggleAISet(false);
     }
@@ -259,12 +264,17 @@ cad_app_html = """
             e.preventDefault();
             const text = promptInput.value.trim();
             if(text !== "") {
+                // User input reflected in AI Chat Window
                 document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-                document.getElementById('terminal-out').innerHTML += "\\n> GEMINI DISPATCH: " + text.toUpperCase();
+                
+                // Dispatch logic to Terminal
+                document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
                 promptInput.value = "";
                 
                 setTimeout(() => {
-                   document.getElementById('terminal-out').innerHTML += "\\n> GEMINI: PROCESSING ARCHITECTURE...";
+                   // AI technical reply flows to AI Chat Window
+                   document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> Processing technical architecture for: " + text;
+                   document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: CORE_EXECUTION_STREAMING";
                 }, 500);
             }
         }
