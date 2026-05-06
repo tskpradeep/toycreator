@@ -1,9 +1,10 @@
 import streamlit as st
-from google import genai
+from google import genai  # Requires 'google-genai' in requirements.txt
 
-# --- 1. DARK UI SETUP ---
+# --- UI SETUP ---
 st.set_page_config(page_title="AI Workbench 2026", layout="wide")
 
+# Dark Theme for 2026 Visibility
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; color: white !important; }
@@ -16,54 +17,49 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. SIDEBAR SETTINGS ---
+# --- SIDEBAR: ONLY API OPTION ---
 with st.sidebar:
     st.header("⚙️ 2026 Settings")
     api_key = st.text_input("Enter 2026 API Key", type="password")
     
-    # Selecting Model 2 as requested (Gemini 3 Flash)
+    # Model 2 Locked (Gemini 3 Flash)
     model_choice = "gemini-3-flash-preview"
     st.success(f"Active Model: {model_choice}")
 
-# --- 3. DUAL WINDOW INTERFACE ---
+# --- INTERFACE ---
 st.title("AI Workbench")
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("PROMPTING WINDOW")
-    user_prompt = st.text_area("Your Question:", height=400, placeholder="e.g. Who are you?")
+    user_prompt = st.text_area("Your Question:", height=400, placeholder="Type here...")
     send_btn = st.button("Send to Gemini 3")
 
 with col2:
     st.subheader("ANSWER WINDOW")
     if send_btn:
         if not api_key:
-            st.error("Missing API Key.")
+            st.error("API Key Required.")
         elif not user_prompt:
-            st.warning("Please enter a prompt.")
+            st.warning("Enter a prompt.")
         else:
-            with st.spinner("Connecting to Google 2026 Servers..."):
+            with st.spinner("Connecting..."):
                 try:
-                    # Verified 2026 Client Logic
+                    # NEW 2026 CLIENT ARCHITECTURE
                     client = genai.Client(api_key=api_key)
                     
-                    # Generate content call
                     response = client.models.generate_content(
                         model=model_choice,
                         contents=user_prompt
                     )
                     
                     st.markdown("---")
-                    # Prove it works by displaying the actual text
                     if response.text:
                         st.write(response.text)
                     else:
-                        st.error("Empty Response. Check Safety Settings.")
+                        st.error("No text returned. Check API permissions.")
                         
                 except Exception as e:
-                    # Captures the 400 error and provides the May 2026 solution
-                    st.error(f"Execution Error: {e}")
-                    if "400" in str(e):
-                        st.info("💡 400 ERROR: Your API key is likely expired or from a legacy project. Create a NEW key at aistudio.google.com.")
+                    st.error(f"Error: {e}")
     else:
         st.write("Awaiting your input...")
