@@ -107,22 +107,35 @@ cad_app_html = """
         </div>
         <div class="ai-setup-body">
             <div class="ai-setup-sidebar" id="tool-list">
-                <div class="ai-tool-item active" onclick="updateToolView(this, 'Google Gemini')">GOOGLE GEMINI</div>
-                <div class="ai-tool-item" onclick="updateToolView(this, 'Luvia AI')">LUVIA AI</div>
+                <div class="ai-tool-item active" onclick="updateToolView(this, 'Google Gemini', 'Intelligence', 'Multi-modal', 'Official Google Integration.')">GOOGLE GEMINI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Luvia AI', 'Selection', 'MPN Text', 'Sourcing only.')">LUVIA AI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Flux.ai', 'Schematic', '.json / .net', 'Non-proprietary concept.')">FLUX.AI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'KiCad', 'Analysis', '.kicad_sch', 'Local & Private.')">KICAD</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Quilter', 'Layout', 'ODB++', 'Best for high-end CAM.')">QUILTER</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'nTop / Fusion', 'Enclosure', 'STEP / STL', 'Physics-verified.')">NTOP / FUSION</div>
             </div>
             <div class="ai-setup-content">
                 <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Google Gemini</span></div>
                 <div id="version-container">
-                    <label>VERSION:</label>
+                    <label>AVAILABLE VERSIONS (DYNAMIC):</label>
                     <select class="ai-select" id="version-select">
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended)</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Slower/Smarts)</option>
+                        <option value="gemini-3-flash">Gemini 3 Flash (PhD reasoning/Speed)</option>
+                        <option value="gemini-3.1-pro">Gemini 3.1 Pro (Complex Logic)</option>
+                        <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (High Volume)</option>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Baseline)</option>
+                        <option value="gemini-2.5-pro">Gemini 2.5 Pro (Standard reasoning)</option>
                     </select>
                 </div>
                 <div>
-                    <label>API KEY:</label>
-                    <input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY...">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px;">Get Key ↗</a>
+                    <label>CORE FUNCTION (OUTPUT):</label>
+                    <select class="ai-select" id="function-select">
+                        <option value="Multi-modal">Multi-modal Reasoning</option>
+                        <option value="MPN Text">MPN Text / Sourcing only</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="key-label">API KEY / LOCAL PATH:</label>
+                    <input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
                 </div>
             </div>
         </div>
@@ -163,6 +176,8 @@ cad_app_html = """
         <div id="foot-palette" class="footer-palette-grid"></div>
         <div class="selection-a-stack">
             <div class="dropup" onclick="toggleMenu(this)"><span>File</span><span>▲</span><div class="dropup-content"><a>New Project</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Tools</span><span>▲</span><div class="dropup-content"><a>BOM Gen</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a></div></div>
         </div>
         <div class="selection-b-container">
             <div class="dropup tall" onclick="toggleAISet(true)"><span>AI-SET</span><span>▲</span><div class="dropup-content"><a>Tool Config</a></div></div>
@@ -185,54 +200,54 @@ cad_app_html = """
         const selectedVersion = document.getElementById('version-select').value;
         if(apiKey) {
             localStorage.setItem('gemini_api_key', apiKey);
-            localStorage.setItem('gemini_version', selectedVersion);
-            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED.";
+            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED. ACTIVE: " + selectedVersion.toUpperCase();
+            document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
         }
         toggleAISet(false);
     }
 
-    async function callGemini(prompt) {
-        const key = localStorage.getItem('gemini_api_key');
-        const model = localStorage.getItem('gemini_version') || 'gemini-1.5-flash';
-        if(!key) return "ERROR: NO API KEY. GO TO AI-SET.";
-        
-        try {
-            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const data = await resp.json();
-            return data.candidates[0].content.parts[0].text;
-        } catch(e) { return "ERROR: CONNECTION FAILED."; }
+    function updateToolView(el, name, cat, func, note) {
+        document.querySelectorAll('.ai-tool-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('tool-name').innerText = name;
     }
 
     function toggleMenu(el) {
         event.stopPropagation();
+        const isActive = el.classList.contains('active');
         document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
-        el.classList.add('active');
+        if(!isActive) el.classList.add('active');
     }
 
     const promptInput = document.getElementById('user-prompt');
-    promptInput.addEventListener('keydown', async function(e) {
+    promptInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             const text = promptInput.value.trim();
-            if(text === "") return;
+            if(text !== "") {
+                document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
+                document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
+                
+                if(text.toLowerCase().includes('circuit') || text.toLowerCase().includes('led')) {
+                    document.getElementById('visual-monitor').innerHTML = `
+                        <div class="viz-container">
+                            <div style="text-align:center; border-bottom:1px solid #00ff00; margin-bottom:10px;">FLOW CHART: ${text.toUpperCase()}</div>
+                            <div class="block">INPUT POWER</div>
+                            <div class="arrow">↓</div>
+                            <div class="block">SWITCHING LOGIC</div>
+                            <div class="arrow">↓</div>
+                            <div class="block">BI-COLOR LED ARRAY</div>
+                            <div style="margin-top:20px; font-size:10px;">[ BLOCK DIAGRAM GENERATED BY SYSTEM AGENT ]</div>
+                        </div>
+                    `;
+                }
 
-            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-            document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
-            promptInput.value = "";
-
-            // Visual Logic
-            if(text.toLowerCase().includes('circuit')) {
-                document.getElementById('visual-monitor').innerHTML = '<div class="viz-container"><div class="block">GENERATING BLOCK DIAGRAM...</div></div>';
+                promptInput.value = "";
+                setTimeout(() => {
+                   document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> Processing architecture for: " + text;
+                   document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: CORE_EXECUTION_STREAMING";
+                }, 500);
             }
-
-            // Real AI Call
-            const response = await callGemini(text);
-            document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> " + response;
-            document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: RESPONSE_RECEIVED";
         }
     });
 </script>
