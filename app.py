@@ -1,10 +1,9 @@
 import streamlit as st
 from google import genai
 
-# --- UI SETUP ---
+# --- 1. DARK UI SETUP ---
 st.set_page_config(page_title="AI Workbench 2026", layout="wide")
 
-# Dark Mode CSS - Ensures 100% text visibility
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; color: white !important; }
@@ -17,17 +16,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR SETTINGS ---
+# --- 2. SIDEBAR SETTINGS ---
 with st.sidebar:
     st.header("⚙️ 2026 Settings")
-    # THE ONLY OPTION: API KEY
     api_key = st.text_input("Enter 2026 API Key", type="password")
     
-    # PERMANENTLY ERASED 1.5 - ONLY 2026 MODELS ALLOWED
-    model_choice = "gemini-3-flash"
+    # Selecting Model 2 as requested (Gemini 3 Flash)
+    model_choice = "gemini-3-flash-preview"
     st.success(f"Active Model: {model_choice}")
 
-# --- MAIN INTERFACE ---
+# --- 3. DUAL WINDOW INTERFACE ---
 st.title("AI Workbench")
 col1, col2 = st.columns(2)
 
@@ -40,32 +38,32 @@ with col2:
     st.subheader("ANSWER WINDOW")
     if send_btn:
         if not api_key:
-            st.error("Action Required: Paste your API Key in the sidebar.")
+            st.error("Missing API Key.")
         elif not user_prompt:
-            st.warning("Action Required: Enter a prompt.")
+            st.warning("Please enter a prompt.")
         else:
-            with st.spinner("Processing via Google 2026 Servers..."):
+            with st.spinner("Connecting to Google 2026 Servers..."):
                 try:
-                    # NEW 2026 SDK CLIENT - Resolves the 400 Header Bug
+                    # Verified 2026 Client Logic
                     client = genai.Client(api_key=api_key)
                     
-                    # FETCHING RESPONSE
+                    # Generate content call
                     response = client.models.generate_content(
                         model=model_choice,
                         contents=user_prompt
                     )
                     
                     st.markdown("---")
-                    # ACTUAL RESPONSE COLLECTION
+                    # Prove it works by displaying the actual text
                     if response.text:
                         st.write(response.text)
                     else:
-                        st.error("Model returned no text. Check API Studio Safety settings.")
+                        st.error("Empty Response. Check Safety Settings.")
                         
                 except Exception as e:
-                    # CLEAR ERROR REPORTING
-                    st.error(f"Technical Failure: {e}")
+                    # Captures the 400 error and provides the May 2026 solution
+                    st.error(f"Execution Error: {e}")
                     if "400" in str(e):
-                        st.info("💡 May 2026 Notice: Google recently purged old keys. If this 400 error persists, delete your key at AI Studio and create a NEW one.")
+                        st.info("💡 400 ERROR: Your API key is likely expired or from a legacy project. Create a NEW key at aistudio.google.com.")
     else:
         st.write("Awaiting your input...")
