@@ -1,63 +1,58 @@
-# app.py
 import streamlit as st
 import requests
 
-st.set_page_config(page_title="Simple AI Chat", layout="wide")
+st.set_page_config(page_title="Gemini AI Chat", layout="wide")
 
-# ---------- Sidebar Settings ----------
+# ---------- Sidebar ----------
 st.sidebar.title("Settings")
 
-api_url = st.sidebar.text_input(
-    "API URL",
-    value="https://api.openai.com/v1/chat/completions"
-)
+api_key = st.sidebar.text_input("Gemini API Key", type="password")
 
-api_key = st.sidebar.text_input(
-    "API Key",
-    type="password"
-)
-
-model = st.sidebar.text_input(
+model = st.sidebar.selectbox(
     "Model",
-    value="gpt-4o-mini"
+    [
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+        "gemini-2.5-flash-lite"
+    ]
 )
 
-# ---------- Main UI ----------
-st.title("Simple AI Chat")
+# ---------- Main ----------
+st.title("Gemini AI Chat")
 
-prompt = st.text_area("Your Prompt", height=200)
+prompt = st.text_area("Your Prompt", height=220)
 
 if st.button("Send"):
 
+    if not api_key:
+        st.warning("Enter API key")
+        st.stop()
+
     if not prompt:
-        st.warning("Enter a prompt.")
-    elif not api_key:
-        st.warning("Enter API Key.")
-    else:
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
+        st.warning("Enter prompt")
+        st.stop()
 
-        data = {
-            "model": model,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        }
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
-        try:
-            response = requests.post(
-                api_url,
-                headers=headers,
-                json=data
-            )
+    data = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ]
+    }
 
-            result = response.json()
+    try:
+        response = requests.post(url, json=data)
+        result = response.json()
 
-            reply = result["choices"][0]["message"]["content"]
+        if "candidates" in result:
+            reply = result["candidates"][0]["content"]["parts"][0]["text"]
+            st.text_area("AI Reply", value=reply, height=320)
+        else:
+            st.error(result)
 
-            st.text_area("AI Reply", value=reply, height=300)
-
-        except Exception as e:
-            st.error(str(e))
+    except Exception as e:
+        st.error(str(e))
