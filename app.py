@@ -37,7 +37,6 @@ cad_app_html = """
         position: relative;
     }
 
-    /* --- SYSTEM AI-SET MODULAR WINDOW --- */
     #ai-modular-setup {
         position: absolute; top: 10%; left: 15%; width: 70%; height: 75%;
         background: #000; border: 2px solid #00ff00; z-index: 9999;
@@ -70,7 +69,6 @@ cad_app_html = """
     .title-action-btn:hover { background: #00ff00; color: #000; }
     .title-action-btn.close { border-color: #fff; color: #fff; }
 
-    /* --- ORIGINAL GUI CSS --- */
     .window-title-bar { background: #1a1a1a; color: #888; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 12px; border-bottom: 1px solid #333; }
     #dynamic-zone { display: flex; flex-direction: row; flex: 1; min-height: 0; width: 100%; }
     .fixed-right-strip { width: 65px; border-left: 1px solid #333; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: min-content; gap: 2px; padding: 5px; background: #000; overflow-y: scroll; }
@@ -92,6 +90,11 @@ cad_app_html = """
     .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #00ff00; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
     .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
     .cmd-text { width: 100%; height: 100%; color: #0f0; font-family: monospace; font-size: 11px; padding: 5px; overflow-y: auto; white-space: pre-wrap; }
+    
+    /* Visualization Styling */
+    .viz-container { width: 90%; height: 90%; border: 1px dashed #00ff00; display: flex; flex-direction: column; padding: 10px; color: #00ff00; font-family: monospace; font-size: 12px; }
+    .block { border: 2px solid #00ff00; padding: 10px; margin: 10px; text-align: center; background: #050505; }
+    .arrow { text-align: center; font-size: 20px; line-height: 10px; }
 </style>
 
 <div class="master-container">
@@ -114,7 +117,6 @@ cad_app_html = """
             </div>
             <div class="ai-setup-content">
                 <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Google Gemini</span></div>
-                
                 <div id="version-container">
                     <label>AVAILABLE VERSIONS (DYNAMIC):</label>
                     <select class="ai-select" id="version-select">
@@ -124,35 +126,17 @@ cad_app_html = """
                         <option value="gemini-2.5-flash">Gemini 2.5 Flash (Baseline)</option>
                         <option value="gemini-2.5-pro">Gemini 2.5 Pro (Standard reasoning)</option>
                     </select>
-                    <div class="tool-note" id="version-desc">Live available free tools from Google Cloud/AI Studio.</div>
                 </div>
-
                 <div>
                     <label>CORE FUNCTION (OUTPUT):</label>
                     <select class="ai-select" id="function-select">
                         <option value="Multi-modal">Multi-modal Reasoning</option>
                         <option value="MPN Text">MPN Text / Sourcing only</option>
-                        <option value="json">.json / .net</option>
-                        <option value="kicad">.kicad_sch</option>
-                        <option value="odb">ODB++</option>
-                        <option value="step">STEP / STL</option>
-                    </select>
-                    <div class="tool-note" id="tool-desc">Official Google Integration.</div>
-                </div>
-
-                <div>
-                    <label>DEPLOYMENT MODE:</label>
-                    <select class="ai-select">
-                        <option>Cloud API (Vertex / AI Studio)</option>
-                        <option>Local / Dropbox (Privacy Mode)</option>
-                        <option>Virtual Machine (Cloud Server)</option>
                     </select>
                 </div>
-
                 <div>
                     <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#00ff00; font-size:10px; display:block; margin-top:5px;">GET FREE API KEY ↗</a>
                 </div>
             </div>
         </div>
@@ -167,7 +151,7 @@ cad_app_html = """
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
                 <div id="cad-pane" class="pane text-main">
-                    <div id="visual-monitor">visual displays dynamic between coding and screen/CAD designs</div>
+                    <div id="visual-monitor" style="color: #444; font-size: 12px; font-family: monospace;">[ IDLE: AWAITING CIRCUIT REQUEST ]</div>
                 </div>
                 <div id="cmd-pane" class="pane" style="justify-content: flex-start; align-items: flex-start;">
                     <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
@@ -192,12 +176,12 @@ cad_app_html = """
         </div>
         <div id="foot-palette" class="footer-palette-grid"></div>
         <div class="selection-a-stack">
-            <div class="dropup" onclick="toggleMenu(this)"><span>File</span><span>▲</span><div class="dropup-content"><a>New Project</a><a>Open</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>Tools</span><span>▲</span><div class="dropup-content"><a>BOM Gen</a><a>Netlist</a></div></div>
-            <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a><a>3D Render</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>File</span><span>▲</span><div class="dropup-content"><a>New Project</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>Tools</span><span>▲</span><div class="dropup-content"><a>BOM Gen</a></div></div>
+            <div class="dropup" onclick="toggleMenu(this)"><span>View</span><span>▲</span><div class="dropup-content"><a>2D View</a></div></div>
         </div>
         <div class="selection-b-container">
-            <div class="dropup tall" onclick="toggleAISet(true)"><span>AI-SET</span><span>▲</span><div class="dropup-content"><a>Tool Config</a><a>AI Dispatcher</a></div></div>
+            <div class="dropup tall" onclick="toggleAISet(true)"><span>AI-SET</span><span>▲</span><div class="dropup-content"><a>Tool Config</a></div></div>
         </div>
     </div>
 </div>
@@ -210,23 +194,15 @@ cad_app_html = """
     for(let i=0; i<100; i++) document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
     for(let i=0; i<18; i++) document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
 
-    function toggleAISet(show) {
-        document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none';
-    }
+    function toggleAISet(show) { document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none'; }
 
     function saveData() {
         const apiKey = document.getElementById('api-field-input').value;
         const selectedVersion = document.getElementById('version-select').value;
-        
         if(apiKey) {
             localStorage.setItem('gemini_api_key', apiKey);
-            localStorage.setItem('gemini_version', selectedVersion);
-            
-            // UI Update: Route info to Chat Window, Log status to Terminal
-            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> GOOGLE GEMINI CONFIGURATION SAVED.<br>Active Engine: " + selectedVersion.toUpperCase();
+            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED. ACTIVE: " + selectedVersion.toUpperCase();
             document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
-        } else {
-            document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: FAIL_KEY_MISSING";
         }
         toggleAISet(false);
     }
@@ -235,11 +211,6 @@ cad_app_html = """
         document.querySelectorAll('.ai-tool-item').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
         document.getElementById('tool-name').innerText = name;
-        document.getElementById('function-select').value = func;
-        document.getElementById('tool-desc').innerText = note;
-        
-        const versionBox = document.getElementById('version-container');
-        versionBox.style.display = (name === 'Google Gemini') ? 'block' : 'none';
     }
 
     function toggleMenu(el) {
@@ -249,39 +220,9 @@ cad_app_html = """
         if(!isActive) el.classList.add('active');
     }
 
-    window.onclick = function() {
-        document.querySelectorAll('.dropup').forEach(d => d.classList.remove('active'));
-    };
-
     const promptInput = document.getElementById('user-prompt');
     promptInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            const text = promptInput.value.trim();
-            if(text !== "") {
-                // User input reflected in top-right AI Chat Window
-                document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-                
-                // Dispatch logic to bottom-left Terminal
-                document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
-                promptInput.value = "";
-                
-                setTimeout(() => {
-                   // AI technical reply correctly routed to top-right AI Chat Window
-                   document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> Processing technical architecture for: " + text;
-                   document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: CORE_EXECUTION_STREAMING";
-                }, 500);
-            }
-        }
-    });
-</script>
-"""
-
-components.html(cad_app_html, height=0)
-st.components.v1.html(
-    f"""<script>
-        window.parent.document.querySelector('iframe').style.height = '94vh';
-    </script>""",
-    height=0
-)
-
+            const text
+            
