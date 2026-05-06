@@ -27,7 +27,6 @@ cad_app_html = """
     .ai-tool-item.active { background: #00ff00; color: #000; font-weight: bold; }
     .ai-select { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; font-family: monospace; }
     .ai-input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; box-sizing: border-box; }
-    .tool-link { font-size: 11px; color: #00ff00; text-decoration: underline; cursor: pointer; }
     .window-title-bar { background: #1a1a1a; color: #888; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 12px; border-bottom: 1px solid #333; }
     #dynamic-zone { display: flex; flex: 1; width: 100%; min-height: 0; }
     .fixed-right-strip { width: 65px; border-left: 1px solid #333; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 5px; background: #000; overflow-y: scroll; }
@@ -42,43 +41,42 @@ cad_app_html = """
 <div class="master-container">
     <div id="ai-modular-setup">
         <div class="ai-setup-header">
-            <span>[ TOOL CONFIGURATION ]</span>
+            <span>[ VERSION CONTROL ]</span>
             <div>
                 <button onclick="saveData()" style="color:#00ff00; background:0; border:1px solid #00ff00; cursor:pointer;">SAVE</button>
                 <button onclick="toggleAISet(false)" style="color:#fff; background:0; border:1px solid #fff; cursor:pointer; margin-left:10px;">[ X ]</button>
             </div>
         </div>
         <div class="ai-setup-body">
-            <div class="ai-setup-sidebar"><div class="ai-tool-item active">GOOGLE GEMINI</div></div>
+            <div class="ai-setup-sidebar"><div class="ai-tool-item active">GEMINI OFFICIAL</div></div>
             <div class="ai-setup-content">
-                <label>MODEL:</label>
+                <label>VERSION SELECT (STRICT):</label>
                 <select class="ai-select" id="version-select">
-                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
-                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    <option value="gemini-1.5-pro">GEMINI 1.5 PRO</option>
+                    <option value="gemini-1.5-flash">GEMINI 1.5 FLASH</option>
                 </select>
                 <label>API KEY:</label>
                 <input type="password" id="api-field-input" class="ai-input">
-                <a class="tool-link" href="https://aistudio.google.com/app/apikey" target="_blank">Get Official API Key</a>
             </div>
         </div>
     </div>
 
-    <div class="window-title-bar"><div>CAD DESIGNER PRO</div><div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div></div>
+    <div class="window-title-bar"><div>CAD ENGINE PRO</div><div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div></div>
 
     <div id="dynamic-zone">
         <div id="left-stack" style="display:flex; flex-direction:column; width:70%;">
             <div id="cad-pane" class="pane" style="flex:4;"><div style="color: #444; font-family: monospace;">[ IDLE ]</div></div>
-            <div id="cmd-pane" class="pane" style="flex:1;"><div id="terminal-out" class="cmd-text">>_ READY</div></div>
+            <div id="cmd-pane" class="pane" style="flex:1;"><div id="terminal-out" class="cmd-text">>_ SYSTEM READY</div></div>
         </div>
         <div id="right-stack" style="display:flex; flex-direction:column; width:30%;">
             <div id="ai-output" class="pane" style="flex:1;"><div id="ai-chat" class="ai-text-area"></div></div>
-            <div id="ai-input" class="pane" style="flex:1;"><textarea id="user-prompt" class="user-input-area" placeholder="INPUT COMMAND..."></textarea></div>
+            <div id="ai-input" class="pane" style="flex:1;"><textarea id="user-prompt" class="user-input-area" placeholder="ENTER COMMAND..."></textarea></div>
         </div>
         <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
     <div class="fixed-footer">
-        <div style="flex:1; display:flex; align-items:center; color:#00ff00; font-size:10px; padding-left:10px;">ONLINE</div>
+        <div style="flex:1; display:flex; align-items:center; color:#00ff00; font-size:10px; padding-left:10px;">STATUS: ONLINE</div>
         <div style="width:130px; background:#e1e1e1; color:#000; text-align:center; cursor:pointer; line-height:60px; font-weight:bold;" onclick="toggleAISet(true)">AI-SET ▲</div>
     </div>
 </div>
@@ -90,7 +88,7 @@ cad_app_html = """
 
     function saveData() {
         localStorage.setItem('gemini_api_key', document.getElementById('api-field-input').value);
-        document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVED";
+        document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_APPLIED";
         toggleAISet(false);
     }
 
@@ -102,7 +100,7 @@ cad_app_html = """
         if (!apiKey) { chatWindow.innerHTML += "<br>[ERROR]: NO KEY"; return; }
 
         try {
-            terminal.innerHTML += "\\n> CALLING " + model;
+            terminal.innerHTML += "\\n> POST: " + model;
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -110,11 +108,12 @@ cad_app_html = """
             });
             const data = await resp.json();
             if (data.error) throw new Error(data.error.message);
-            chatWindow.innerHTML += `<br><br><span style="color:#00ff00">[${model}]:</span> ` + data.candidates[0].content.parts[0].text;
-            terminal.innerHTML += "\\n> 200 OK";
+            chatWindow.innerHTML += `<br><br><span style="color:#00ff00">[${model.toUpperCase()}]:</span> ` + data.candidates[0].content.parts[0].text;
+            terminal.innerHTML += "\\n> STATUS 200";
             chatWindow.scrollTop = chatWindow.scrollHeight;
         } catch (err) {
-            chatWindow.innerHTML += `<br><span style="color:red">[ERR]: ${err.message}</span>`;
+            chatWindow.innerHTML += `<br><span style="color:red">[ERROR]: ${err.message}</span>`;
+            terminal.innerHTML += "\\n> STATUS FAILED";
         }
     }
 
