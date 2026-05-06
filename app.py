@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # 1. Page Configuration
 st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# 2. UI Reset (Maintaining your exact black/minimalist style)
+# 2. UI Reset
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -20,7 +20,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Native UI Application with AI Logic Bridge
+# 3. Native UI Application (Original 6 AI & 100 Button GUI)
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
@@ -80,12 +80,11 @@ cad_app_html = """
     .dropup-content { display: none; position: absolute; bottom: 100%; left: -1px; background-color: #f0f0f0; min-width: 140px; border: 1px solid #707070; z-index: 1000; }
     .dropup.active .dropup-content { display: block; }
 
-    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #00ff00; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; white-space: pre-wrap; }
+    .ai-text-area { width: 100%; height: 100%; padding: 10px; color: #00ff00; font-family: 'Consolas', monospace; font-size: 13px; overflow-y: auto; text-align: left; }
     .user-input-area { width: 100%; height: 100%; background: transparent; border: none; color: #800080; padding: 10px; font-family: 'Consolas', monospace; outline: none; resize: none; font-weight: bold; }
 </style>
 
 <div class="master-container">
-    <!-- 6 AI SELECTION GUI (UNTOUCHED) -->
     <div id="ai-modular-setup">
         <div class="ai-setup-header">
             <span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
@@ -102,46 +101,41 @@ cad_app_html = """
             </div>
             <div class="ai-setup-content">
                 <label>VERSION:</label>
-                <select class="ai-select" id="model-version">
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <select class="ai-select">
+                    <option>Gemini 1.5 Flash</option>
+                    <option>Gemini 1.5 Pro</option>
                 </select>
                 <label>API KEY:</label>
-                <input type="password" id="api-key-input" class="ai-input" placeholder="PASTE KEY HERE...">
-                <button onclick="saveSettings()" style="margin-top:10px; background:#00ff00; color:#000; border:none; padding:5px; cursor:pointer; font-weight:bold;">APPLY SETTINGS</button>
+                <input type="password" class="ai-input" placeholder="ENTER ACCESS KEY...">
             </div>
         </div>
     </div>
 
     <div class="window-title-bar">
-        <div>CAD DESIGNER PRO [CORE_ACTIVE]</div>
+        <div>CAD DESIGNER PRO</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
     </div>
 
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex; flex:1; width:100%;">
             <div id="left-stack" style="width:70%;">
-                <div id="cad-pane" class="pane" style="height:80%; color:#b22222; font-weight:bold;">ENGINE VISUALIZATION</div>
-                <div id="cmd-pane" class="pane" style="height:20%; color:#0f0; font-family:monospace; padding:10px; align-items:flex-start; justify-content:flex-start;">
-                   <div id="terminal-log">>_ SYSTEM INITIALIZED...</div>
-                </div>
+                <div id="cad-pane" class="pane" style="height:80%; color:#b22222; font-weight:bold;">CAD VISUALIZATION</div>
+                <div id="cmd-pane" class="pane" style="height:20%; color:#0f0; font-family:monospace; padding:10px;">>_ READY</div>
             </div>
-            <!-- AI INTERACTION ZONE -->
             <div id="right-stack" style="width:30%;">
                 <div id="ai-output" class="pane" style="height:50%;">
-                    <div id="ai-chat" class="ai-text-area">SYSTEM: Awaiting input...</div>
+                    <div id="ai-chat" class="ai-text-area">AI REPLY AREA</div>
                 </div>
                 <div id="ai-input" class="pane" style="height:50%;">
-                    <textarea id="user-prompt" class="user-input-area" placeholder="Type prompt and press Enter..."></textarea>
+                    <textarea id="user-prompt" class="user-input-area" placeholder="TYPE HERE..."></textarea>
                 </div>
             </div>
         </div>
-        <!-- 100 BUTTON STRIP (UNTOUCHED) -->
         <div class="fixed-right-strip" id="side-strip"></div>
     </div>
 
     <div class="fixed-footer">
-        <div class="footer-left-content"><span style="color:#00ff00; font-size:11px;">CAD_ENGINE_ONLINE</span></div>
+        <div class="footer-left-content"><span style="color:#00ff00; font-size:11px;">SYSTEM ONLINE</span></div>
         <div id="foot-palette" class="footer-palette-grid"></div>
         <div class="selection-a-stack">
             <div class="dropup"><span>File</span><span>▲</span></div>
@@ -155,63 +149,12 @@ cad_app_html = """
 </div>
 
 <script>
-    // LAYOUT INITIALIZATION
     Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 4 });
     const strip = document.getElementById('side-strip');
     for(let i=0; i<100; i++) strip.innerHTML += '<div class="btn-cell"></div>';
     const pal = document.getElementById('foot-palette');
     for(let i=0; i<18; i++) pal.innerHTML += '<div class="btn-cell"></div>';
-    
     function toggleAISet(show) { document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none'; }
-
-    // AI LOGIC BRIDGE
-    let apiKey = "";
-    function saveSettings() {
-        apiKey = document.getElementById('api-key-input').value;
-        document.getElementById('terminal-log').innerHTML += "<br>>_ API KEY CONFIGURED.";
-        toggleAISet(false);
-    }
-
-    const chatBox = document.getElementById('ai-chat');
-    const userInput = document.getElementById('user-prompt');
-
-    userInput.addEventListener('keydown', async (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const prompt = userInput.value.trim();
-            if (!prompt) return;
-
-            // Update UI with User Prompt
-            chatBox.innerHTML += `<div style="color:#800080; margin-bottom:10px;"><b>[USER]:</b> ${prompt}</div>`;
-            userInput.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            if (!apiKey) {
-                chatBox.innerHTML += `<div style="color:red;">ERROR: No API Key. Open AI-SET to configure.</div>`;
-                return;
-            }
-
-            // ACTING AS AI: Fetching from Gemini
-            try {
-                chatBox.innerHTML += `<div id="loading" style="color:#555;">[GEMINI]: Thinking...</div>`;
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await response.json();
-                document.getElementById('loading').remove();
-                
-                const aiMsg = data.candidates[0].content.parts[0].text;
-                chatBox.innerHTML += `<div style="color:#00ff00; margin-bottom:15px;"><b>[GEMINI]:</b> ${aiMsg}</div>`;
-                document.getElementById('terminal-log').innerHTML += "<br>>_ DATA_PACKET_RECEIVED";
-            } catch (err) {
-                if(document.getElementById('loading')) document.getElementById('loading').remove();
-                chatBox.innerHTML += `<div style="color:red;">CONNECTION FAILED: Check Key/Network.</div>`;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-    });
 </script>
 """
 
