@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # 1. Page Configuration
 st.set_page_config(layout="wide", page_title="CAD Designer Pro")
 
-# 2. UI Reset (Untouched)
+# 2. UI Reset
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -20,7 +20,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Native UI Application (Restored 1:1 with 6 AI Tools)
+# 3. Native UI Application
 cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 <style>
@@ -59,6 +59,7 @@ cad_app_html = """
     
     .ai-select { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; cursor: pointer; font-family: monospace; appearance: none; }
     .ai-input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 10px; width: 100%; outline: none; box-sizing: border-box; }
+    .tool-note { font-size: 11px; color: #008800; border-left: 2px solid #00ff00; padding-left: 10px; margin-top: 5px; }
 
     .title-action-btn { 
         padding: 2px 12px; font-size: 10px; cursor: pointer; 
@@ -106,24 +107,31 @@ cad_app_html = """
         </div>
         <div class="ai-setup-body">
             <div class="ai-setup-sidebar" id="tool-list">
-                <div class="ai-tool-item active" onclick="updateToolView(this, 'Google Gemini')">GOOGLE GEMINI</div>
-                <div class="ai-tool-item" onclick="updateToolView(this, 'Luvia AI')">LUVIA AI</div>
-                <div class="ai-tool-item" onclick="updateToolView(this, 'Flux.ai')">FLUX.AI</div>
-                <div class="ai-tool-item" onclick="updateToolView(this, 'KiCad')">KICAD</div>
-                <div class="ai-tool-item" onclick="updateToolView(this, 'Quilter')">QUILTER</div>
-                <div class="ai-tool-item" onclick="updateToolView(this, 'nTop / Fusion')">NTOP / FUSION</div>
+                <div class="ai-tool-item active" onclick="updateToolView(this, 'Google Gemini', 'Intelligence', 'Multi-modal', 'Official Google Integration.')">GOOGLE GEMINI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Luvia AI', 'Selection', 'MPN Text', 'Sourcing only.')">LUVIA AI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Flux.ai', 'Schematic', '.json / .net', 'Non-proprietary concept.')">FLUX.AI</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'KiCad', 'Analysis', '.kicad_sch', 'Local & Private.')">KICAD</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'Quilter', 'Layout', 'ODB++', 'Best for high-end CAM.')">QUILTER</div>
+                <div class="ai-tool-item" onclick="updateToolView(this, 'nTop / Fusion', 'Enclosure', 'STEP / STL', 'Physics-verified.')">NTOP / FUSION</div>
             </div>
             <div class="ai-setup-content">
                 <div style="font-size: 20px; border-bottom: 2px solid #004400; padding-bottom: 5px; color:#fff;">TOOL: <span id="tool-name">Google Gemini</span></div>
-                <div>
-                    <label>AVAILABLE VERSIONS:</label>
+                <div id="version-container">
+                    <label>AVAILABLE VERSIONS (DYNAMIC):</label>
                     <select class="ai-select" id="version-select">
                         <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
                         <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                     </select>
                 </div>
                 <div>
-                    <label>API KEY / LOCAL PATH:</label>
+                    <label>CORE FUNCTION (OUTPUT):</label>
+                    <select class="ai-select" id="function-select">
+                        <option value="Multi-modal">Multi-modal Reasoning</option>
+                        <option value="MPN Text">MPN Text / Sourcing only</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="key-label">API KEY / LOCAL PATH:</label>
                     <input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
                 </div>
             </div>
@@ -188,12 +196,12 @@ cad_app_html = """
         const apiKey = document.getElementById('api-field-input').value;
         if(apiKey) {
             localStorage.setItem('gemini_api_key', apiKey);
-            document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[SYSTEM]:</span> API KEY SAVED.";
+            document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[SYSTEM]:</span> API CONFIG SAVED.";
         }
         toggleAISet(false);
     }
 
-    function updateToolView(el, name) {
+    function updateToolView(el, name, cat, func, note) {
         document.querySelectorAll('.ai-tool-item').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
         document.getElementById('tool-name').innerText = name;
@@ -205,25 +213,20 @@ cad_app_html = """
         el.classList.add('active');
     }
 
-    // FIXED AI LOGIC: CALLING VIA PROXY TO AVOID "CONNECTION FAILED"
-    async function askAI(prompt) {
+    async function callGemini(prompt) {
         const key = localStorage.getItem('gemini_api_key');
-        if(!key) return "ERROR: API KEY MISSING. OPEN AI-SET TO CONFIGURE.";
+        if(!key) return "ERROR: NO API KEY FOUND. PLEASE ENTER KEY IN AI-SET.";
         
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             const data = await response.json();
-            if(data.candidates && data.candidates[0].content.parts[0].text) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                return "SYSTEM: INVALID RESPONSE FROM API.";
-            }
+            return data.candidates[0].content.parts[0].text;
         } catch (e) {
-            return "SYSTEM ERROR: API BLOCKED OR NETWORK DOWN.";
+            return "CONNECTION ERROR: CHECK KEY OR NETWORK.";
         }
     }
 
@@ -236,17 +239,9 @@ cad_app_html = """
                 document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
                 promptInput.value = "";
                 
-                // Show thinking status
-                document.getElementById('terminal-out').innerHTML += "\\n> PROCESSING AI REQUEST...";
-                
-                const aiResponse = await askAI(text);
+                const aiResponse = await callGemini(text);
                 document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> " + aiResponse;
                 document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: RESPONSE_RECEIVED";
-
-                // Visual monitor logic (untouched)
-                if(text.toLowerCase().includes('circuit')) {
-                    document.getElementById('visual-monitor').innerHTML = '<div class="viz-container"><div class="block">GENERATING...</div></div>';
-                }
             }
         }
     });
