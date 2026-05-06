@@ -1,5 +1,4 @@
 dash
 dash-bootstrap-components
-google-generativeai
 google-genai
 streamlit
