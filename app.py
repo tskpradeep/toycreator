@@ -1,10 +1,10 @@
 import streamlit as st
-from google import genai  # Requires 'google-genai' in requirements.txt
+import requests
+import json
 
-# --- UI SETUP ---
+# --- 1. UI CONFIGURATION ---
 st.set_page_config(page_title="AI Workbench 2026", layout="wide")
 
-# Dark Theme for 2026 Visibility
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; color: white !important; }
@@ -17,49 +17,56 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR: ONLY API OPTION ---
+# --- 2. SIDEBAR ---
 with st.sidebar:
-    st.header("⚙️ 2026 Settings")
-    api_key = st.text_input("Enter 2026 API Key", type="password")
-    
-    # Model 2 Locked (Gemini 3 Flash)
-    model_choice = "gemini-3-flash-preview"
-    st.success(f"Active Model: {model_choice}")
+    st.header("⚙️ Dashboard Settings")
+    api_key = st.text_input("Enter Gemini API Key", type="password")
+    # Using Model 2 (Gemini 3 Flash) as requested
+    model_id = "gemini-3-flash-preview"
+    st.success(f"Target: {model_id}")
 
-# --- INTERFACE ---
+# --- 3. DUAL WINDOW DASHBOARD ---
 st.title("AI Workbench")
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("PROMPTING WINDOW")
-    user_prompt = st.text_area("Your Question:", height=400, placeholder="Type here...")
-    send_btn = st.button("Send to Gemini 3")
+    user_prompt = st.text_area("Enter your request:", height=400)
+    send_btn = st.button("Get Response")
 
 with col2:
     st.subheader("ANSWER WINDOW")
     if send_btn:
         if not api_key:
-            st.error("API Key Required.")
+            st.error("API Key is missing.")
         elif not user_prompt:
-            st.warning("Enter a prompt.")
+            st.warning("Please enter a prompt.")
         else:
-            with st.spinner("Connecting..."):
+            with st.spinner("Connecting to Google Servers..."):
                 try:
-                    # NEW 2026 CLIENT ARCHITECTURE
-                    client = genai.Client(api_key=api_key)
+                    # DIRECT REST API CALL (Bypasses library bugs)
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={api_key}"
                     
-                    response = client.models.generate_content(
-                        model=model_choice,
-                        contents=user_prompt
-                    )
+                    headers = {'Content-Type': 'application/json'}
+                    data = {
+                        "contents": [{"parts": [{"text": user_prompt}]}]
+                    }
                     
-                    st.markdown("---")
-                    if response.text:
-                        st.write(response.text)
+                    response = requests.post(url, headers=headers, json=data)
+                    result = response.json()
+                    
+                    # ERROR HANDLING FOR THE 400 ERROR
+                    if response.status_code != 200:
+                        st.error(f"Error {response.status_code}: {result['error']['message']}")
+                        if "API key not valid" in str(result):
+                            st.info("💡 SOLUTION: Go to aistudio.google.com, delete your old key, and create a NEW one. Keys from before April 2026 are often rejected.")
                     else:
-                        st.error("No text returned. Check API permissions.")
+                        # SUCCESSFUL RESPONSE DISPLAY
+                        answer = result['candidates'][0]['content']['parts'][0]['text']
+                        st.markdown("---")
+                        st.write(answer)
                         
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(f"Technical Failure: {e}")
     else:
         st.write("Awaiting your input...")
