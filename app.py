@@ -95,7 +95,6 @@ cad_app_html = """
 </style>
 
 <div class="master-container">
-    <!-- MODULAR AI-SET WINDOW -->
     <div id="ai-modular-setup">
         <div class="ai-setup-header">
             <span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
@@ -159,7 +158,6 @@ cad_app_html = """
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
     <div class="window-title-bar">
         <div>CAD DESIGNER PRO</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
@@ -220,15 +218,12 @@ cad_app_html = """
         const apiKey = document.getElementById('api-field-input').value;
         const selectedVersion = document.getElementById('version-select').value;
         
-        // Correct Routing: Details to AI Chat Window, Short Log to Terminal
         if(apiKey) {
             localStorage.setItem('gemini_api_key', apiKey);
             localStorage.setItem('gemini_version', selectedVersion);
             
-            // Detail to AI Chat Window
-            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> GOOGLE GEMINI CONFIGURATION SAVED.<br>Active Engine: " + selectedVersion.toUpperCase() + ".<br>Security: API Key encrypted in local storage.";
-            
-            // System Log to Terminal
+            // UI Update: Route info to Chat Window, Log status to Terminal
+            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> GOOGLE GEMINI CONFIGURATION SAVED.<br>Active Engine: " + selectedVersion.toUpperCase();
             document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
         } else {
             document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: FAIL_KEY_MISSING";
@@ -264,15 +259,15 @@ cad_app_html = """
             e.preventDefault();
             const text = promptInput.value.trim();
             if(text !== "") {
-                // User input reflected in AI Chat Window
+                // User input reflected in top-right AI Chat Window
                 document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
                 
-                // Dispatch logic to Terminal
+                // Dispatch logic to bottom-left Terminal
                 document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
                 promptInput.value = "";
                 
                 setTimeout(() => {
-                   // AI technical reply flows to AI Chat Window
+                   // AI technical reply correctly routed to top-right AI Chat Window
                    document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> Processing technical architecture for: " + text;
                    document.getElementById('terminal-out').innerHTML += "\\n> SYSTEM: CORE_EXECUTION_STREAMING";
                 }, 500);
@@ -289,3 +284,4 @@ st.components.v1.html(
     </script>""",
     height=0
 )
+
