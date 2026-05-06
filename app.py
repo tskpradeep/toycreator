@@ -1,72 +1,42 @@
 import streamlit as st
 import requests
-import json
 
-# --- 1. UI CONFIGURATION ---
-st.set_page_config(page_title="AI Workbench 2026", layout="wide")
-
+# Set the functional design you specified: light-gray, no shadows
+st.set_page_config(page_title="ToyCreator Gateway", layout="wide")
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; color: white !important; }
-    .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp label { color: white !important; }
-    .stTextArea textarea { 
-        background-color: #1c2128 !important; 
-        color: white !important;
-        border: 1px solid #30363d !important;
-    }
+    .stApp { background-color: #d3d3d3; color: black; }
+    div.stButton > button { border: 1px solid black; border-radius: 0px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. SIDEBAR ---
-with st.sidebar:
-    st.header("⚙️ Dashboard Settings")
-    api_key = st.text_input("Enter Gemini API Key", type="password")
-    # Using Model 2 (Gemini 3 Flash) as requested
-    model_id = "gemini-3-flash-preview"
-    st.success(f"Target: {model_id}")
+st.title("ToyCreator Phase 1")
 
-# --- 3. DUAL WINDOW DASHBOARD ---
-st.title("AI Workbench")
-col1, col2 = st.columns(2)
+# Use a clean input field for your key
+api_key = st.text_input("Enter Key:", type="password")
 
-with col1:
-    st.subheader("PROMPTING WINDOW")
-    user_prompt = st.text_area("Enter your request:", height=400)
-    send_btn = st.button("Get Response")
-
-with col2:
-    st.subheader("ANSWER WINDOW")
-    if send_btn:
-        if not api_key:
-            st.error("API Key is missing.")
-        elif not user_prompt:
-            st.warning("Please enter a prompt.")
-        else:
-            with st.spinner("Connecting to Google Servers..."):
-                try:
-                    # DIRECT REST API CALL (Bypasses library bugs)
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={api_key}"
-                    
-                    headers = {'Content-Type': 'application/json'}
-                    data = {
-                        "contents": [{"parts": [{"text": user_prompt}]}]
-                    }
-                    
-                    response = requests.post(url, headers=headers, json=data)
-                    result = response.json()
-                    
-                    # ERROR HANDLING FOR THE 400 ERROR
-                    if response.status_code != 200:
-                        st.error(f"Error {response.status_code}: {result['error']['message']}")
-                        if "API key not valid" in str(result):
-                            st.info("💡 SOLUTION: Go to aistudio.google.com, delete your old key, and create a NEW one. Keys from before April 2026 are often rejected.")
-                    else:
-                        # SUCCESSFUL RESPONSE DISPLAY
-                        answer = result['candidates'][0]['content']['parts'][0]['text']
-                        st.markdown("---")
-                        st.write(answer)
-                        
-                except Exception as e:
-                    st.error(f"Technical Failure: {e}")
+if st.button("Initialize Workbench"):
+    if not api_key:
+        st.warning("Key Required")
     else:
-        st.write("Awaiting your input...")
+        # This direct URL method is the only one currently bypassing the 400 error
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key={api_key}"
+        
+        headers = {'Content-Type': 'application/json'}
+        payload = {"contents": [{"parts": [{"text": "System Check"}]}]}
+
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            result = response.json()
+
+            if response.status_code == 200:
+                st.success("AUTHENTICATED")
+                st.session_state['api_ready'] = True
+                # Proceed to your hard-freezed Phase 1 GUI logic here
+            else:
+                # Show the exact reason from Google without AI interpretation
+                error_info = result.get('error', {}).get('message', 'Validation Failed')
+                st.error(f"Error: {error_info}")
+                st.info("Check if 'Generative Language API' is enabled in your Google Cloud console.")
+        except Exception as e:
+            st.error(f"Technical Block: {e}")
