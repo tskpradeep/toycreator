@@ -1,54 +1,71 @@
 import streamlit as st
 
-# --- PAGE CONFIGURATION ---
+# 1. Setup the Page Layout
 st.set_page_config(page_title="AI Interface", layout="wide")
 
-# --- CUSTOM CSS FOR MINIMALIST LOOK ---
+# 2. Apply the Design (Plain light-gray background, no shadows)
 st.markdown("""
     <style>
-    .stApp { background-color: #e0e0e0; }
-    .stTextArea textarea { background-color: #ffffff; border: none; }
-    .stChatMessage { background-color: #f5f5f5; border-radius: 0px; }
+    /* Background color for the whole app */
+    .stApp { 
+        background-color: #e0e0e0; 
+    }
+    /* Simple text boxes with no borders/shadows */
+    .stTextArea textarea { 
+        background-color: #ffffff; 
+        border: 1px solid #cccccc; 
+        border-radius: 0px; 
+        box-shadow: none !important;
+    }
+    /* Styling for the output box */
+    .stVerticalBlock {
+        gap: 0rem;
+    }
     </style>
-    """, unsafe_allow_index=True)
+    """, unsafe_allow_html=True)
 
-# --- SIDEBAR (SETTINGS) ---
+# 3. SETTINGS WINDOW (The Sidebar)
 with st.sidebar:
     st.header("⚙️ Gemini Settings")
-    api_key = st.text_input("Enter Gemini API Key", type="password")
+    st.write("Configure your AI here:")
+    
+    api_key = st.text_input("Gemini API Key", type="password", placeholder="Paste your key here")
+    
     model_version = st.selectbox(
         "Model Version",
         ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"]
     )
-    st.info("Settings are saved for this session.")
+    
+    st.divider()
+    st.caption("Settings update automatically.")
 
-# --- MAIN INTERFACE (2 WINDOWS) ---
+# 4. MAIN INTERFACE (The Two Windows)
 st.title("AI Workbench")
 
-# Create two columns to act as your "windows"
+# Creating the split view: Left for prompting, Right for seeing the answer
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("PROMPTING WINDOW")
-    user_prompt = st.text_area("Enter your prompt here:", height=300, placeholder="Type something...")
-    send_button = st.button("Send to AI")
+    user_prompt = st.text_area("Type your request:", height=400)
+    send_button = st.button("Get Answer")
 
 with col2:
     st.subheader("ANSWER WINDOW")
-    # Container for the AI response to make it look like a distinct window
-    response_container = st.container(border=True)
+    # This creates a plain box for the result
+    answer_box = st.container()
     
-    if send_button:
-        if not api_key:
-            st.error("Please enter an API Key in the settings sidebar.")
-        elif not user_prompt:
-            st.warning("Please enter a prompt first.")
-        else:
-            with response_container:
-                st.write(f"**System:** Sending request to {model_version}...")
-                # This is where your AI logic will display the final answer
+    with answer_box:
+        if send_button:
+            if not api_key:
+                st.error("Error: Missing API Key in Settings!")
+            elif not user_prompt:
+                st.warning("Please type a prompt first.")
+            else:
+                # This is a placeholder showing the system is working
+                st.info(f"Connecting to {model_version}...")
                 st.markdown("---")
-                st.write("AI response will appear here once connected to the API.")
-    else:
-        with response_container:
-            st.write("Waiting for prompt...")
+                st.write("Your AI answer will appear here.")
+                st.write("(To finish this, you would connect the Google Gemini library next).")
+        else:
+            st.write("Waitng for your prompt...")
