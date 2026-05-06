@@ -6,6 +6,11 @@ st.set_page_config(page_title="Gemini AI Chat", layout="wide")
 # ---------- Sidebar ----------
 st.sidebar.title("Settings")
 
+api_url = st.sidebar.text_input(
+    "API URL",
+    value="https://generativelanguage.googleapis.com/v1beta/models/"
+)
+
 api_key = st.sidebar.text_input("Gemini API Key", type="password")
 
 model = st.sidebar.selectbox(
@@ -32,7 +37,7 @@ if st.button("Send"):
         st.warning("Enter prompt")
         st.stop()
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    url = f"{api_url}{model}:generateContent?key={api_key}"
 
     data = {
         "contents": [
