@@ -1,50 +1,70 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.set_page_config(page_title="2026 AI Workbench", layout="wide")
+# 1. Page Config
+st.set_page_config(page_title="AI Workbench", layout="wide")
 
-# --- Dark Mode CSS ---
-st.markdown("""<style>
-    .stApp { background-color: #0e1117; color: white !important; }
-    .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp label { color: white !important; }
-    .stTextArea textarea { background-color: #262730 !important; color: white !important; border: 1px solid #444444; }
-</style>""", unsafe_allow_html=True)
+# 2. Dark Mode Styling
+st.markdown("""
+    <style>
+    .stApp { background-color: #1a1a1a; }
+    .stApp, .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp label { color: #ffffff !important; }
+    .stTextArea textarea { 
+        background-color: #2d2d2d !important; 
+        color: #ffffff !important;
+        border: 1px solid #444444 !important; 
+        border-radius: 0px; 
+    }
+    section[data-testid="stSidebar"] { background-color: #121212 !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
+# 3. Sidebar Settings
 with st.sidebar:
-    st.header("⚙️ 2026 Settings")
-    api_key = st.text_input("New Gemini 3 Key", type="password")
-    # Using the exact 2026 model string
-    model_choice = "gemini-3-flash-preview" 
+    st.header("⚙️ Gemini Settings")
+    api_key = st.text_input("Gemini API Key", type="password")
+    model_choice = st.selectbox(
+        "Select Model",
+        ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+    )
+    st.info("The 'Flash' model is best for the free version.")
 
-# --- Main Logic ---
+# 4. Main Interface
 st.title("AI Workbench")
+
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("PROMPTING")
-    user_prompt = st.text_area("Your Question:", height=300)
-    send_btn = st.button("Send Request")
+    st.subheader("PROMPTING WINDOW")
+    user_prompt = st.text_area("Type your request:", height=400, placeholder="e.g. Who are you?")
+    send_button = st.button("Get Answer")
 
 with col2:
-    st.subheader("RESPONSE")
-    if send_btn:
+    st.subheader("ANSWER WINDOW")
+    answer_container = st.container()
+    
+    if send_button:
         if not api_key:
-            st.error("Error: Please paste a NEW API Key in the sidebar.")
+            st.error("Please enter your API Key in the sidebar.")
+        elif not user_prompt:
+            st.warning("Please enter a prompt first.")
         else:
-            try:
-                genai.configure(api_key=api_key)
-                # SETTING SAFETY TO 'BLOCK_NONE' TO PREVENT NONSENSE FLAGS
-                model = genai.GenerativeModel(
-                    model_name=model_choice,
-                    safety_settings={
-                        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
-                        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
-                        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
-                        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
-                    }
-                )
-                response = model.generate_content(user_prompt)
-                st.markdown(response.text)
-            except Exception as e:
-                st.error(f"Execution Error: {e}")
-                st.info("If it says 'Invalid Key', please generate a new one at AI Studio.")
+            with st.spinner("Connecting to Google..."):
+                try:
+                    # CONFIGURING THE AI ENGINE
+                    genai.configure(api_key=api_key)
+                    model = genai.GenerativeModel(model_choice)
+                    
+                    # SENDING THE PROMPT
+                    response = model.generate_content(user_prompt)
+                    
+                    # DISPLAYING THE ANSWER
+                    with answer_container:
+                        st.markdown("---")
+                        st.markdown(response.text)
+                except Exception as e:
+                    st.error(f"Technical Error: {e}")
+                    st.write("Tip: Make sure your API key is correct for the selected model.")
+    else:
+        with answer_container:
+            st.write("Waiting for prompt...")
