@@ -1,158 +1,84 @@
-import streamlit as st
-import streamlit.components.v1 as components
+import tkinter as tk
+from tkinter import messagebox, scrolledtext
 
-st.set_page_config(layout="wide", page_title="CAD Designer Pro")
+class GeminiApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("AI Interface")
+        self.root.geometry("800x600")
+        self.root.configure(bg="#e0e0e0")
 
-# 1. CSS Styling
-st.markdown("""
-    <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-        .stApp { background-color: #000 !important; overflow: hidden !important; }
-        .block-container { padding: 0rem !important; max-width: 100% !important; height: 100vh !important; }
-    </style>
-""", unsafe_allow_html=True)
+        # Global Settings Variables
+        self.api_key = tk.StringVar(value="")
+        self.model_version = tk.StringVar(value="gemini-1.5-flash")
 
-# 2. Main Application
-cad_app_html = """
-<!DOCTYPE html>
-<html>
-<head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
-    <style>
-        html, body { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; font-family: monospace; color: white; overflow: hidden; }
-        .master-container { display: flex; flex-direction: column; height: 100vh; border: 2px solid #333; }
+        self.setup_ui()
+
+    def setup_ui(self):
+        # Top Menu / Header Area
+        header_frame = tk.Frame(self.root, bg="#e0e0e0")
+        header_frame.pack(fill="x", pady=5)
+
+        settings_btn = tk.Button(header_frame, text="⚙ Settings", command=self.open_settings)
+        settings_btn.pack(side="right", padx=10)
+
+        # Main Content Area (Split into two windows/panes)
+        main_container = tk.PanedWindow(self.root, orient="vertical", bg="#cccccc", sashwidth=4)
+        main_container.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Window 1: Prompt Input
+        prompt_frame = tk.Frame(main_container, bg="#e0e0e0")
+        tk.Label(prompt_frame, text="PROMPT INPUT", bg="#e0e0e0", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.prompt_input = scrolledtext.ScrolledText(prompt_frame, height=8, font=("Arial", 11))
+        self.prompt_input.pack(fill="both", expand=True, pady=5)
         
-        /* AI Config Modal */
-        #ai-modular-setup {
-            position: absolute; top: 15%; left: 20%; width: 60%; height: 60%;
-            background: #000; border: 2px solid #00ff00; z-index: 9999;
-            display: none; flex-direction: column; padding: 20px;
-        }
-        .ai-input, .ai-select { background: #111; border: 1px solid #00ff00; color: #00ff00; padding: 10px; margin-bottom: 20px; width: 100%; }
+        send_btn = tk.Button(prompt_frame, text="Send to AI", command=self.handle_send)
+        send_btn.pack(anchor="e", pady=5)
         
-        /* Layout Panes */
-        .window-title-bar { background: #1a1a1a; padding: 5px 10px; font-size: 12px; border-bottom: 1px solid #333; }
-        #dynamic-zone { display: flex; flex: 1; min-height: 0; }
-        .pane { background: #000; border: 1px solid #222; overflow: hidden; display: flex; flex-direction: column; }
-        .gutter { background-color: #333; }
+        main_container.add(prompt_frame)
+
+        # Window 2: AI Response
+        response_frame = tk.Frame(main_container, bg="#e0e0e0")
+        tk.Label(response_frame, text="AI RESPONSE", bg="#e0e0e0", font=("Arial", 10, "bold")).pack(anchor="w")
+        self.response_output = scrolledtext.ScrolledText(response_frame, state="disabled", font=("Arial", 11), bg="#f5f5f5")
+        self.response_output.pack(fill="both", expand=True, pady=5)
         
-        /* Content Areas */
-        .ai-text-area { flex: 1; padding: 10px; color: #00ff00; overflow-y: auto; white-space: pre-wrap; border-bottom: 1px solid #222; }
-        .user-input-area { height: 100%; background: transparent; border: none; color: #800080; padding: 10px; outline: none; resize: none; font-weight: bold; }
-        .cmd-text { height: 100%; color: #0f0; font-size: 11px; padding: 10px; overflow-y: auto; }
-        
-        .fixed-footer { height: 50px; background: #111; border-top: 1px solid #333; display: flex; align-items: center; padding: 0 10px; }
-        .ai-btn { background: #e1e1e1; color: #000; padding: 5px 15px; cursor: pointer; font-weight: bold; }
-    </style>
-</head>
-<body>
+        main_container.add(response_frame)
 
-<div class="master-container">
-    <div id="ai-modular-setup">
-        <h3 style="color:#00ff00">AI SYSTEM CONFIG</h3>
-        <label>SELECT MODEL:</label>
-        <select id="version-select" class="ai-select">
-            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
-            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Complex)</option>
-        </select>
-        <label>API KEY:</label>
-        <input type="password" id="api-field-input" class="ai-input" placeholder="Paste Key Here...">
-        <button class="ai-btn" onclick="saveConfig()">SAVE & CLOSE</button>
-    </div>
+    def open_settings(self):
+        settings_win = tk.Toplevel(self.root)
+        settings_win.title("Gemini Configuration")
+        settings_win.geometry("400x250")
+        settings_win.configure(bg="#e0e0e0")
 
-    <div class="window-title-bar">CAD DESIGNER PRO v1.0</div>
+        tk.Label(settings_win, text="Gemini API Key:", bg="#e0e0e0").pack(pady=(20, 0))
+        tk.Entry(settings_win, textvariable=self.api_key, width=40, show="*").pack(pady=5)
 
-    <div id="dynamic-zone">
-        <div id="left-stack" style="width: 70%;">
-            <div id="cad-pane" class="pane" style="height: 75%;">
-                <div id="visual-monitor" style="padding:20px; color:#444;">[ CANVAS IDLE ]</div>
-            </div>
-            <div id="cmd-pane" class="pane" style="height: 25%;">
-                <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
-            </div>
-        </div>
-        <div id="right-stack" style="width: 30%;">
-            <div id="ai-output" class="pane" style="height: 50%;">
-                <div id="ai-chat" class="ai-text-area">AWAITING CONNECTION...</div>
-            </div>
-            <div id="ai-input" class="pane" style="height: 50%;">
-                <textarea id="user-prompt" class="user-input-area" placeholder="TYPE MESSAGE..."></textarea>
-            </div>
-        </div>
-    </div>
+        tk.Label(settings_win, text="Model Version:", bg="#e0e0e0").pack(pady=(10, 0))
+        tk.OptionMenu(settings_win, self.model_version, "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro").pack(pady=5)
 
-    <div class="fixed-footer">
-        <div class="ai-btn" onclick="toggleModal(true)">AI-SET ▲</div>
-    </div>
-</div>
+        save_btn = tk.Button(settings_win, text="Save Settings", command=settings_win.destroy)
+        save_btn.pack(pady=20)
 
-<script>
-    // Initialize Splits
-    Split(['#left-stack', '#right-stack'], { sizes: [70, 30], gutterSize: 5 });
-    
-    function toggleModal(show) { 
-        document.getElementById('ai-modular-setup').style.display = show ? 'flex' : 'none'; 
-    }
+    def handle_send(self):
+        user_text = self.prompt_input.get("1.0", tk.END).strip()
+        if not user_text:
+            return
 
-    function saveConfig() {
-        const key = document.getElementById('api-field-input').value.trim();
-        const model = document.getElementById('version-select').value;
-        if(key) {
-            localStorage.setItem('gemini_key', key);
-            localStorage.setItem('gemini_model', model);
-            document.getElementById('terminal-out').innerHTML += `\\n> CONFIG UPDATED: ${model}`;
-            toggleModal(false);
-        }
-    }
+        if not self.api_key.get():
+            messagebox.showwarning("Settings Required", "Please enter an API key in Settings.")
+            return
 
-    async function callGemini(text) {
-        const key = localStorage.getItem('gemini_key');
-        const model = localStorage.getItem('gemini_model') || "gemini-1.5-flash";
-        const chat = document.getElementById('ai-chat');
-        const term = document.getElementById('terminal-out');
+        # Placeholder for AI Logic
+        self.update_response(f"System: Sending prompt to {self.model_version.get()}...\n(Logic for API call goes here)")
 
-        if(!key) {
-            chat.innerHTML += "\\n[ERROR] NO API KEY. CLICK AI-SET.";
-            return;
-        }
+    def update_response(self, text):
+        self.response_output.config(state="normal")
+        self.response_output.insert(tk.END, text + "\n---\n")
+        self.response_output.config(state="disabled")
+        self.response_output.see(tk.END)
 
-        term.innerHTML += `\\n> CALLING API: ${model}...`;
-        
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-            });
-
-            const data = await response.json();
-            const reply = data.candidates[0].content.parts[0].text;
-            
-            chat.innerHTML += `\\n\\n[GEMINI]: ${reply}`;
-            term.innerHTML += `\\n> HTTP 200: OK`;
-            chat.scrollTop = chat.scrollHeight;
-        } catch (e) {
-            chat.innerHTML += `\\n[ERROR] API FAILED.`;
-            term.innerHTML += `\\n> ERROR: CHECK KEY OR NETWORK`;
-        }
-    }
-
-    document.getElementById('user-prompt').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const val = this.value.trim();
-            if(val) {
-                document.getElementById('ai-chat').innerHTML += `\\n\\n[USER]: ${val}`;
-                callGemini(val);
-                this.value = "";
-            }
-        }
-    });
-</script>
-</body>
-</html>
-"""
-
-components.html(cad_app_html, height=800)
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = GeminiApp(root)
+    root.mainloop()
