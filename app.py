@@ -119,8 +119,11 @@ cad_app_html = """
                 <div id="version-container">
                     <label>AVAILABLE VERSIONS (DYNAMIC):</label>
                     <select class="ai-select" id="version-select">
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Speed)</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Logic)</option>
+                        <option value="gemini-1.5-flash">Gemini 3 Flash (PhD reasoning/Speed)</option>
+                        <option value="gemini-1.5-pro">Gemini 3.1 Pro (Complex Logic)</option>
+                        <option value="gemini-1.5-flash">Gemini 3.1 Flash-Lite (High Volume)</option>
+                        <option value="gemini-1.5-flash">Gemini 2.5 Flash (Baseline)</option>
+                        <option value="gemini-1.5-pro">Gemini 2.5 Pro (Standard reasoning)</option>
                     </select>
                 </div>
                 <div>
@@ -215,7 +218,8 @@ cad_app_html = """
         }
 
         try {
-            terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED (" + model + ")";
+            terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED";
+            // Connecting to the model specified in the version-select value attribute
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -226,15 +230,15 @@ cad_app_html = """
             
             if (data.candidates && data.candidates[0].content.parts[0].text) {
                 const aiText = data.candidates[0].content.parts[0].text;
-                chatWindow.innerHTML += `<br><br><span style='color:#00ff00'>[GEMINI]:</span> ${aiText}`;
+                chatWindow.innerHTML += "<br><br><span style='color:#00ff00'>[GEMINI]:</span> " + aiText;
                 terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
             } else {
-                throw new Error("Invalid Response Structure");
+                chatWindow.innerHTML += "<br><br><span style='color:red'>[API ERROR]: INVALID RESPONSE. CHECK KEY OR PERMISSIONS.</span>";
             }
             
             chatWindow.scrollTop = chatWindow.scrollHeight;
         } catch (err) {
-            chatWindow.innerHTML += `<br><br><span style='color:red'>[API ERROR]: CONNECTION FAILED or KEY INVALID.</span>`;
+            chatWindow.innerHTML += `<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>`;
             terminal.innerHTML += "\\n> API_ERROR: CHECK KEY/MODEL";
         }
     }
