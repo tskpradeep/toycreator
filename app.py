@@ -162,19 +162,6 @@ box-sizing:border-box;
 
 .dropup.tall{height:62px;}
 
-.dropup-content{
-display:none; position:absolute; bottom:100%; left:-1px;
-background:#f0f0f0; min-width:140px;
-border:1px solid #707070; z-index:1000;
-}
-
-.dropup.active .dropup-content{display:block;}
-
-.dropup-content a{
-color:#000; padding:6px; text-decoration:none;
-display:block; border-bottom:1px solid #ccc; font-size:10px;
-}
-
 .text-main{
 color:#b22222; font-size:1.4vw; font-weight:bold;
 text-align:center; width:100%; height:100%;
@@ -248,13 +235,14 @@ TOOL: <span id="tool-name">Google Gemini</span>
 </div>
 
 <div>
-<label id="key-label">API KEY / LOCAL PATH:</label>
-<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
+<label>API KEY / LOCAL PATH:</label>
+<input type="password" id="api-field-input" class="ai-input">
 </div>
 
 <div>
 <label>API URL:</label>
-<input type="text" id="url-input" class="ai-input" value="https://generativelanguage.googleapis.com/v1beta/models/">
+<input type="text" id="url-input" class="ai-input"
+value="https://generativelanguage.googleapis.com/v1beta/models/">
 </div>
 
 </div>
@@ -338,26 +326,48 @@ document.getElementById('ai-modular-setup').style.display = show ? 'flex':'none'
 }
 
 function saveData(){
-localStorage.setItem('gemini_api_key',document.getElementById('api-field-input').value);
-localStorage.setItem('gemini_model',document.getElementById('version-select').value);
-localStorage.setItem('gemini_url',document.getElementById('url-input').value);
+localStorage.setItem('gemini_api_key',
+document.getElementById('api-field-input').value);
 
-document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED.";
-document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
+localStorage.setItem('gemini_model',
+document.getElementById('version-select').value);
+
+localStorage.setItem('gemini_url',
+document.getElementById('url-input').value);
+
+document.getElementById('ai-chat').innerHTML +=
+"<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED.";
+
+document.getElementById('terminal-out').innerHTML +=
+"\\n> CONFIG_SAVE: SUCCESS";
+
 toggleAISet(false);
+}
+
+function escapeHtml(text){
+return text.replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
 async function callGemini(promptText){
 
 const apiKey = localStorage.getItem('gemini_api_key');
-const model = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
-const apiUrl = localStorage.getItem('gemini_url') || 'https://generativelanguage.googleapis.com/v1beta/models/';
+const selected = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
+
+const realMap = {
+"gemini-2.5-flash":"gemini-2.5-flash",
+"gemini-2.5-pro":"gemini-2.5-pro",
+"gemini-2.5-flash-lite":"gemini-2.5-flash-lite"
+};
+
+const model = realMap[selected];
+const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/";
 
 const chatWindow = document.getElementById('ai-chat');
 const terminal = document.getElementById('terminal-out');
 
 if(!apiKey){
-chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO API KEY FOUND. OPEN AI-SET.</span>";
+chatWindow.innerHTML +=
+"<br><span style='color:red'>[ERROR]: NO API KEY FOUND. OPEN AI-SET.</span>";
 return;
 }
 
@@ -365,36 +375,38 @@ try{
 
 terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED";
 
-const response = await fetch(`${apiUrl}${model}:generateContent?key=${apiKey}`,{
+const response = await fetch(
+`${apiUrl}${model}:generateContent?key=${apiKey}`,
+{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 contents:[{parts:[{text:promptText}]}]
 })
-});
+}
+);
 
 const data = await response.json();
 
-if(
-data.candidates &&
-data.candidates[0] &&
-data.candidates[0].content &&
-data.candidates[0].content.parts &&
-data.candidates[0].content.parts[0]
-){
-const aiText = data.candidates[0].content.parts[0].text || "No text returned.";
+let aiText = "No text returned.";
 
-chatWindow.innerHTML += `<br><span style='color:#00ff00'>[GEMINI]:</span> ${aiText}`;
+if(data.candidates?.[0]?.content?.parts){
+aiText = data.candidates[0].content.parts
+.map(p => p.text || "")
+.join("");
+}
+
+chatWindow.innerHTML +=
+`<br><span style='color:#00ff00'>[GEMINI]:</span> ${escapeHtml(aiText)}`;
+
 terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
 chatWindow.scrollTop = chatWindow.scrollHeight;
 
-}else{
-chatWindow.innerHTML += `<br><span style='color:red'>[API ERROR]: ${JSON.stringify(data)}</span>`;
-terminal.innerHTML += "\\n> API_RESPONSE: UNKNOWN_FORMAT";
-}
-
 }catch(err){
-chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>";
+
+chatWindow.innerHTML +=
+"<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>";
+
 terminal.innerHTML += "\\n> API_ERROR: CHECK KEY/MODEL";
 }
 }
@@ -410,8 +422,12 @@ const text = promptInput.value.trim();
 
 if(text !== ''){
 
-document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
+document.getElementById('ai-chat').innerHTML +=
+"<br><br><span style='color:#800080'>[USER]:</span> " +
+escapeHtml(text);
+
+document.getElementById('terminal-out').innerHTML +=
+"\\n> DISPATCH: " + text.toUpperCase();
 
 callGemini(text);
 
@@ -424,11 +440,9 @@ promptInput.value='';
 
 components.html(cad_app_html, height=0)
 
-st.components.v1.html(
-"""
+st.components.v1.html("""
 <script>
-window.parent.document.querySelector('iframe').style.height='94vh';
+const iframes = window.parent.document.querySelectorAll('iframe');
+iframes[iframes.length-1].style.height='94vh';
 </script>
-""",
-height=0
-)
+""", height=0)
