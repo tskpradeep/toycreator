@@ -351,7 +351,7 @@ async function callGemini(promptText){
 
 const apiKey = localStorage.getItem('gemini_api_key');
 const model = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
-const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/';
+const apiUrl = localStorage.getItem('gemini_url') || 'https://generativelanguage.googleapis.com/v1beta/models/';
 
 const chatWindow = document.getElementById('ai-chat');
 const terminal = document.getElementById('terminal-out');
@@ -382,7 +382,7 @@ data.candidates[0].content &&
 data.candidates[0].content.parts &&
 data.candidates[0].content.parts[0]
 ){
-const aiText = data.candidates[0].content.parts.map(p => p.text || "").join("");
+const aiText = data.candidates[0].content.parts[0].text || "No text returned.";
 
 chatWindow.innerHTML += `<br><span style='color:#00ff00'>[GEMINI]:</span> ${aiText}`;
 terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
@@ -422,4 +422,13 @@ promptInput.value='';
 </script>
 """
 
-components.html(cad_app_html, height=950, scrolling=False)
+components.html(cad_app_html, height=0)
+
+st.components.v1.html(
+"""
+<script>
+window.parent.document.querySelector('iframe').style.height='94vh';
+</script>
+""",
+height=0
+)
