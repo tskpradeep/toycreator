@@ -1,36 +1,33 @@
 <!-- aiset.html -->
 
-<div style="height:100%;display:flex;flex-direction:column;background:#000;border:2px solid #00ff00;box-shadow:0 0 50px rgba(0,255,0,0.3);">
-
-<div style="background:#0a1a0a;border-bottom:1px solid #00ff00;padding:10px;display:flex;justify-content:space-between;color:#00ff00;font-family:monospace;font-weight:bold;">
+<div class="ai-setup-header">
 <span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
-
-<div>
-<button onclick="saveData()" style="padding:2px 12px;font-size:10px;border:1px solid #00ff00;background:#000;color:#00ff00;">SAVE</button>
-<button onclick="toggleAISet(false)" style="padding:2px 12px;font-size:10px;border:1px solid #fff;background:#000;color:#fff;">[ X ]</button>
+<div class="ai-header-controls">
+<button class="title-action-btn" onclick="saveData()">SAVE</button>
+<button class="title-action-btn close" onclick="toggleAISet(false)">[ X ]</button>
 </div>
 </div>
 
-<div style="display:flex;flex:1;overflow:hidden;">
+<div class="ai-setup-body">
 
-<div style="width:30%;border-right:1px solid #00ff00;padding:10px;background:#050505;overflow-y:auto;font-family:monospace;color:#00ff00;">
-<div style="padding:12px;background:#00ff00;color:#000;font-weight:bold;">GOOGLE GEMINI</div>
-<div style="padding:12px;">LUVIA AI</div>
-<div style="padding:12px;">FLUX.AI</div>
-<div style="padding:12px;">KICAD</div>
-<div style="padding:12px;">QUILTER</div>
-<div style="padding:12px;">NTOP / FUSION</div>
+<div class="ai-setup-sidebar" id="tool-list">
+<div class="ai-tool-item active">GOOGLE GEMINI</div>
+<div class="ai-tool-item">LUVIA AI</div>
+<div class="ai-tool-item">FLUX.AI</div>
+<div class="ai-tool-item">KICAD</div>
+<div class="ai-tool-item">QUILTER</div>
+<div class="ai-tool-item">NTOP / FUSION</div>
 </div>
 
-<div style="width:70%;padding:25px;color:#00ff00;font-family:monospace;display:flex;flex-direction:column;gap:20px;">
+<div class="ai-setup-content">
 
 <div style="font-size:20px;border-bottom:2px solid #004400;padding-bottom:5px;color:#fff;">
-TOOL: Google Gemini
+TOOL: <span id="tool-name">Google Gemini</span>
 </div>
 
 <div>
-<label>AVAILABLE VERSIONS (DYNAMIC):</label><br>
-<select id="version-select" style="width:100%;padding:10px;background:#000;color:#00ff00;border:1px solid #00ff00;">
+<label>AVAILABLE VERSIONS (DYNAMIC):</label>
+<select class="ai-select" id="version-select">
 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
 <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
 <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
@@ -38,36 +35,22 @@ TOOL: Google Gemini
 </div>
 
 <div>
-<label>CORE FUNCTION (OUTPUT):</label><br>
-<select style="width:100%;padding:10px;background:#000;color:#00ff00;border:1px solid #00ff00;">
+<label>CORE FUNCTION (OUTPUT):</label>
+<select class="ai-select">
 <option>Multi-modal Reasoning</option>
 <option>MPN Text / Sourcing only</option>
 </select>
 </div>
 
 <div>
-<label>API KEY / LOCAL PATH:</label><br>
-<input id="api-field-input" type="password" style="width:100%;padding:10px;background:#000;color:#00ff00;border:1px solid #00ff00;">
+<label id="key-label">API KEY / LOCAL PATH:</label>
+<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
 </div>
 
 <div>
-<label>API URL:</label><br>
-<input id="url-input" type="text" value="https://generativelanguage.googleapis.com/v1beta/models/" style="width:100%;padding:10px;background:#000;color:#00ff00;border:1px solid #00ff00;">
+<label>API URL:</label>
+<input type="text" id="url-input" class="ai-input" value="https://generativelanguage.googleapis.com/v1beta/models/">
 </div>
 
 </div>
 </div>
-</div>
-
-<script>
-function saveData(){
-localStorage.setItem('gemini_api_key',document.getElementById('api-field-input').value);
-localStorage.setItem('gemini_model',document.getElementById('version-select').value);
-localStorage.setItem('gemini_url',document.getElementById('url-input').value);
-
-parent.document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED.";
-parent.document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
-
-toggleAISet(false);
-}
-</script>
