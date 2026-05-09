@@ -1,56 +1,81 @@
-<!-- aiset.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI SET</title>
 
-<div class="ai-setup-header">
-<span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
-<div class="ai-header-controls">
-<button class="title-action-btn" onclick="saveData()">SAVE</button>
-<button class="title-action-btn close" onclick="toggleAISet(false)">[ X ]</button>
-</div>
-</div>
+<style>
+body{
+margin:0;
+background:#000;
+color:#00ff00;
+font-family:monospace;
+}
 
-<div class="ai-setup-body">
+.wrap{
+padding:20px;
+}
 
-<div class="ai-setup-sidebar" id="tool-list">
-<div class="ai-tool-item active">GOOGLE GEMINI</div>
-<div class="ai-tool-item">LUVIA AI</div>
-<div class="ai-tool-item">FLUX.AI</div>
-<div class="ai-tool-item">KICAD</div>
-<div class="ai-tool-item">QUILTER</div>
-<div class="ai-tool-item">NTOP / FUSION</div>
-</div>
+input,select{
+width:100%;
+padding:10px;
+margin-top:6px;
+margin-bottom:16px;
+background:#000;
+color:#00ff00;
+border:1px solid #00ff00;
+}
 
-<div class="ai-setup-content">
+button{
+padding:10px 20px;
+background:#000;
+color:#00ff00;
+border:1px solid #00ff00;
+cursor:pointer;
+}
 
-<div style="font-size:20px;border-bottom:2px solid #004400;padding-bottom:5px;color:#fff;">
-TOOL: <span id="tool-name">Google Gemini</span>
-</div>
+button:hover{
+background:#00ff00;
+color:#000;
+}
+</style>
+</head>
 
-<div>
-<label>AVAILABLE VERSIONS (DYNAMIC):</label>
-<select class="ai-select" id="version-select">
+<body>
+
+<div class="wrap">
+
+<h2>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</h2>
+
+<label>AVAILABLE VERSIONS</label>
+<select id="model">
 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
 <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-<option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+<option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
 </select>
-</div>
 
-<div>
-<label>CORE FUNCTION (OUTPUT):</label>
-<select class="ai-select">
-<option>Multi-modal Reasoning</option>
-<option>MPN Text / Sourcing only</option>
-</select>
-</div>
+<label>API KEY</label>
+<input type="password" id="key">
 
-<div>
-<label id="key-label">API KEY / LOCAL PATH:</label>
-<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
-</div>
+<label>API URL</label>
+<input type="text" id="url" value="https://generativelanguage.googleapis.com/v1beta/models/">
 
-<div>
-<label>API URL:</label>
-<input type="text" id="url-input" class="ai-input" value="https://generativelanguage.googleapis.com/v1beta/models/">
-</div>
+<button onclick="saveData()">SAVE</button>
 
 </div>
-</div>
+
+<script>
+document.getElementById("key").value=localStorage.getItem("gemini_api_key")||"";
+document.getElementById("model").value=localStorage.getItem("gemini_model")||"gemini-2.5-flash";
+document.getElementById("url").value=localStorage.getItem("gemini_url")||"https://generativelanguage.googleapis.com/v1beta/models/";
+
+function saveData(){
+localStorage.setItem("gemini_api_key",document.getElementById("key").value);
+localStorage.setItem("gemini_model",document.getElementById("model").value);
+localStorage.setItem("gemini_url",document.getElementById("url").value);
+window.close();
+}
+</script>
+
+</body>
+</html>
