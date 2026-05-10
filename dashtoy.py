@@ -15,18 +15,18 @@ header {visibility:hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# Load config from the shared JSON file
 def load_comu():
     if os.path.exists("comutoy.json"):
-        with open("comutoy.json", "r") as f:
-            return json.load(f)
+        try:
+            with open("comutoy.json", "r") as f:
+                return json.load(f)
+        except: return {}
     return {}
 
 current_config = load_comu()
 
 cad_app_html = f"""
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
-
 <style>
 html, body {{ margin:0; padding:0; height:100%; width:100%; overflow:hidden !important; background:#000; font-family:'Segoe UI',Tahoma,sans-serif; color:white; }}
 .master-container{{ display:flex; flex-direction:column; height:100vh; width:100vw; background:#000; border:2px solid #d3d3d3; box-sizing:border-box; position:relative; }}
@@ -34,7 +34,6 @@ html, body {{ margin:0; padding:0; height:100%; width:100%; overflow:hidden !imp
 #dynamic-zone{{ display:flex; flex-direction:row; flex:1; min-height:0; width:100%; }}
 .fixed-right-strip{{ width:65px; border-left:1px solid #333; display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:min-content; gap:2px; padding:5px; background:#000; overflow-y:scroll; }}
 .btn-cell{{ aspect-ratio:1/1; width:20px; height:20px; background:#e1e1e1; color:#000; border-top:2px solid #fff; border-left:2px solid #fff; border-right:2px solid #707070; border-bottom:2px solid #707070; cursor:pointer; display:flex; align-items:center; justify-content:center; box-sizing:border-box; flex-shrink:0; }}
-.btn-cell:active{{ border-top:2px solid #707070; border-left:2px solid #707070; border-right:2px solid #fff; border-bottom:2px solid #fff; background:#bebebe; }}
 .pane{{ background:#000 !important; border:1px solid #333 !important; overflow:hidden; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }}
 .gutter{{ background:#444 !important; }}
 .fixed-footer{{ height:64px; display:flex; flex-direction:row; border-top:2px solid #333; background:#000; flex-shrink:0; align-items:flex-end; padding:0px 4px 2px 4px; }}
@@ -55,7 +54,6 @@ html, body {{ margin:0; padding:0; height:100%; width:100%; overflow:hidden !imp
         <div>CAD DESIGNER PRO</div>
         <div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
     </div>
-
     <div id="dynamic-zone">
         <div id="split-container" style="display:flex;flex:1;width:100%;">
             <div id="left-stack" style="display:flex;flex-direction:column;width:70%;">
@@ -73,7 +71,6 @@ html, body {{ margin:0; padding:0; height:100%; width:100%; overflow:hidden !imp
         </div>
         <div class="fixed-right-strip" id="side-strip"></div>
     </div>
-
     <div class="fixed-footer">
         <div class="footer-left-content">
             <span style="color:#008000;font-size:11px;margin-right:20px;">READY</span>
@@ -86,23 +83,20 @@ html, body {{ margin:0; padding:0; height:100%; width:100%; overflow:hidden !imp
             <div class="dropup"><span>View</span><span>▲</span></div>
         </div>
         <div class="selection-b-container">
-            <div class="dropup tall" onclick="window.open('/aisettoy', '_blank', 'width=800,height=600')">
+            <div class="dropup tall" onclick="window.open('http://localhost:8501', '_blank', 'width=900,height=700')">
                 <span>AI-SET</span><span>▲</span>
             </div>
         </div>
     </div>
 </div>
-
 <script>
 Split(['#left-stack','#right-stack'],{{sizes:[70,30],gutterSize:4}});
 Split(['#cad-pane','#cmd-pane'],{{direction:'vertical',sizes:[80,20],gutterSize:4}});
 Split(['#ai-output','#ai-input'],{{direction:'vertical',sizes:[50,50],gutterSize:4}});
-
 for(let i=0;i<100;i++){{ document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>'; }}
 for(let i=0;i<18;i++){{ document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>'; }}
 
 const config = {json.dumps(current_config)};
-
 async function callGemini(promptText){{
     if(!config.api_key){{ document.getElementById('ai-chat').innerHTML += "<br><span style='color:red'>[ERROR]: NO CONFIG. CLICK AI-SET.</span>"; return; }}
     try{{
@@ -115,7 +109,6 @@ async function callGemini(promptText){{
         document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> " + aiText;
     }} catch(e) {{ }}
 }}
-
 document.getElementById('user-prompt').addEventListener('keydown', function(e){{
     if(e.key==='Enter' && !e.shiftKey){{
         e.preventDefault();
@@ -130,5 +123,4 @@ document.getElementById('user-prompt').addEventListener('keydown', function(e){{
 </script>
 """
 components.html(cad_app_html, height=0)
-
-st.components.v1.html("<script>window.parent.document.querySelector('iframe').style.height='94vh';</script>", height=0)
+components.html("<script>window.parent.document.querySelector('iframe').style.height='94vh';</script>", height=0)
