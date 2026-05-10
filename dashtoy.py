@@ -20,14 +20,14 @@ overflow:hidden !important;
 </style>
 """, unsafe_allow_html=True)
 
-# Function to read the configuration from comutoy.json
-def load_comu_config():
+# Helper to read the json for the AI call
+def get_config():
     if os.path.exists("comutoy.json"):
         with open("comutoy.json", "r") as f:
             return json.load(f)
     return {}
 
-config_data = load_comu_config()
+config = get_config()
 
 cad_app_html = f"""
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
@@ -198,7 +198,7 @@ padding:5px; overflow-y:auto; white-space:pre-wrap;
 </div>
 
 <div class="selection-b-container">
-<div class="dropup tall" onclick="window.open('http://localhost:8501', '_blank', 'width=900,height=700')">
+<div class="dropup tall" onclick="parent.postMessage('OPEN_AI_SET', '*')">
 <span>AI-SET</span><span>▲</span>
 </div>
 </div>
@@ -219,7 +219,7 @@ for(let i=0;i<18;i++){{
 document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
 }}
 
-const config = {json.dumps(config_data)};
+const config = {json.dumps(config)};
 
 async function callGemini(promptText){{
 const apiKey = config.api_key;
@@ -230,7 +230,7 @@ const chatWindow = document.getElementById('ai-chat');
 const terminal = document.getElementById('terminal-out');
 
 if(!apiKey){{
-chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO API KEY FOUND. OPEN AI-SET.</span>";
+chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO CONFIG FOUND IN COMUTOY.JSON</span>";
 return;
 }}
 
@@ -239,43 +239,42 @@ terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED";
 const response = await fetch(`${{apiUrl}}${{model}}:generateContent?key=${{apiKey}}`,{{
 method:"POST",
 headers:{{"Content-Type":"application/json"}},
-body:JSON.stringify({{contents:[{{parts:[{{text:promptText}}]}}]}})
+body:JSON.stringify({{ contents:[{{parts:[{{text:promptText}}]}}] }})
 }});
-
 const data = await response.json();
-
-if(data.candidates && data.candidates[0] && data.candidates[0].content){{
-const aiText = data.candidates[0].content.parts[0].text || "No text returned.";
+const aiText = data.candidates[0].content.parts[0].text;
 chatWindow.innerHTML += `<br><span style='color:#00ff00'>[GEMINI]:</span> ${{aiText}}`;
-terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
-chatWindow.scrollTop = chatWindow.scrollHeight;
-}}
 }}catch(err){{
-chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>";
+chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]</span>";
 }}
 }}
 
-const promptInput = document.getElementById('user-prompt');
-promptInput.addEventListener('keydown',function(e){{
+document.getElementById('user-prompt').addEventListener('keydown',function(e){{
 if(e.key==='Enter' && !e.shiftKey){{
 e.preventDefault();
-const text = promptInput.value.trim();
+const text = this.value.trim();
 if(text !== ''){{
 document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
 callGemini(text);
-promptInput.value='';
+this.value='';
 }}
 }}
 }});
 </script>
 """
 
+# Logic to handle opening the window from Streamlit
 components.html(cad_app_html, height=0)
 
 st.components.v1.html(
 """
 <script>
 window.parent.document.querySelector('iframe').style.height='94vh';
+window.addEventListener('message', function(e) {
+    if(e.data === 'OPEN_AI_SET') {
+        window.parent.location.href = '/?window=aisettoy';
+    }
+});
 </script>
 """,
 height=0
