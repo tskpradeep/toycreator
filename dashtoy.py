@@ -162,19 +162,6 @@ box-sizing:border-box;
 
 .dropup.tall{height:62px;}
 
-.dropup-content{
-display:none; position:absolute; bottom:100%; left:-1px;
-background:#f0f0f0; min-width:140px;
-border:1px solid #707070; z-index:1000;
-}
-
-.dropup.active .dropup-content{display:block;}
-
-.dropup-content a{
-color:#000; padding:6px; text-decoration:none;
-display:block; border-bottom:1px solid #ccc; font-size:10px;
-}
-
 .text-main{
 color:#b22222; font-size:1.4vw; font-weight:bold;
 text-align:center; width:100%; height:100%;
@@ -200,6 +187,10 @@ width:100%; height:100%; color:#0f0;
 font-family:monospace; font-size:11px;
 padding:5px; overflow-y:auto; white-space:pre-wrap;
 }
+
+/* Media Display Styles for Visual Monitor */
+#visual-monitor img { max-width: 95%; max-height: 95%; object-fit: contain; border: 1px solid #444; }
+#visual-monitor iframe { width: 100%; height: 100%; border: none; }
 </style>
 
 <div class="master-container">
@@ -214,49 +205,30 @@ padding:5px; overflow-y:auto; white-space:pre-wrap;
 </div>
 
 <div class="ai-setup-body">
-
 <div class="ai-setup-sidebar" id="tool-list">
 <div class="ai-tool-item active">GOOGLE GEMINI</div>
 <div class="ai-tool-item">LUVIA AI</div>
-<div class="ai-tool-item">FLUX.AI</div>
-<div class="ai-tool-item">KICAD</div>
-<div class="ai-tool-item">QUILTER</div>
-<div class="ai-tool-item">NTOP / FUSION</div>
 </div>
 
 <div class="ai-setup-content">
-
 <div style="font-size:20px;border-bottom:2px solid #004400;padding-bottom:5px;color:#fff;">
 TOOL: <span id="tool-name">Google Gemini</span>
 </div>
-
 <div>
 <label>AVAILABLE VERSIONS (DYNAMIC):</label>
 <select class="ai-select" id="version-select">
-<option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-<option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-<option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+<option value="gemini-3-flash">Gemini 3 Flash</option>
+<option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
 </select>
 </div>
-
-<div>
-<label>CORE FUNCTION (OUTPUT):</label>
-<select class="ai-select">
-<option>Multi-modal Reasoning</option>
-<option>MPN Text / Sourcing only</option>
-</select>
-</div>
-
 <div>
 <label id="key-label">API KEY / LOCAL PATH:</label>
-<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
+<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY...">
 </div>
-
 <div>
 <label>API URL:</label>
 <input type="text" id="url-input" class="ai-input" value="https://generativelanguage.googleapis.com/v1beta/models/">
 </div>
-
 </div>
 </div>
 </div>
@@ -267,16 +239,13 @@ TOOL: <span id="tool-name">Google Gemini</span>
 </div>
 
 <div id="dynamic-zone">
-
 <div id="split-container" style="display:flex;flex:1;width:100%;">
-
 <div id="left-stack" style="display:flex;flex-direction:column;width:70%;">
 <div id="cad-pane" class="pane text-main">
-<div id="visual-monitor" style="color:#444;font-size:12px;font-family:monospace;">
+<div id="visual-monitor" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#444; font-size:12px; font-family:monospace;">
 [ IDLE: AWAITING CIRCUIT REQUEST ]
 </div>
 </div>
-
 <div id="cmd-pane" class="pane" style="justify-content:flex-start;align-items:flex-start;">
 <div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
 </div>
@@ -286,14 +255,11 @@ TOOL: <span id="tool-name">Google Gemini</span>
 <div id="ai-output" class="pane">
 <div id="ai-chat" class="ai-text-area">AI TEXT REPLYING WINDOW</div>
 </div>
-
 <div id="ai-input" class="pane">
 <textarea id="user-prompt" class="user-input-area" placeholder="TYPE HERE..."></textarea>
 </div>
 </div>
-
 </div>
-
 <div class="fixed-right-strip" id="side-strip"></div>
 </div>
 
@@ -302,22 +268,18 @@ TOOL: <span id="tool-name">Google Gemini</span>
 <span style="color:#008000;font-size:11px;margin-right:20px;">READY</span>
 <span style="color:#0000ff;font-size:11px;">SYSTEM STATUS: ONLINE</span>
 </div>
-
 <div id="foot-palette" class="footer-palette-grid"></div>
-
 <div class="selection-a-stack">
 <div class="dropup"><span>File</span><span>▲</span></div>
 <div class="dropup"><span>Tools</span><span>▲</span></div>
 <div class="dropup"><span>View</span><span>▲</span></div>
 </div>
-
 <div class="selection-b-container">
 <div class="dropup tall" onclick="toggleAISet(true)">
 <span>AI-SET</span><span>▲</span>
 </div>
 </div>
 </div>
-
 </div>
 
 <script>
@@ -325,110 +287,88 @@ Split(['#left-stack','#right-stack'],{sizes:[70,30],gutterSize:4});
 Split(['#cad-pane','#cmd-pane'],{direction:'vertical',sizes:[80,20],gutterSize:4});
 Split(['#ai-output','#ai-input'],{direction:'vertical',sizes:[50,50],gutterSize:4});
 
-for(let i=0;i<100;i++){
-document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
-}
+for(let i=0;i<100;i++){ document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>'; }
+for(let i=0;i<18;i++){ document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>'; }
 
-for(let i=0;i<18;i++){
-document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
-}
-
-function toggleAISet(show){
-document.getElementById('ai-modular-setup').style.display = show ? 'flex':'none';
-}
+function toggleAISet(show){ document.getElementById('ai-modular-setup').style.display = show ? 'flex':'none'; }
 
 function saveData(){
 localStorage.setItem('gemini_api_key',document.getElementById('api-field-input').value);
 localStorage.setItem('gemini_model',document.getElementById('version-select').value);
 localStorage.setItem('gemini_url',document.getElementById('url-input').value);
-
-document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED.";
-document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
+document.getElementById('ai-chat').innerHTML += "<br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED.";
 toggleAISet(false);
 }
 
+// MEDIA PARSER LOGIC
+function updateVisualMonitor(text) {
+    const visual = document.getElementById('visual-monitor');
+    
+    // Regex for Images
+    const imgRegex = /(https?:\\/\\/[^\\s]+\\.(?:jpg|jpeg|png|gif|webp|svg))/gi;
+    // Regex for YouTube
+    const ytRegex = /(?:https?:\\/\\/)?(?:www\\.)?(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([a-zA-Z0-9_-]{11})/gi;
+
+    const imgMatch = imgRegex.exec(text);
+    const ytMatch = ytRegex.exec(text);
+
+    if (ytMatch) {
+        visual.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    } else if (imgMatch) {
+        visual.innerHTML = `<img src="${imgMatch[0]}" alt="AI Generated Graphic">`;
+    }
+}
+
 async function callGemini(promptText){
+    const apiKey = localStorage.getItem('gemini_api_key');
+    const model = localStorage.getItem('gemini_model') || 'gemini-3-flash';
+    const apiUrl = localStorage.getItem('gemini_url') || 'https://generativelanguage.googleapis.com/v1beta/models/';
+    const chatWindow = document.getElementById('ai-chat');
+    const terminal = document.getElementById('terminal-out');
 
-const apiKey = localStorage.getItem('gemini_api_key');
-const model = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
-const apiUrl = localStorage.getItem('gemini_url') || 'https://generativelanguage.googleapis.com/v1beta/models/';
+    if(!apiKey){
+        chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO API KEY.</span>";
+        return;
+    }
 
-const chatWindow = document.getElementById('ai-chat');
-const terminal = document.getElementById('terminal-out');
-
-if(!apiKey){
-chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO API KEY FOUND. OPEN AI-SET.</span>";
-return;
-}
-
-try{
-
-terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED";
-
-const response = await fetch(`${apiUrl}${model}:generateContent?key=${apiKey}`,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-contents:[{parts:[{text:promptText}]}]
-})
-});
-
-const data = await response.json();
-
-if(
-data.candidates &&
-data.candidates[0] &&
-data.candidates[0].content &&
-data.candidates[0].content.parts &&
-data.candidates[0].content.parts[0]
-){
-const aiText = data.candidates[0].content.parts[0].text || "No text returned.";
-
-chatWindow.innerHTML += `<br><span style='color:#00ff00'>[GEMINI]:</span> ${aiText}`;
-terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
-chatWindow.scrollTop = chatWindow.scrollHeight;
-
-}else{
-chatWindow.innerHTML += `<br><span style='color:red'>[API ERROR]: ${JSON.stringify(data)}</span>`;
-terminal.innerHTML += "\\n> API_RESPONSE: UNKNOWN_FORMAT";
-}
-
-}catch(err){
-chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>";
-terminal.innerHTML += "\\n> API_ERROR: CHECK KEY/MODEL";
-}
+    try{
+        terminal.innerHTML += "\\n> API_CALL: STREAMING DATA...";
+        const response = await fetch(`${apiUrl}${model}:generateContent?key=${apiKey}`,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({contents:[{parts:[{text:promptText}]}]})
+        });
+        const data = await response.json();
+        if(data.candidates?.[0]?.content?.parts?.[0]){
+            const aiText = data.candidates[0].content.parts[0].text;
+            chatWindow.innerHTML += `<br><span style='color:#00ff00'>[GEMINI]:</span> ${aiText}`;
+            terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS";
+            
+            // Trigger the automated media routing
+            updateVisualMonitor(aiText);
+            
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    }catch(err){
+        terminal.innerHTML += "\\n> API_ERROR: CONNECTION FAILED";
+    }
 }
 
 const promptInput = document.getElementById('user-prompt');
-
 promptInput.addEventListener('keydown',function(e){
-
-if(e.key==='Enter' && !e.shiftKey){
-e.preventDefault();
-
-const text = promptInput.value.trim();
-
-if(text !== ''){
-
-document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
-
-callGemini(text);
-
-promptInput.value='';
-}
-}
+    if(e.key==='Enter' && !e.shiftKey){
+        e.preventDefault();
+        const text = promptInput.value.trim();
+        if(text !== ''){
+            document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
+            document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
+            callGemini(text);
+            promptInput.value='';
+        }
+    }
 });
 </script>
 """
 
 components.html(cad_app_html, height=0)
-
-st.components.v1.html(
-"""
-<script>
-window.parent.document.querySelector('iframe').style.height='94vh';
-</script>
-""",
-height=0
-)
+st.components.v1.html("<script>window.parent.document.querySelector('iframe').style.height='94vh';</script>", height=0)
