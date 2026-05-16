@@ -36,188 +36,193 @@ def load_cloud_config():
 
 cfg = load_cloud_config()
 
-cad_app_html = f"""
+# Read values into safe Python variables to avoid JavaScript collision errors
+api_key_val = cfg.get('gemini_api_key', '')
+model_val = cfg.get('gemini_model', 'gemini-2.5-flash')
+url_val = cfg.get('gemini_url', 'https://generativelanguage.googleapis.com/v1beta/models/')
+
+cad_app_html = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 
 <style>
-html, body {{
+html, body {
 margin:0; padding:0; height:100%; width:100%;
 overflow:hidden !important; background:#000;
 font-family:'Segoe UI',Tahoma,sans-serif; color:white;
-}}
+}
 
-.master-container{{
+.master-container{
 display:flex; flex-direction:column;
 height:100vh; width:100vw; background:#000;
 border:2px solid #d3d3d3; box-sizing:border-box;
 position:relative;
-}}
+}
 
-#ai-modular-setup{{
+#ai-modular-setup{
 position:absolute; top:10%; left:15%; width:70%; height:75%;
 background:#000; border:2px solid #00ff00; z-index:9999;
 display:none; flex-direction:column;
 box-shadow:0 0 50px rgba(0,255,0,0.3);
-}}
+}
 
-.ai-setup-header{{
+.ai-setup-header{
 background:#0a1a0a; border-bottom:1px solid #00ff00;
 padding:10px; display:flex; justify-content:space-between;
 color:#00ff00; font-family:monospace; font-weight:bold;
 align-items:center;
-}}
+}
 
-.ai-header-controls{{display:flex; gap:10px; align-items:center;}}
-.ai-setup-body{{display:flex; flex:1; overflow:hidden;}}
-.ai-setup-sidebar{{
+.ai-header-controls{display:flex; gap:10px; align-items:center;}
+.ai-setup-body{display:flex; flex:1; overflow:hidden;}
+.ai-setup-sidebar{
 width:30%; border-right:1px solid #00ff00;
 padding:10px; background:#050505; overflow-y:auto;
-}}
+}
 
-.ai-setup-content{{
+.ai-setup-content{
 width:70%; padding:25px; color:#00ff00;
 font-family:monospace; display:flex;
 flex-direction:column; gap:20px;
 overflow-y:auto;
-}}
+}
 
-.ai-tool-item{{
+.ai-tool-item{
 padding:12px; border:1px solid #004400;
 margin-bottom:8px; cursor:pointer; font-size:12px;
 transition:0.2s;
-}}
-.ai-tool-item:hover{{border-color:#00ff00; background:#0a2a0a;}}
-.ai-tool-item.active{{background:#00ff00; color:#000; font-weight:bold;}}
+}
+.ai-tool-item:hover{border-color:#00ff00; background:#0a2a0a;}
+.ai-tool-item.active{background:#00ff00; color:#000; font-weight:bold;}
 
-.ai-select{{
+.ai-select{
 background:#000; border:1px solid #00ff00; color:#00ff00;
 padding:10px; width:100%; outline:none; cursor:pointer;
 font-family:monospace; appearance:none;
-}}
+}
 
-.ai-input{{
+.ai-input{
 background:#000; border:1px solid #00ff00; color:#00ff00;
 padding:10px; width:100%; outline:none; box-sizing:border-box;
-}}
+}
 
-.title-action-btn{{
+.title-action-btn{
 padding:2px 12px; font-size:10px; cursor:pointer;
 border:1px solid #00ff00; background:#000; color:#00ff00;
 font-family:monospace; text-transform:uppercase;
-}}
-.title-action-btn:hover{{background:#00ff00; color:#000;}}
-.title-action-btn.close{{border-color:#fff; color:#fff;}}
+}
+.title-action-btn:hover{background:#00ff00; color:#000;}
+.title-action-btn.close{border-color:#fff; color:#fff;}
 
-.window-title-bar{{
+.window-title-bar{
 background:#1a1a1a; color:#888; height:30px; flex-shrink:0;
 display:flex; align-items:center; justify-content:space-between;
 padding:0 10px; font-size:12px; border-bottom:1px solid #333;
-}}
+}
 
-#dynamic-zone{{
+#dynamic-zone{
 display:flex; flex-direction:row; flex:1; min-height:0; width:100%;
-}}
+}
 
-.fixed-right-strip{{
+.fixed-right-strip{
 width:65px; border-left:1px solid #333;
 display:grid; grid-template-columns:1fr 1fr;
 grid-auto-rows:min-content; gap:2px; padding:5px;
 background:#000; overflow-y:scroll;
-}}
+}
 
-.btn-cell{{
+.btn-cell{
 aspect-ratio:1/1; width:20px; height:20px; background:#e1e1e1;
 color:#000; border-top:2px solid #fff; border-left:2px solid #fff;
 border-right:2px solid #707070; border-bottom:2px solid #707070;
 cursor:pointer; display:flex; align-items:center;
 justify-content:center; box-sizing:border-box; flex-shrink:0;
-}}
+}
 
-.btn-cell:active{{
+.btn-cell:active{
 border-top:2px solid #707070; border-left:2px solid #707070;
 border-right:2px solid #fff; border-bottom:2px solid #fff;
 background:#bebebe;
-}}
+}
 
-.pane{{
+.pane{
 background:#000 !important; border:1px solid #333 !important;
 overflow:hidden; display:flex; align-items:center;
 justify-content:center; box-sizing:border-box;
-}}
+}
 
-.gutter{{background:#444 !important;}}
+.gutter{background:#444 !important;}
 
-.fixed-footer{{
+.fixed-footer{
 height:64px; display:flex; flex-direction:row;
 border-top:2px solid #333; background:#000;
 flex-shrink:0; align-items:flex-end;
 padding:0px 4px 2px 4px;
-}}
+}
 
-.footer-left-content{{
+.footer-left-content{
 flex:1; display:flex; height:100%;
 align-items:center; padding-left:10px;
-}}
+}
 
-.selection-b-container{{width:130px; height:62px; margin-left:5px;}}
-.selection-a-stack{{
+.selection-b-container{width:130px; height:62px; margin-left:5px;}
+.selection-a-stack{
 display:flex; flex-direction:column; gap:1px;
 width:130px; margin-left:5px;
-}}
+}
 
-.footer-palette-grid{{
+.footer-palette-grid{
 display:grid; grid-template-columns:repeat(6,20px);
 grid-template-rows:repeat(3,20px); gap:1px; margin-left:8px;
-}}
+}
 
-.dropup{{
+.dropup{
 position:relative; width:100%; height:20px;
 background:#e1e1e1; color:#000; border:1px solid #707070;
 display:flex; align-items:center; justify-content:space-between;
 padding:0 5px; cursor:pointer; font-size:9px;
 box-sizing:border-box;
-}}
+}
 
-.dropup.tall{{height:62px;}}
+.dropup.tall{height:62px;}
 
-.dropup-content{{
+.dropup-content{
 display:none; position:absolute; bottom:100%; left:-1px;
 background:#f0f0f0; min-width:140px;
 border:1px solid #707070; z-index:1000;
-}}
+}
 
-.dropup.active .dropup-content{{display:block;}}
+.dropup.active .dropup-content{display:block;}
 
-.dropup-content a{{
+.dropup-content a{
 color:#000; padding:6px; text-decoration:none;
 display:block; border-bottom:1px solid #ccc; font-size:10px;
-}}
+}
 
-.text-main{{
+.text-main{
 color:#b22222; font-size:1.4vw; font-weight:bold;
 text-align:center; width:100%; height:100%;
 overflow:auto; display:flex; flex-direction:column;
 align-items:center; justify-content:center;
-}}
+}
 
-.ai-text-area{{
+.ai-text-area{
 width:100%; height:100%; padding:10px; color:#00ff00;
 font-family:'Consolas',monospace; font-size:13px;
 overflow-y:auto; text-align:left;
-}}
+}
 
-.user-input-area{{
+.user-input-area{
 width:100%; height:100%; background:transparent;
 border:none; color:#800080; padding:10px;
 font-family:'Consolas',monospace; outline:none;
 resize:none; font-weight:bold;
-}}
+}
 
-.cmd-text{{
+.cmd-text{
 width:100%; height:100%; color:#0f0;
 font-family:monospace; font-size:11px;
 padding:5px; overflow-y:auto; white-space:pre-wrap;
-}}
+}
 </style>
 
 <div class="master-container">
@@ -339,34 +344,34 @@ TOOL: <span id="tool-name">Google Gemini</span>
 </div>
 
 <script>
-// Prefill configurations directly parsed out from cloud comutoy.json storage layer
-const cloudApiKey = "{cfg.get('gemini_api_key', '')}";
-const cloudModel = "{cfg.get('gemini_model', 'gemini-2.5-flash')}";
-const cloudUrl = "{cfg.get('gemini_url', 'https://generativelanguage.googleapis.com/v1beta/models/')}";
+// Injection of cloud parameter variables safely passed down from Streamlit configuration definitions
+const cloudApiKey = """ + f'"{api_key_val}"' + """ ;
+const cloudModel = """ + f'"{model_val}"' + """ ;
+const cloudUrl = """ + f'"{url_val}"' + """ ;
 
-if(cloudApiKey) {{
+if(cloudApiKey) {
     localStorage.setItem('gemini_api_key', cloudApiKey);
     localStorage.setItem('gemini_model', cloudModel);
     localStorage.setItem('gemini_url', cloudUrl);
-}}
+}
 
-Split(['#left-stack','#right-stack'],{{sizes:[70,30],gutterSize:4}});
-Split(['#cad-pane','#cmd-pane'],{{direction:'vertical',sizes:[80,20],gutterSize:4}});
-Split(['#ai-output','#ai-input'],{{direction:'vertical',sizes:[50,50],gutterSize:4}});
+Split(['#left-stack','#right-stack'],{sizes:[70,30],gutterSize:4});
+Split(['#cad-pane','#cmd-pane'],{direction:'vertical',sizes:[80,20],gutterSize:4});
+Split(['#ai-output','#ai-input'],{direction:'vertical',sizes:[50,50],gutterSize:4});
 
-for(let i=0;i<100;i++){{
+for(let i=0;i<100;i++){
 document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
-}}
+}
 
-for(let i=0;i<18;i++){{
+for(let i=0;i<18;i++){
 document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
-}}
+}
 
-function toggleAISet(show){{
+function toggleAISet(show){
 document.getElementById('ai-modular-setup').style.display = show ? 'flex':'none';
-}}
+}
 
-function saveData(){{
+function saveData(){
 const apiKey = document.getElementById('api-field-input').value;
 const model = document.getElementById('version-select').value;
 const apiUrl = document.getElementById('url-input').value;
@@ -378,9 +383,9 @@ localStorage.setItem('gemini_url', apiUrl);
 document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED TEMPORARILY.";
 document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
 toggleAISet(false);
-}}
+}
 
-async function callGemini(promptText){{
+async function callGemini(promptText){
 
 const apiKey = localStorage.getItem('gemini_api_key') || cloudApiKey;
 const model = localStorage.getItem('gemini_model') || cloudModel || 'gemini-2.5-flash';
@@ -389,22 +394,22 @@ const apiUrl = localStorage.getItem('gemini_url') || cloudUrl || 'https://genera
 const chatWindow = document.getElementById('ai-chat');
 const terminal = document.getElementById('terminal-out');
 
-if(!apiKey){{
+if(!apiKey){
 chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO API KEY FOUND. OPEN AI-SET.</span>";
 return;
-}}
+}
 
-try{{
+try{
 
 terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED";
 
-const response = await fetch(`${{apiUrl}}${{model}}:generateContent?key=${{apiKey}}`,{{
+const response = await fetch(apiUrl + model + ":generateContent?key=" + apiKey, {
 method:"POST",
-headers:{{"Content-Type":"application/json"}},
-body:JSON.stringify({{
-contents:[{{parts:[{{text:promptText}}]}}]
-}})
-}});
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+contents:[{parts:[{text:promptText}]}]
+})
+});
 
 const data = await response.json();
 
@@ -414,34 +419,34 @@ data.candidates[0] &&
 data.candidates[0].content &&
 data.candidates[0].content.parts &&
 data.candidates[0].content.parts[0]
-){{
+){
 const aiText = data.candidates[0].content.parts[0].text || "No text returned.";
 
-chatWindow.innerHTML += `<br><span style='color:#00ff00'>[GEMINI]:</span> \${aiText\}`;
+chatWindow.innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> " + aiText;
 terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
 chatWindow.scrollTop = chatWindow.scrollHeight;
 
-}}else{{
-chatWindow.innerHTML += `<br><span style='color:red'>[API ERROR]: \${JSON.stringify(data)\}</span>`;
+}else{
+chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: " + JSON.stringify(data) + "</span>";
 terminal.innerHTML += "\\n> API_RESPONSE: UNKNOWN_FORMAT";
-}}
+}
 
-}}catch(err){{
+}catch(err){
 chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>";
 terminal.innerHTML += "\\n> API_ERROR: CHECK KEY/MODEL";
-}}
-}}
+}
+}
 
 const promptInput = document.getElementById('user-prompt');
 
-promptInput.addEventListener('keydown',function(e){{
+promptInput.addEventListener('keydown',function(e){
 
-if(e.key==='Enter' && !e.shiftKey){{
+if(e.key==='Enter' && !e.shiftKey){
 e.preventDefault();
 
 const text = promptInput.value.trim();
 
-if(text !== ''){{
+if(text !== ''){
 
 document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
 document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
@@ -449,9 +454,9 @@ document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.to
 callGemini(text);
 
 promptInput.value='';
-}}
-}}
-}});
+}
+}
+});
 </script>
 """
 
