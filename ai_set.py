@@ -35,63 +35,68 @@ def get_current_values():
 
 current_cfg = get_current_values()
 
-ai_set_html = f"""
+# Load current configuration values into safe python variables
+p_key = current_cfg.get('gemini_api_key','')
+p_model = current_cfg.get('gemini_model','gemini-2.5-flash')
+p_url = current_cfg.get('gemini_url','https://generativelanguage.googleapis.com/v1beta/models/')
+
+ai_set_html = """
 <style>
-html, body {{
+html, body {
 margin:0; padding:0; height:100%; width:100%;
 overflow:hidden !important; background:#000;
 font-family:'Segoe UI',Tahoma,sans-serif; color:white;
-}}
-.master-container{{
+}
+.master-container{
 display:flex; flex-direction:column;
 height:100vh; width:100vw; background:#000;
 box-sizing:border-box; position:relative;
-}}
-#ai-modular-setup{{
+}
+#ai-modular-setup{
 width:100%; height:100%;
 background:#000; border:2px solid #00ff00;
 display:flex; flex-direction:column;
-}}
-.ai-setup-header{{
+}
+.ai-setup-header{
 background:#0a1a0a; border-bottom:1px solid #00ff00;
 padding:10px; display:flex; justify-content:space-between;
 color:#00ff00; font-family:monospace; font-weight:bold;
 align-items:center;
-}}
-.ai-header-controls{{display:flex; gap:10px; align-items:center;}}
-.ai-setup-body{{display:flex; flex:1; overflow:hidden;}}
-.ai-setup-sidebar{{
+}
+.ai-header-controls{display:flex; gap:10px; align-items:center;}
+.ai-setup-body{display:flex; flex:1; overflow:hidden;}
+.ai-setup-sidebar{
 width:30%; border-right:1px solid #00ff00;
 padding:10px; background:#050505; overflow-y:auto;
-}}
-.ai-setup-content{{
+}
+.ai-setup-content{
 width:70%; padding:25px; color:#00ff00;
 font-family:monospace; display:flex;
 flex-direction:column; gap:20px;
 overflow-y:auto;
-}}
-.ai-tool-item{{
+}
+.ai-tool-item{
 padding:12px; border:1px solid #004400;
 margin-bottom:8px; cursor:pointer; font-size:12px;
 transition:0.2s;
-}}
-.ai-tool-item:hover{{border-color:#00ff00; background:#0a2a0a;}}
-.ai-tool-item.active{{background:#00ff00; color:#000; font-weight:bold;}}
-.ai-select{{
+}
+.ai-tool-item:hover{border-color:#00ff00; background:#0a2a0a;}
+.ai-tool-item.active{background:#00ff00; color:#000; font-weight:bold;}
+.ai-select{
 background:#000; border:1px solid #00ff00; color:#00ff00;
 padding:10px; width:100%; outline:none; cursor:pointer;
 font-family:monospace; appearance:none;
-}}
-.ai-input{{
+}
+.ai-input{
 background:#000; border:1px solid #00ff00; color:#00ff00;
 padding:10px; width:100%; outline:none; box-sizing:border-box;
-}}
-.title-action-btn{{
+}
+.title-action-btn{
 padding:2px 12px; font-size:10px; cursor:pointer;
 border:1px solid #00ff00; background:#000; color:#00ff00;
 font-family:monospace; text-transform:uppercase;
-}}
-.title-action-btn:hover{{background:#00ff00; color:#000;}}
+}
+.title-action-btn:hover{background:#00ff00; color:#000;}
 </style>
 
 <div class="master-container">
@@ -132,11 +137,11 @@ TOOL: <span id="tool-name">Google Gemini</span>
 </div>
 <div>
 <label id="key-label">API KEY / LOCAL PATH:</label>
-<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH..." value="{current_cfg.get('gemini_api_key','')}">
+<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH..." value=" """ + p_key + """ ">
 </div>
 <div>
 <label>API URL:</label>
-<input type="text" id="url-input" class="ai-input" value="{current_cfg.get('gemini_url','https://generativelanguage.googleapis.com/v1beta/models/')}">
+<input type="text" id="url-input" class="ai-input" value=" """ + p_url + """ ">
 </div>
 </div>
 </div>
@@ -144,29 +149,27 @@ TOOL: <span id="tool-name">Google Gemini</span>
 </div>
 
 <script>
-// Select the currently set model parameter automatically
-document.getElementById('version-select').value = "{current_cfg.get('gemini_model','gemini-2.5-flash')}";
+document.getElementById('version-select').value = """ + f'"{p_model}"' + """ ;
 
-function emitData() {{
-    const apiKey = document.getElementById('api-field-input').value;
+function emitData() {
+    const apiKey = document.getElementById('api-field-input').value.trim();
     const model = document.getElementById('version-select').value;
-    const apiUrl = document.getElementById('url-input').value;
+    const apiUrl = document.getElementById('url-input').value.trim();
     
-    const packet = {{
+    const packet = {
         gemini_api_key: apiKey,
         gemini_model: model,
         gemini_url: apiUrl
-    }};
+    };
     
-    window.parent.postMessage({{
+    window.parent.postMessage({
         type: 'streamlit:setComponentValue',
         value: packet
-    }}, '*');
-}}
+    }, '*');
+}
 </script>
 """
 
-# Streamlit bridge component captures frame message responses natively and writes to comutoy.json cloud anchor file
 response_data = components.html(ai_set_html, height=700)
 
 if response_data:
