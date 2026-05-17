@@ -136,6 +136,7 @@ color:#000; border-top:2px solid #fff; border-left:2px solid #fff;
 border-right:2px solid #707070; border-bottom:2px solid #707070;
 cursor:pointer; display:flex; align-items:center;
 justify-content:center; box-sizing:border-box; flex-shrink:0;
+font-size:9px; font-weight:bold; font-family:sans-serif;
 }
 
 .btn-cell:active{
@@ -223,6 +224,47 @@ width:100%; height:100%; color:#0f0;
 font-family:monospace; font-size:11px;
 padding:5px; overflow-y:auto; white-space:pre-wrap;
 }
+
+/* --- REPO SUB-PANEL EMBEDDED HUD MATRIX STYLES --- */
+.repo-overlay-panel {
+width:100%; height:100%; background:#000; padding:20px;
+box-sizing:border-box; display:flex; flex-direction:column;
+font-family:monospace; color:#00ff00; text-align:left;
+}
+.repo-nav-row { display:flex; gap:10px; margin-bottom:15px; }
+.repo-nav-btn {
+flex:1; background:#000; color:#00ff00; border:2px solid #00ff00;
+padding:10px; font-weight:bold; cursor:pointer; border-radius:4px;
+font-family:monospace; text-align:center;
+}
+.repo-nav-btn:hover { background:#003300; }
+.repo-inner-card {
+flex:1; border:1px solid #333; background:#050505;
+padding:15px; border-radius:4px; overflow-y:auto; margin-bottom:15px;
+}
+.repo-field-group { margin-bottom:12px; display:flex; flex-direction:column; gap:5px; }
+.repo-field-label { font-size:11px; color:#888; text-transform:uppercase; }
+.repo-select-input {
+background:#000; border:1px solid #00ff00; color:#00ff00; padding:8px;
+font-family:monospace; outline:none;
+}
+.repo-txt-input {
+background:#000; border:1px solid #00ff00; color:#00ff00; padding:8px;
+font-family:monospace; outline:none; box-sizing:border-box; width:100%;
+}
+.repo-check-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.repo-check-input { accent-color:#00ff00; cursor:pointer; }
+.repo-footer-row { display:flex; justify-content:center; gap:20px; align-items:center; }
+.repo-action-commit {
+background:#00ff00; color:#000; border:none; padding:8px 20px;
+font-weight:bold; cursor:pointer; font-family:monospace; border-radius:4px;
+}
+.repo-action-commit:hover { background:#00cc00; }
+.repo-action-close {
+background:#000; color:#fff; border:1px solid #fff; padding:8px 20px;
+font-weight:bold; cursor:pointer; font-family:monospace; border-radius:4px;
+}
+.repo-action-close:hover { background:#222; }
 </style>
 
 <div class="master-container">
@@ -295,7 +337,7 @@ TOOL: <span id="tool-name">Google Gemini</span>
 
 <div id="left-stack" style="display:flex;flex-direction:column;width:70%;">
 <div id="cad-pane" class="pane text-main">
-<div id="visual-monitor" style="color:#444;font-size:12px;font-family:monospace;">
+<div id="visual-monitor" style="color:#444;font-size:12px;font-family:monospace;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
 [ IDLE: AWAITING CIRCUIT REQUEST ]
 </div>
 </div>
@@ -359,12 +401,128 @@ Split(['#left-stack','#right-stack'],{sizes:[70,30],gutterSize:4});
 Split(['#cad-pane','#cmd-pane'],{direction:'vertical',sizes:[80,20],gutterSize:4});
 Split(['#ai-output','#ai-input'],{direction:'vertical',sizes:[50,50],gutterSize:4});
 
+// MODIFIED: Generates top 2 buttons uniquely and preserves the other 98 cells exactly
 for(let i=0;i<100;i++){
-document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
+    if(i === 0) {
+        document.getElementById('side-strip').innerHTML += '<div class="btn-cell" id="btn-repo-trigger" onclick="toggleRepoSubPanel()">RP</div>';
+    } else if(i === 1) {
+        document.getElementById('side-strip').innerHTML += '<div class="btn-cell" id="btn-fs-trigger">FS</div>';
+    } else {
+        document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
+    }
 }
 
 for(let i=0;i<18;i++){
-document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
+    document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
+}
+
+// Global active sub-panel tracking variable
+let activeRepoTab = "storage";
+
+function toggleRepoSubPanel() {
+    const monitor = document.getElementById('visual-monitor');
+    const terminal = document.getElementById('terminal-out');
+    
+    // Check if repo overlay panel is already rendered on screen
+    const existingPanel = document.getElementById('repo-embedded-panel');
+    
+    if(existingPanel) {
+        // Toggle view back to default idle state
+        monitor.innerHTML = '<div id="visual-monitor" style="color:#444;font-size:12px;font-family:monospace;">[ IDLE: AWAITING CIRCUIT REQUEST ]</div>';
+        terminal.innerHTML += "\\n> DEACTIVATED: REPO SET VIEW OVERLAY CLOSING";
+    } else {
+        // Inject clean structural HTML payload inside the central pane window canvas block
+        monitor.innerHTML = `
+            <div class="repo-overlay-panel" id="repo-embedded-panel">
+                <div class="repo-nav-row">
+                    <div class="repo-nav-btn" onclick="switchRepoTab('storage')">STORAGE</div>
+                    <div class="repo-nav-btn" onclick="switchRepoTab('backup')">BACK UP</div>
+                    <div class="repo-nav-btn" onclick="switchRepoTab('milestone')">MILESTONE</div>
+                </div>
+                <div class="repo-inner-card" id="repo-dynamic-content">
+                    </div>
+                <div class="repo-footer-row">
+                    <button class="repo-action-commit" onclick="commitRepoConfig()">[ COMMIT CHANGES ]</button>
+                    <button class="repo-action-close" onclick="toggleRepoSubPanel()">CLOSE</button>
+                </div>
+            </div>
+        `;
+        terminal.innerHTML += "\\n> INITIALIZED: REPO SET SUBSYSTEM DASHBOARD MOUNTED";
+        switchRepoTab(activeRepoTab);
+    }
+}
+
+function switchRepoTab(tabName) {
+    activeRepoTab = tabName;
+    const contentArea = document.getElementById('repo-dynamic-content');
+    if(!contentArea) return;
+    
+    if(tabName === 'storage') {
+        contentArea.innerHTML = `
+            <div style="font-size:14px; color:#fff; margin-bottom:10px; font-weight:bold;">📁 PRIMARY STORAGE ROUTING DEFINITION</div>
+            <div class="repo-field-group">
+                <label class="repo-field-label">Cloud Target Platform Instance:</label>
+                <select class="repo-select-input" id="repo-p-provider">
+                    <option value="gdrive">Google Drive Workspace Mirror</option>
+                    <option value="dropbox">Dropbox Sync Engine</option>
+                    <option value="local">Isolated Local Hard-Path Matrix</option>
+                </select>
+            </div>
+            <div class="repo-field-group">
+                <label class="repo-field-label">Workspace Local Directory Target Road Map (D:/):</label>
+                <input type="text" class="repo-txt-input" id="repo-l-path" value="D:/Project_Mothership/temp_workspace">
+            </div>
+            <div class="repo-field-group">
+                <label class="repo-field-label">Cache Scratchpad Temporal Subfolder:</label>
+                <input type="text" class="repo-txt-input" id="repo-c-path" value="D:/Project_Mothership/temp_workspace/cache">
+            </div>
+        `;
+    } else if(tabName === 'backup') {
+        contentArea.innerHTML = `
+            <div style="font-size:14px; color:#fff; margin-bottom:10px; font-weight:bold;">🛡️ COLD SYNC & REDUNDANCY MATRICES</div>
+            <div class="repo-field-group">
+                <label class="repo-field-label">Redundant Cold Backup Target Vault:</label>
+                <select class="repo-select-input" id="repo-b-provider">
+                    <option value="dropbox">Dropbox Core System Repository</option>
+                    <option value="gdrive">Google Drive Cloud Instance</option>
+                    <option value="s3">AWS S3 Glacial Server Segment</option>
+                </select>
+            </div>
+            <div class="repo-field-group">
+                <label class="repo-field-label">Automated Mirror Interval Trigger Frequency (Hours):</label>
+                <input type="range" min="1" max="24" value="6" style="width:100%; accent-color:#00ff00;" id="repo-sync-slider" oninput="document.getElementById('slider-val-read').innerText = this.value + ' Hours'">
+                <span id="slider-val-read" style="font-size:11px; color:#00ff00;">6 Hours</span>
+            </div>
+        `;
+    } else if(tabName === 'milestone') {
+        contentArea.innerHTML = `
+            <div style="font-size:14px; color:#fff; margin-bottom:10px; font-weight:bold;">🎯 FIXED WORKFLOW MATRIX TARGET GATES</div>
+            <div class="repo-check-row"><input type="checkbox" class="repo-check-input" id="m1" checked><label>Milestone 1: Web Component Match API (Luvia AI Component API)</label></div>
+            <div class="repo-check-row"><input type="checkbox" class="repo-check-input" id="m2" checked><label>Milestone 2: Netlist Capture Rules (Flux.ai Structural Schema Check)</label></div>
+            <div class="repo-check-row"><input type="checkbox" class="repo-check-input" id="m3" checked><label>Milestone 3: Headless Wave Simulator Check (KiCad Local SPICE Engine)</label></div>
+            <div class="repo-check-row"><input type="checkbox" class="repo-check-input" id="m4" checked><label>Milestone 4: Trace Georouting Compliance (Quilter CAM Engine Router)</label></div>
+            <div class="repo-check-row"><input type="checkbox" class="repo-check-input" id="m5"><label>Milestone 5: 3D Physics Collision Check (nTop Structural Integrity)</label></div>
+            <div style="margin-top:12px; font-size:11px; color:#888;">AUTOMATION INTERCEPT PATTERN SETTINGS:</div>
+            <div class="repo-check-row" style="margin-top:5px;"><input type="radio" name="auto-rule" value="full" checked id="r-full"><label>Fully Automated Conference Pipeline Process</label></div>
+            <div class="repo-check-row"><input type="radio" name="auto-rule" value="hitl" id="r-hitl"><label>Human Decision Checkpoint Verification Halt Mode</label></div>
+        `;
+    }
+}
+
+function commitRepoConfig() {
+    const terminal = document.getElementById('terminal-out');
+    const chatWindow = document.getElementById('ai-chat');
+    
+    // Scrape live values depending on which tab is open for safe persistence initialization
+    if(document.getElementById('repo-p-provider')) {
+        localStorage.setItem('repo_primary_provider', document.getElementById('repo-p-provider').value);
+        localStorage.setItem('repo_local_path', document.getElementById('repo-l-path').value);
+        localStorage.setItem('repo_cache_path', document.getElementById('repo-c-path').value);
+    }
+    
+    terminal.innerHTML += "\\n> CONFIG_SAVE: WORKFLOW GUIDELINES ANCHORED INTO MEMORY MATRIX LAYER SUCCESSFULLY";
+    chatWindow.innerHTML += "<br><span style='color:#00ff00'>[SYSTEM]:</span> REPO SET VARIABLES REGISTERED AND CACHED.";
+    toggleRepoSubPanel();
 }
 
 function toggleAISet(show){
