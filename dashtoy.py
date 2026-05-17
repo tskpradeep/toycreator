@@ -1,472 +1,262 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import json
 import os
 
-st.set_page_config(layout="wide", page_title="CAD Designer Pro")
-
-st.markdown("""
-<style>
-#MainMenu {visibility:hidden;}
-footer {visibility:hidden;}
-header {visibility:hidden;}
-.stApp { background:#000 !important; overflow:hidden !important; }
-.block-container{
-padding:0rem !important;
-max-width:100% !important;
-height:100vh !important;
-overflow:hidden !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Cloud persistence handler: reads common configuration matrix
-def load_cloud_config():
-    if os.path.exists("comutoy.json"):
-        try:
-            with open("comutoy.json", "r") as f:
-                return json.load(f)
-        except:
-            pass
-    return {
-        "gemini_api_key": "",
-        "gemini_model": "gemini-2.5-flash",
-        "gemini_url": "https://generativelanguage.googleapis.com/v1beta/models/"
-    }
-
-cfg = load_cloud_config()
-
-# Read values into safe Python variables to avoid JavaScript collision errors
-api_key_val = cfg.get('gemini_api_key', '')
-model_val = cfg.get('gemini_model', 'gemini-2.5-flash')
-url_val = cfg.get('gemini_url', 'https://generativelanguage.googleapis.com/v1beta/models/')
-
-cad_app_html = """
-<script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
-
-<style>
-html, body {
-margin:0; padding:0; height:100%; width:100%;
-overflow:hidden !important; background:#000;
-font-family:'Segoe UI',Tahoma,sans-serif; color:white;
-}
-
-.master-container{
-display:flex; flex-direction:column;
-height:100vh; width:100vw; background:#000;
-border:2px solid #d3d3d3; box-sizing:border-box;
-position:relative;
-}
-
-#ai-modular-setup{
-position:absolute; top:10%; left:15%; width:70%; height:75%;
-background:#000; border:2px solid #00ff00; z-index:9999;
-display:none; flex-direction:column;
-box-shadow:0 0 50px rgba(0,255,0,0.3);
-}
-
-.ai-setup-header{
-background:#0a1a0a; border-bottom:1px solid #00ff00;
-padding:10px; display:flex; justify-content:space-between;
-color:#00ff00; font-family:monospace; font-weight:bold;
-align-items:center;
-}
-
-.ai-header-controls{display:flex; gap:10px; align-items:center;}
-.ai-setup-body{display:flex; flex:1; overflow:hidden;}
-.ai-setup-sidebar{
-width:30%; border-right:1px solid #00ff00;
-padding:10px; background:#050505; overflow-y:auto;
-}
-
-.ai-setup-content{
-width:70%; padding:25px; color:#00ff00;
-font-family:monospace; display:flex;
-flex-direction:column; gap:20px;
-overflow-y:auto;
-}
-
-.ai-tool-item{
-padding:12px; border:1px solid #004400;
-margin-bottom:8px; cursor:pointer; font-size:12px;
-transition:0.2s;
-}
-.ai-tool-item:hover{border-color:#00ff00; background:#0a2a0a;}
-.ai-tool-item.active{background:#00ff00; color:#000; font-weight:bold;}
-
-.ai-select{
-background:#000; border:1px solid #00ff00; color:#00ff00;
-padding:10px; width:100%; outline:none; cursor:pointer;
-font-family:monospace; appearance:none;
-}
-
-.ai-input{
-background:#000; border:1px solid #00ff00; color:#00ff00;
-padding:10px; width:100%; outline:none; box-sizing:border-box;
-}
-
-.title-action-btn{
-padding:2px 12px; font-size:10px; cursor:pointer;
-border:1px solid #00ff00; background:#000; color:#00ff00;
-font-family:monospace; text-transform:uppercase;
-}
-.title-action-btn:hover{background:#00ff00; color:#000;}
-.title-action-btn.close{border-color:#fff; color:#fff;}
-
-.window-title-bar{
-background:#1a1a1a; color:#888; height:30px; flex-shrink:0;
-display:flex; align-items:center; justify-content:space-between;
-padding:0 10px; font-size:12px; border-bottom:1px solid #333;
-}
-
-#dynamic-zone{
-display:flex; flex-direction:row; flex:1; min-height:0; width:100%;
-}
-
-.fixed-right-strip{
-width:65px; border-left:1px solid #333;
-display:grid; grid-template-columns:1fr 1fr;
-grid-auto-rows:min-content; gap:2px; padding:5px;
-background:#000; overflow-y:scroll;
-}
-
-.btn-cell{
-aspect-ratio:1/1; width:20px; height:20px; background:#e1e1e1;
-color:#000; border-top:2px solid #fff; border-left:2px solid #fff;
-border-right:2px solid #707070; border-bottom:2px solid #707070;
-cursor:pointer; display:flex; align-items:center;
-justify-content:center; box-sizing:border-box; flex-shrink:0;
-}
-
-.btn-cell:active{
-border-top:2px solid #707070; border-left:2px solid #707070;
-border-right:2px solid #fff; border-bottom:2px solid #fff;
-background:#bebebe;
-}
-
-.pane{
-background:#000 !important; border:1px solid #333 !important;
-overflow:hidden; display:flex; align-items:center;
-justify-content:center; box-sizing:border-box;
-}
-
-.gutter{background:#444 !important;}
-
-.fixed-footer{
-height:64px; display:flex; flex-direction:row;
-border-top:2px solid #333; background:#000;
-flex-shrink:0; align-items:flex-end;
-padding:0px 4px 2px 4px;
-}
-
-.footer-left-content{
-flex:1; display:flex; height:100%;
-align-items:center; padding-left:10px;
-}
-
-.selection-b-container{width:130px; height:62px; margin-left:5px;}
-.selection-a-stack{
-display:flex; flex-direction:column; gap:1px;
-width:130px; margin-left:5px;
-}
-
-.footer-palette-grid{
-display:grid; grid-template-columns:repeat(6,20px);
-grid-template-rows:repeat(3,20px); gap:1px; margin-left:8px;
-}
-
-.dropup{
-position:relative; width:100%; height:20px;
-background:#e1e1e1; color:#000; border:1px solid #707070;
-display:flex; align-items:center; justify-content:space-between;
-padding:0 5px; cursor:pointer; font-size:9px;
-box-sizing:border-box;
-}
-
-.dropup.tall{height:62px;}
-
-.dropup-content{
-display:none; position:absolute; bottom:100%; left:-1px;
-background:#f0f0f0; min-width:140px;
-border:1px solid #707070; z-index:1000;
-}
-
-.dropup.active .dropup-content{display:block;}
-
-.dropup-content a{
-color:#000; padding:6px; text-decoration:none;
-display:block; border-bottom:1px solid #ccc; font-size:10px;
-}
-
-.text-main{
-color:#b22222; font-size:1.4vw; font-weight:bold;
-text-align:center; width:100%; height:100%;
-overflow:auto; display:flex; flex-direction:column;
-align-items:center; justify-content:center;
-}
-
-.ai-text-area{
-width:100%; height:100%; padding:10px; color:#00ff00;
-font-family:'Consolas',monospace; font-size:13px;
-overflow-y:auto; text-align:left;
-}
-
-.user-input-area{
-width:100%; height:100%; background:transparent;
-border:none; color:#800080; padding:10px;
-font-family:'Consolas',monospace; outline:none;
-resize:none; font-weight:bold;
-}
-
-.cmd-text{
-width:100%; height:100%; color:#0f0;
-font-family:monospace; font-size:11px;
-padding:5px; overflow-y:auto; white-space:pre-wrap;
-}
-</style>
-
-<div class="master-container">
-
-<div id="ai-modular-setup">
-<div class="ai-setup-header">
-<span>[ SYSTEM AI-SET : TOOL CONFIGURATION ]</span>
-<div class="ai-header-controls">
-<button class="title-action-btn" onclick="saveData()">SAVE</button>
-<button class="title-action-btn close" onclick="toggleAISet(false)">[ X ]</button>
-</div>
-</div>
-
-<div class="ai-setup-body">
-
-<div class="ai-setup-sidebar" id="tool-list">
-<div class="ai-tool-item active">GOOGLE GEMINI</div>
-<div class="ai-tool-item">LUVIA AI</div>
-<div class="ai-tool-item">FLUX.AI</div>
-<div class="ai-tool-item">KICAD</div>
-<div class="ai-tool-item">QUILTER</div>
-<div class="ai-tool-item">NTOP / FUSION</div>
-</div>
-
-<div class="ai-setup-content">
-
-<div style="font-size:20px;border-bottom:2px solid #004400;padding-bottom:5px;color:#fff;">
-TOOL: <span id="tool-name">Google Gemini</span>
-</div>
-
-<div>
-<label>AVAILABLE VERSIONS (DYNAMIC):</label>
-<select class="ai-select" id="version-select">
-<option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-<option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-<option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
-</select>
-</div>
-
-<div>
-<label>CORE FUNCTION (OUTPUT):</label>
-<select class="ai-select">
-<option>Multi-modal Reasoning</option>
-<option>MPN Text / Sourcing only</option>
-</select>
-</div>
-
-<div>
-<label id="key-label">API KEY / LOCAL PATH:</label>
-<input type="password" id="api-field-input" class="ai-input" placeholder="ENTER ACCESS KEY OR PATH...">
-</div>
-
-<div>
-<label>API URL:</label>
-<input type="text" id="url-input" class="ai-input" value="https://generativelanguage.googleapis.com/v1beta/models/">
-</div>
-
-</div>
-</div>
-</div>
-
-<div class="window-title-bar">
-<div>CAD DESIGNER PRO</div>
-<div><span>−</span><span style="margin:0 10px;">❐</span><span>×</span></div>
-</div>
-
-<div id="dynamic-zone">
-
-<div id="split-container" style="display:flex;flex:1;width:100%;">
-
-<div id="left-stack" style="display:flex;flex-direction:column;width:70%;">
-<div id="cad-pane" class="pane text-main">
-<div id="visual-monitor" style="color:#444;font-size:12px;font-family:monospace;">
-[ IDLE: AWAITING CIRCUIT REQUEST ]
-</div>
-</div>
-
-<div id="cmd-pane" class="pane" style="justify-content:flex-start;align-items:flex-start;">
-<div id="terminal-out" class="cmd-text">>_ SYSTEM INITIALIZED</div>
-</div>
-</div>
-
-<div id="right-stack" style="display:flex;flex-direction:column;width:30%;">
-<div id="ai-output" class="pane">
-<div id="ai-chat" class="ai-text-area">AI TEXT REPLYING WINDOW</div>
-</div>
-
-<div id="ai-input" class="pane">
-<textarea id="user-prompt" class="user-input-area" placeholder="TYPE HERE..."></textarea>
-</div>
-</div>
-
-</div>
-
-<div class="fixed-right-strip" id="side-strip"></div>
-</div>
-
-<div class="fixed-footer">
-<div class="footer-left-content">
-<span style="color:#008000;font-size:11px;margin-right:20px;">READY</span>
-<span style="color:#0000ff;font-size:11px;">SYSTEM STATUS: ONLINE</span>
-</div>
-
-<div id="foot-palette" class="footer-palette-grid"></div>
-
-<div class="selection-a-stack">
-<div class="dropup"><span>File</span><span>▲</span></div>
-<div class="dropup"><span>Tools</span><span>▲</span></div>
-<div class="dropup"><span>View</span><span>▲</span></div>
-</div>
-
-<div class="selection-b-container">
-<div class="dropup tall" onclick="toggleAISet(true)">
-<span>AI-SET</span><span>▲</span>
-</div>
-</div>
-</div>
-
-</div>
-
-<script>
-// Injection of cloud parameter variables safely passed down from Streamlit configuration definitions
-const cloudApiKey = """ + f'"{api_key_val}"' + """ ;
-const cloudModel = """ + f'"{model_val}"' + """ ;
-const cloudUrl = """ + f'"{url_val}"' + """ ;
-
-if(cloudApiKey) {
-    localStorage.setItem('gemini_api_key', cloudApiKey);
-    localStorage.setItem('gemini_model', cloudModel);
-    localStorage.setItem('gemini_url', cloudUrl);
-}
-
-Split(['#left-stack','#right-stack'],{sizes:[70,30],gutterSize:4});
-Split(['#cad-pane','#cmd-pane'],{direction:'vertical',sizes:[80,20],gutterSize:4});
-Split(['#ai-output','#ai-input'],{direction:'vertical',sizes:[50,50],gutterSize:4});
-
-for(let i=0;i<100;i++){
-document.getElementById('side-strip').innerHTML += '<div class="btn-cell"></div>';
-}
-
-for(let i=0;i<18;i++){
-document.getElementById('foot-palette').innerHTML += '<div class="btn-cell"></div>';
-}
-
-function toggleAISet(show){
-document.getElementById('ai-modular-setup').style.display = show ? 'flex':'none';
-}
-
-function saveData(){
-const apiKey = document.getElementById('api-field-input').value;
-const model = document.getElementById('version-select').value;
-const apiUrl = document.getElementById('url-input').value;
-
-localStorage.setItem('gemini_api_key', apiKey);
-localStorage.setItem('gemini_model', model);
-localStorage.setItem('gemini_url', apiUrl);
-
-document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#00ff00'>[SYSTEM]:</span> CONFIG SAVED TEMPORARILY.";
-document.getElementById('terminal-out').innerHTML += "\\n> CONFIG_SAVE: SUCCESS";
-toggleAISet(false);
-}
-
-async function callGemini(promptText){
-
-const apiKey = localStorage.getItem('gemini_api_key') || cloudApiKey;
-const model = localStorage.getItem('gemini_model') || cloudModel || 'gemini-2.5-flash';
-const apiUrl = localStorage.getItem('gemini_url') || cloudUrl || 'https://generativelanguage.googleapis.com/v1beta/models/';
-
-const chatWindow = document.getElementById('ai-chat');
-const terminal = document.getElementById('terminal-out');
-
-if(!apiKey){
-chatWindow.innerHTML += "<br><span style='color:red'>[ERROR]: NO API KEY FOUND. OPEN AI-SET.</span>";
-return;
-}
-
-try{
-
-terminal.innerHTML += "\\n> API_CALL: HANDSHAKE STARTED";
-
-const response = await fetch(apiUrl + model + ":generateContent?key=" + apiKey, {
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-contents:[{parts:[{text:promptText}]}]
-})
-});
-
-const data = await response.json();
-
-if(
-data.candidates &&
-data.candidates[0] &&
-data.candidates[0].content &&
-data.candidates[0].content.parts &&
-data.candidates[0].content.parts[0]
-){
-const aiText = data.candidates[0].content.parts[0].text || "No text returned.";
-
-chatWindow.innerHTML += "<br><span style='color:#00ff00'>[GEMINI]:</span> " + aiText;
-terminal.innerHTML += "\\n> API_RESPONSE: SUCCESS_LOADED";
-chatWindow.scrollTop = chatWindow.scrollHeight;
-
-}else{
-chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: " + JSON.stringify(data) + "</span>";
-terminal.innerHTML += "\\n> API_RESPONSE: UNKNOWN_FORMAT";
-}
-
-}catch(err){
-chatWindow.innerHTML += "<br><span style='color:red'>[API ERROR]: CONNECTION FAILED.</span>";
-terminal.innerHTML += "\\n> API_ERROR: CHECK KEY/MODEL";
-}
-}
-
-const promptInput = document.getElementById('user-prompt');
-
-promptInput.addEventListener('keydown',function(e){
-
-if(e.key==='Enter' && !e.shiftKey){
-e.preventDefault();
-
-const text = promptInput.value.trim();
-
-if(text !== ''){
-
-document.getElementById('ai-chat').innerHTML += "<br><br><span style='color:#800080'>[USER]:</span> " + text;
-document.getElementById('terminal-out').innerHTML += "\\n> DISPATCH: " + text.toUpperCase();
-
-callGemini(text);
-
-promptInput.value='';
-}
-}
-});
-</script>
-"""
-
-components.html(cad_app_html, height=0)
-
-st.components.v1.html(
-"""
-<script>
-window.parent.document.querySelector('iframe').style.height='94vh';
-</script>
-""",
-height=0
+# --- 1. CORE APPLICATION CONFIGURATION ---
+st.set_page_config(
+    page_title="CAD DESIGNER PRO",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
+
+# --- 2. THE MASTER SYSTEM REGISTRY & STATE ENGINE ---
+# Ensure local memory spaces exist to prevent thread cross-talk between instances
+if "current_view" not in st.session_state:
+    st.session_state.current_view = "MAIN_CANVAS"
+if "active_panel" not in st.session_state:
+    st.session_state.active_panel = None
+
+CONFIG_PATH = "config_layer/comutoy.json"
+STATE_PATH = "config_layer/active_board_state.json"
+
+def save_system_configuration(data, path=CONFIG_PATH):
+    """Writes path mappings and configuration arrays directly to storage layer."""
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(data, f, indent=4)
+    except Exception as e:
+        st.error(f"Configuration Write Failure: {str(e)}")
+
+# --- 3. HIGH-DENSITY TERMINAL STYLING SHEETS ---
+st.markdown("""
+    <style>
+    /* Global Background Settings matching image_007d38.png */
+    .stApp {
+        background-color: #000000;
+        color: #00FF00;
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+    
+    /* Main Central Workspace Canvas Style Rules */
+    .canvas-border {
+        border: 2px solid #333333;
+        padding: 20px;
+        height: 520px;
+        background-color: #000000;
+        color: #FFFFFF;
+        position: relative;
+    }
+    
+    /* Native Green System Prompt Text styling */
+    .terminal-prompt-text {
+        color: #00FF00 !important;
+        font-weight: bold;
+    }
+    
+    /* Bottom Status Activity Log Monitor Feed */
+    .log-box {
+        border: 1px solid #111111;
+        background-color: #000000;
+        padding: 10px;
+        font-size: 12px;
+        color: #00FF00;
+        height: 180px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+    }
+    
+    /* Unmodified Native Grid Square Action Buttons (Far Right Deck) */
+    div.native-square-deck button {
+        background-color: #1a1a1a !important;
+        color: #FFFFFF !important;
+        border: 1px solid #333333 !important;
+        border-radius: 4px !important;
+        height: 32px !important;
+        width: 100% !important;
+        padding: 0px !important;
+        font-size: 11px !important;
+        font-weight: bold !important;
+        transition: all 0.2s ease;
+    }
+    div.native-square-deck button:hover {
+        border: 1px solid #00FF00 !important;
+        color: #00FF00 !important;
+        box-shadow: 0px 0px 5px #00FF00 !important;
+    }
+    
+    /* Dynamic Target Styling for Activated Modules */
+    div.active-target-btn button {
+        background-color: #00FF00 !important;
+        color: #000000 !important;
+        border: 1px solid #00FF00 !important;
+    }
+    
+    /* Side Chat Prompt Console Box Overlay rules */
+    .chat-display {
+        background-color: #000000;
+        border-left: 1px solid #222222;
+        padding: 10px;
+        height: 400px;
+        overflow-y: auto;
+        color: #00FF00;
+        font-size: 12px;
+    }
+    
+    /* Storage Sub-Panel Cyberpunk Styling */
+    div.stButton > button.storage-action-btn {
+        background-color: #000000 !important;
+        color: #00FF00 !important;
+        border: 2px solid #00FF00 !important;
+        border-radius: 12px !important;
+        font-size: 18px !important;
+        padding: 12px 5px !important;
+    }
+    </style>
+""", unsafe_allowed_with_html=True)
+
+
+# --- 4. STRUCTURAL WORKSPACE VIEWPORT LAYOUT ---
+# 3-Column Split: 65% Main Canvas Area, 25% Chat Console, 10% Native Selection Button Matrix
+col_canvas, col_chat, col_matrix = st.columns([6.5, 2.5, 1.0])
+
+
+# === SECTION A: MAIN CENTRAL WORKSPACE CANVAS AREA ===
+with col_canvas:
+    if st.session_state.current_view == "MAIN_CANVAS":
+        st.markdown('<div class="canvas-border">', unsafe_allowed_with_html=True)
+        st.markdown("<p style='text-align: center; margin-top: 220px; color:#555555; font-weight:bold;'>[ IDLE: AWAITING CIRCUIT REQUEST ]</p>", unsafe_allowed_with_html=True)
+        st.markdown('</div>', unsafe_allowed_with_html=True)
+        
+    elif st.session_state.current_view == "REPO_SET":
+        st.markdown('<div class="canvas-border" style="overflow-y: auto;">', unsafe_allowed_with_html=True)
+        st.markdown("<h4 style='color:#00FF00;'>⚙️ REPOSITORY & WORKFLOW CONTROL HUB</h4>", unsafe_allowed_with_html=True)
+        st.markdown("<hr style='border-color:#333333;'>", unsafe_allowed_with_html=True)
+        
+        # --- REPO_SET.PY INLINE EXECUTED SUB-PANEL CONTROLS ---
+        # Render the 3 primary action sub-toggles mapped from your three-button layout
+        sub_col1, sub_col2, sub_col3 = st.columns(3)
+        
+        with sub_col1:
+            if st.button("STORAGE", key="repo_panel_storage"):
+                st.session_state.active_panel = "storage" if st.session_state.active_panel != "storage" else None
+                st.rerun()
+        with sub_col2:
+            if st.button("BACK UP", key="repo_panel_backup"):
+                st.session_state.active_panel = "backup" if st.session_state.active_panel != "backup" else None
+                st.rerun()
+        with sub_col3:
+            if st.button("MILESTONE", key="repo_panel_milestone"):
+                st.session_state.active_panel = "milestone" if st.session_state.active_panel != "milestone" else None
+                st.rerun()
+                
+        st.markdown("<br>", unsafe_allowed_with_html=True)
+        
+        # Sub-Panel Target Operations Area
+        if st.session_state.active_panel == "storage":
+            st.markdown("<p style='color:#00FF00; font-weight:bold;'>📁 Primary Workspace Storage Setup</p>", unsafe_allowed_with_html=True)
+            p_provider = st.selectbox("Active Cloud Workspace Target Engine", ["Google Drive", "Dropbox", "Local PC Directory Only"])
+            l_path = st.text_input("Active PC Workspace Folder Route (D:/)", "D:/Project_Mothership/temp_workspace")
+            c_path = st.text_input("System Cache Temporary Operations Storage Directory", "D:/Project_Mothership/temp_workspace/cache")
+            if st.button("[ SAVE STORAGE TARGETS ]"):
+                save_system_configuration({"primary_provider": p_provider, "local_path": l_path, "cache_path": c_path})
+                st.success("Primary path mapping records written cleanly to config_layer.")
+                
+        elif st.session_state.active_panel == "backup":
+            st.markdown("<p style='color:#00FF00; font-weight:bold;'>🛡️ Redundant Mirroring Configurations</p>", unsafe_allowed_with_html=True)
+            b_provider = st.selectbox("Secondary Cold Storage Target Vault", ["Dropbox", "Google Drive", "AWS S3 Cloud Server Instance"])
+            s_freq = st.slider("Automated Cloud Sync Mirror Frequency (Hours)", 1, 24, 6)
+            if st.button("[ SAVE BACKUP MATRIX POLICIES ]"):
+                save_system_configuration({"backup_provider": b_provider, "sync_frequency_hours": s_freq})
+                st.success("Redundancy configurations updated successfully.")
+                
+        elif st.session_state.active_panel == "milestone":
+            st.markdown("<p style='color:#00FF00; font-weight:bold;'>🎯 Milestone Target Checkpoints & Rules Pipeline</p>", unsafe_allowed_with_html=True)
+            m1 = st.checkbox("Milestone 1: Web Component Sourcing Clearance (Luvia AI Engine API)", value=True)
+            m2 = st.checkbox("Milestone 2: Schematic Capture Validation (Flux.ai Schema Parsing)", value=True)
+            m3 = st.checkbox("Milestone 3: Deep Headless Wave Simulation (KiCad Core SPICE Engine)", value=True)
+            m4 = st.checkbox("Milestone 4: Trace Georouting Integrity Verification (Quilter CAM Engine)", value=True)
+            m5 = st.checkbox("Milestone 5: 3D Enclosure Collision Check (nTop/Fusion Physics Rules)", value=False)
+            auto_mode = st.radio("Automation Rule Selection", ["Fully Automated Execution Flow", "Human Checkpoint Intercept Rules"])
+            if st.button("[ LOCK MILESTONE COMPLIANCE TEMPLATE ]"):
+                save_system_configuration({
+                    "m1": m1, "m2": m2, "m3": m3, "m4": m4, "m5": m5, "mode": auto_mode
+                }, path=STATE_PATH)
+                st.success("Fixed guidelines anchored to centralized whiteboard memory file.")
+
+        # Bottom Row: Centered Close Action Block with Two Expansion Bays
+        st.markdown("<br><hr style='border-color:#222222;'>", unsafe_allowed_with_html=True)
+        b_row1, b_row2, b_row3 = st.columns([1.5, 1.0, 1.5])
+        with b_row1:
+            st.empty()  # Blank Expansion Slot 1 Reserved
+        with b_row2:
+            if st.button("CLOSE", key="repo_panel_close"):
+                st.session_state.current_view = "MAIN_CANVAS"
+                st.session_state.active_panel = None
+                st.rerun()
+        with b_row3:
+            st.empty()  # Blank Expansion Slot 2 Reserved
+            
+        st.markdown('</div>', unsafe_allowed_with_html=True)
+
+    # Core Terminal Real-Time Status Feed Bar
+    st.markdown("<br>", unsafe_allowed_with_html=True)
+    st.markdown('<p class="terminal-prompt-text">&gt;_ SYSTEM LIVE TRANSMISSION MONITOR LOGS</p>', unsafe_allowed_with_html=True)
+    st.markdown(f"""
+        <div class="log-box">&gt;_ SYSTEM CORE INITIATED NATIVELY... SUCCESS
+&gt;_ CONFIG_SAVE: MATRIX FLAGGED IN SYSTEM_LEARNING_LOOP.JSON
+&gt;_ DETECTED ACTIVE CHANNELS: 5 DOMAIN ENGINEERING AGENTS STANDBY
+&gt;_ CONFERENCE BROADCAST PROTOCOL LINK: ONLINE
+&gt;_ SYSTEM STATUS: OPERATIONAL MIGRATION READY
+&gt;_ INTERFACE VIEW RECOGNIZED PORT: {st.session_state.current_view}</div>
+    """, unsafe_allowed_with_html=True)
+
+
+# === SECTION B: RIGHT-HAND SIDE CHAT PROMPT PANEL ===
+with col_chat:
+    st.markdown('<div class="chat-display">', unsafe_allowed_with_html=True)
+    st.markdown("**\*\*MATLAB:\*\*** Type `clear all` and press Enter. This clears all variables, functions, and MEX-files from the workspace.<br><br>**\*\*R:\*\*** Type `rm(list = ls())` and press Enter. This removes all objects from the current workspace.<br><br>**\*\*Python (Jupyter/IPython Notebook):\*\*** There isn't a direct equivalent to `clear all` for all variables at once without restarting the kernel. You can restart the kernel to clear all variables and execution history. For individual variables, you use `del variable_name`. * **\*\*Spyder (Python IDE):\*\*** There's usually a button or menu option to clear all variables in the 'Variable Explorer' pane. 3. **\*\*Clear cache/cookies/history in a web browser:\*\*** This is usually done through the browser's settings or history menu (e.g., 'Clear browsing data'). 4. **\*\*Clear notifications/alerts on a device:\*\*** This is usually an option within the notification shade or settings. Let me know what you're trying to do, and I can give you more specific instructions!", unsafe_allowed_with_html=True)
+    st.markdown('</div>', unsafe_allowed_with_html=True)
+    st.text_input("", value="TYPE HERE...", label_visibility="collapsed")
+    
+    # Bottom App Control Triggers
+    b_col1, b_col2, b_col3 = st.columns(3)
+    with b_col1:
+        st.selectbox("", ["File"], label_visibility="collapsed")
+    with b_col2:
+        st.selectbox("", ["Tools"], label_visibility="collapsed")
+    with b_col3:
+        st.selectbox("", ["View"], label_visibility="collapsed")
+
+
+# === SECTION C: UNMODIFIED NATIVE DOUBLE-BUTTON STACK GRID ===
+with col_matrix:
+    st.markdown('<div class="native-square-deck">', unsafe_allowed_with_html=True)
+    
+    # Row 1: The target execution triggers. Separate, independent buttons.
+    grid_col_1, grid_col_2 = st.columns(2)
+    with grid_col_1:
+        # Highlighting row behavior if current active viewport matches
+        if st.session_state.current_view == "REPO_SET":
+            st.markdown('<div class="active-target-btn">', unsafe_allowed_with_html=True)
+            
+        if st.button("RP", key="native_slot_row1_left", help="Open Repository and Storage Hub"):
+            st.session_state.current_view = "REPO_SET" if st.session_state.current_view != "REPO_SET" else "MAIN_CANVAS"
+            st.rerun()
+            
+        if st.session_state.current_view == "REPO_SET":
+            st.markdown('</div>', unsafe_allowed_with_html=True)
+            
+    with grid_col_2:
+        st.button("FS", key="native_slot_row1_right", help="Folder Structure Configuration Panel")
+        
+    # Rows 2 to 15: Fully structural, independent unmerged placeholder squares matching image_007d38.png
+    for row_idx in range(2, 16):
+        g_left, g_right = st.columns(2)
+        with g_left:
+            st.button("", key=f"native_btn_L_{row_idx}")
+        with g_right:
+            st.button("", key=f"native_btn_R_{row_idx}")
+            
+    st.selectbox("", ["AI-SET"], label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allowed_with_html=True)
